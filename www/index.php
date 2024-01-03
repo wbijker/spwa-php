@@ -27,7 +27,7 @@ $prev = View::render(new Model(8, ['Tea', 'Water', 'Coffee', 'Milk']));
 $next = View::render(new Model(12, ['Hot chocolate', 'Coffee', 'Milk', 'Tea', 'Lemonade', 'Milk']));
 
 $prev->fillPath(null, 0);
-$next->fillPath(null, 0);//
+$next->fillPath(null, 0);
 compare($prev, $next);
 
 //$prev->render();

@@ -16,84 +16,7 @@ function compare($prev, $next)
         return;
     }
 
-
-    if (get_class($prev) == TextNode::class) {
-//        echo "Comparing binding:: $next->value with $prev->value\n";
-        return;
-    }
-
-    if (get_class($prev) == ConditionalNode::class) {
-
-        if ($prev->condition != $next->condition) {
-
-            if ($next->condition) {
-                // remove $prev->else
-                // insert $next->then
-//                echo "Need to replace next\n";
-//                print_r($next->then);
-                return;
-            }
-            // remove $prev->then
-            // insert $next->else
-//            echo "Need to replace else\n";
-            return;
-        }
-        return;
-    }
-
-    if (get_class($prev) == ArrayNode::class) {
-
-        echo "comparing array\n";
-        // hash each value and compare: delete, insert, move
-        $prevHash = array_map($prev->keyCallback, $prev->array);
-        $nextHash = array_map($next->keyCallback, $next->array);
-
-
-        print_r($prevHash);
-        print_r($nextHash);
-
-        for ($i = 0; $i < max(count($prevHash), count($nextHash)); $i++) {
-            $prevItem = $prevHash[$i];
-            $nextItem = $nextHash[$i];
-
-            if ($prevItem == null) {
-                echo "Insert $nextItem at $i\n";
-                continue;
-            }
-            if ($nextItem == null) {
-                echo "Delete $prevItem at $i\n";
-                continue;
-            }
-
-            if ($prevItem == $nextItem) {
-                echo "Same item $prevItem\n";
-                continue;
-            }
-
-            // search for prev in next
-            // DOM that already existed is present in the new list
-            $found = array_search($prevItem, $next->array);
-            if ($found !== false) {
-                // move
-                echo "Move $prevItem from $i to $found\n";
-                moveElement($prevHash, $i, $found);
-
-                print_r($prevHash);
-            }
-
-            echo "Replace $prevItem with $nextItem\n";
-        }
-
-        return;
-    }
-
-    if (get_class($prev) == HtmlNode::class) {
-//        echo "Comparing $prev->tag\n";
-
-        for ($i = 0; $i < count($prev->children); $i++) {
-            compare($prev->children[$i], $next->children[$i]);
-        }
-    }
+    $prev->compare($next);
 }
 
 abstract class Node
@@ -102,6 +25,7 @@ abstract class Node
     public int $index = 0;
 
     abstract function render(): void;
+
 
     function fillPath(?Node $parent, int $index): void
     {
@@ -119,6 +43,8 @@ abstract class Node
         }
         return array_reverse($paths);
     }
+
+
 }
 
 class TextNode extends Node
@@ -134,6 +60,12 @@ class TextNode extends Node
     function render(): void
     {
         echo htmlentities($this->value);
+    }
+
+    function compare(TextNode $other): bool
+    {
+        echo "Comparing text:: $this->value with $other->value\n";
+        return $this->value == $other->value;
     }
 }
 
@@ -165,6 +97,25 @@ class ConditionalNode extends Node
             $this->else->fillPath($this, 0);
     }
 
+    public function compare(ConditionalNode $other): bool
+    {
+        return false;
+//        if ($prev->condition != $next->condition) {
+//
+//            if ($next->condition) {
+//                // remove $prev->else
+//                // insert $next->then
+////                echo "Need to replace next\n";
+////                print_r($next->then);
+//                return;
+//            }
+//            // remove $prev->then
+//            // insert $next->else
+////            echo "Need to replace else\n";
+//            return;
+//        }
+//        return;
+    }
 
     function render(): void
     {
@@ -224,6 +175,52 @@ class ArrayNode extends Node
         foreach ($this->children as $index => $child) {
             $child->fillPath($this, $index);
         }
+    }
+
+    function compare(ArrayNode $other): bool
+    {
+        echo "comparing array\n";
+        // hash each value and compare: delete, insert, move
+        $prevHash = array_map($this->keyCallback, $this->array);
+        $nextHash = array_map($other->keyCallback, $other->array);
+
+
+        print_r($prevHash);
+        print_r($nextHash);
+
+        for ($i = 0; $i < max(count($prevHash), count($nextHash)); $i++) {
+            $prevItem = $prevHash[$i];
+            $nextItem = $nextHash[$i];
+
+            if ($prevItem == null) {
+                echo "Insert $nextItem at $i\n";
+                continue;
+            }
+            if ($nextItem == null) {
+                echo "Delete $prevItem at $i\n";
+                continue;
+            }
+
+            if ($prevItem == $nextItem) {
+                echo "Same item $prevItem\n";
+                continue;
+            }
+
+            // search for prev in next
+            // DOM that already existed is present in the new list
+            $found = array_search($prevItem, $other->array);
+            if ($found !== false) {
+                // move
+                echo "Move $prevItem from $i to $found\n";
+                moveElement($prevHash, $i, $found);
+
+                print_r($prevHash);
+            }
+
+            echo "Replace $prevItem with $nextItem\n";
+        }
+
+        return false;
     }
 
 }
@@ -298,6 +295,14 @@ class HtmlNode extends Node
         foreach ($this->children as $index => $child) {
             $child->fillPath($this, $index);
         }
+    }
+
+    public function compare(HtmlNode $other): bool
+    {
+        for ($i = 0; $i < count($this->children); $i++) {
+            compare($this->children[$i], $other->children[$i]);
+        }
+        return false;
     }
 
 }
