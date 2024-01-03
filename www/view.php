@@ -1,5 +1,71 @@
 <?php
 
+function compare($prev, $next)
+{
+    if (is_string($prev)) {
+        return;
+    }
+
+    // $prev and $next should always be of the same type
+    if (get_class($prev) != get_class($next)) {
+        return;
+    }
+
+
+    if (get_class($prev) == BindingNode::class) {
+        echo "Comparing binding:: $next->value with $prev->value\n";
+        return;
+    }
+
+    if (get_class($prev) == ConditionalNode::class) {
+
+        if ($prev->condition != $next->condition) {
+
+            if ($next->condition) {
+                // remove $prev->else
+                // insert $next->then
+                echo "Need to replace next\n";
+                print_r($next->then);
+                return;
+            }
+            // remove $prev->then
+            // insert $next->else
+            echo "Need to replace else\n";
+            return;
+        }
+        return;
+    }
+
+    if (get_class($prev) == ArrayNode::class) {
+
+        echo "comparing array\n";
+        // hash each value and compare: delete, insert, move
+        $prevHash = array_map(fn($item) => md5($item), $prev->array);
+        $nextHash = array_map(fn($item) => md5($item), $next->array);
+
+        // prev hashes that are not in next
+        $toDelete = array_diff($prevHash, $nextHash);
+        // map back to prev array
+        echo "To delete:\n";
+        print_r(array_map(fn($hash) => $prev->array[array_search($hash, $prevHash)], $toDelete));
+
+        // next hashes that are not in prev
+        $toInsert = array_diff($nextHash, $prevHash);
+        echo "To insert:\n";
+        print_r(array_map(fn($hash) => $next->array[array_search($hash, $nextHash)], $toInsert));
+
+        return;
+    }
+
+    if (get_class($prev) == HtmlNode::class) {
+        echo "Comparing $prev->tag\n";
+
+        for ($i = 0; $i < count($prev->children); $i++) {
+            compare($prev->children[$i], $next->children[$i]);
+        }
+    }
+}
+
 abstract class Node
 {
     abstract function render(): void;
@@ -17,7 +83,7 @@ class BindingNode extends Node
 
     function render(): void
     {
-        echo $this->value;
+        echo htmlentities($this->value);
     }
 }
 
