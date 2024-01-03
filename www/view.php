@@ -2,17 +2,13 @@
 
 function compare($prev, $next)
 {
-    if (is_string($prev)) {
-        return;
-    }
-
     // $prev and $next should always be of the same type
     if (get_class($prev) != get_class($next)) {
         return;
     }
 
 
-    if (get_class($prev) == BindingNode::class) {
+    if (get_class($prev) == TextNode::class) {
         echo "Comparing binding:: $next->value with $prev->value\n";
         return;
     }
@@ -71,7 +67,7 @@ abstract class Node
     abstract function render(): void;
 }
 
-class BindingNode extends Node
+class TextNode extends Node
 {
     public $value;
 
@@ -162,7 +158,7 @@ class HtmlNode extends Node
     /**
      * @param string $tag
      * @param array|null $attributes
-     * @param null|(Node|string)[] $children
+     * @param null|Node[] $children
      */
     public function __construct(string $tag, ?array $attributes, ?array $children)
     {
@@ -207,10 +203,6 @@ class HtmlNode extends Node
         echo ">";
         if ($this->children != null) {
             foreach ($this->children as $child) {
-                if (is_string($child)) {
-                    echo $child;
-                    continue;
-                }
                 $child->render();
             }
         }
@@ -224,9 +216,9 @@ function node(string $tag, ?array $attributes, ?array $children): HtmlNode
     return new HtmlNode($tag, $attributes, $children);
 }
 
-function bind($value): BindingNode
+function text($value): TextNode
 {
-    return new BindingNode($value);
+    return new TextNode($value);
 }
 
 function conditional($exp, $then, $else): ConditionalNode
