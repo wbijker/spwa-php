@@ -9,6 +9,7 @@ class Model
 }
 
 
-$model = new Model();
 require_once 'view-compiled.php';
-$template->render();
+
+$view = View::render(new Model());
+$view->render();
