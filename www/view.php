@@ -42,6 +42,9 @@ function compare($prev, $next)
         // prev hashes that are not in next
         $toDelete = array_diff($prevHash, $nextHash);
         // map back to prev array
+        echo "Indexes";
+        print_r($prev->getPath());
+
         echo "To delete:\n";
         print_r(array_map(fn($hash) => $prev->array[array_search($hash, $prevHash)], $toDelete));
 
@@ -64,7 +67,27 @@ function compare($prev, $next)
 
 abstract class Node
 {
+    public ?Node $parent = null;
+    public int $index = 0;
+
     abstract function render(): void;
+
+    function fillPath(?Node $parent, int $index): void
+    {
+        $this->parent = $parent;
+        $this->index = $index;
+    }
+
+    function getPath(): array
+    {
+        $paths = [$this->index];
+        $parent = $this->parent;
+        while ($parent != null) {
+            $paths[] = $parent->index;
+            $parent = $parent->parent;
+        }
+        return array_reverse($paths);
+    }
 }
 
 class TextNode extends Node
@@ -101,6 +124,16 @@ class ConditionalNode extends Node
         $this->else = $else;
     }
 
+    function fillPath(?Node $parent, int $index): void
+    {
+        parent::fillPath($parent, $index);
+        if ($this->then != null)
+            $this->then->fillPath($this, 0);
+
+        if ($this->else != null)
+            $this->else->fillPath($this, 0);
+    }
+
 
     function render(): void
     {
@@ -118,6 +151,10 @@ class ArrayNode extends Node
      * @var $callback callback
      */
     public $callback;
+    /**
+     * @var Node[] $children
+     */
+    public array $children = [];
 
     /**
      * @param array|null $array $array
@@ -127,22 +164,26 @@ class ArrayNode extends Node
     {
         $this->array = $array;
         $this->callback = $callback;
+        if ($this->array != null)
+            $this->children = array_map($callback, $array);
     }
 
 
     function render(): void
     {
-        if ($this->array == null) {
-            return;
-        }
-
-        foreach ($this->array as $item) {
-            $item = call_user_func($this->callback, $item);
-            if ($item instanceof Node) {
-                $item->render();
-            }
+        foreach ($this->children as $child) {
+            $child->render();
         }
     }
+
+    function fillPath(?Node $parent, int $index): void
+    {
+        parent::fillPath($parent, $index);
+        foreach ($this->children as $index => $child) {
+            $child->fillPath($this, $index);
+        }
+    }
+
 }
 
 class HtmlNode extends Node
@@ -208,6 +249,15 @@ class HtmlNode extends Node
         }
         echo "</$this->tag>";
     }
+
+    function fillPath(?Node $parent, int $index): void
+    {
+        parent::fillPath($parent, $index);
+        foreach ($this->children as $index => $child) {
+            $child->fillPath($this, $index);
+        }
+    }
+
 }
 
 
