@@ -28,6 +28,9 @@ $next = View::render(new Model(12, ['Hot chocolate', 'Coffee', 'Milk', 'Tea', 'L
 
 $prev->fillPath(null, 0);
 $next->fillPath(null, 0);
-compare($prev, $next);
+$list = [];
+compare($prev, $next, $list);
 
-//$prev->render();
+$prev->render();
+
+print_r($list);

@@ -1,6 +1,5 @@
 <?php
 
-
 function moveElement(&$array, int $from, int $to): void
 {
     // Remove the element from the array and keep the value
@@ -9,14 +8,14 @@ function moveElement(&$array, int $from, int $to): void
     array_splice($array, $to, 0, [$element]);
 }
 
-function compare($prev, $next)
+function compare($prev, $next, &$list): void
 {
     // $prev and $next should always be of the same type
     if (get_class($prev) != get_class($next)) {
         return;
     }
 
-    $prev->compare($next);
+    $prev->compare($next, $list, $list);
 }
 
 abstract class Node
@@ -37,10 +36,11 @@ abstract class Node
     {
         $paths = [$this->index];
         $parent = $this->parent;
-        while ($parent != null) {
+        while ($parent != null && $parent->parent != null) {
             $paths[] = $parent->index;
             $parent = $parent->parent;
         }
+        // root level parent is always 0 - ignore
         return array_reverse($paths);
     }
 
@@ -62,10 +62,11 @@ class TextNode extends Node
         echo htmlentities($this->value);
     }
 
-    function compare(TextNode $other): bool
+    function compare(TextNode $other, &$list): void
     {
-        echo "Comparing text:: $this->value with $other->value\n";
-        return $this->value == $other->value;
+        if ($this->value != $other->value) {
+            $list[] = ['type' => 0, 'value' => $other->value, 'path' => $this->getPath()];
+        }
     }
 }
 
@@ -97,9 +98,8 @@ class ConditionalNode extends Node
             $this->else->fillPath($this, 0);
     }
 
-    public function compare(ConditionalNode $other): bool
+    public function compare(ConditionalNode $other, &$list): void
     {
-        return false;
 //        if ($prev->condition != $next->condition) {
 //
 //            if ($next->condition) {
@@ -163,8 +163,7 @@ class ArrayNode extends Node
     {
         foreach ($this->children as $index => $child) {
             $key = call_user_func($this->keyCallback, $this->array[$index]);
-            print_r($key);
-            echo "<!-- $key -->";
+//            echo "<!-- $key -->";
             $child->render();
         }
     }
@@ -177,32 +176,26 @@ class ArrayNode extends Node
         }
     }
 
-    function compare(ArrayNode $other): bool
+    function compare(ArrayNode $other, &$list)
     {
-        echo "comparing array\n";
         // hash each value and compare: delete, insert, move
         $prevHash = array_map($this->keyCallback, $this->array);
         $nextHash = array_map($other->keyCallback, $other->array);
-
-
-        print_r($prevHash);
-        print_r($nextHash);
 
         for ($i = 0; $i < max(count($prevHash), count($nextHash)); $i++) {
             $prevItem = $prevHash[$i];
             $nextItem = $nextHash[$i];
 
             if ($prevItem == null) {
-                echo "Insert $nextItem at $i\n";
+                $list[] = ['type' => 1, 'value' => $nextItem, 'path' => $this->getPath()];
                 continue;
             }
             if ($nextItem == null) {
-                echo "Delete $prevItem at $i\n";
+                $list[] = ['type' => 2, 'path' => $this->getPath()];
                 continue;
             }
 
             if ($prevItem == $nextItem) {
-                echo "Same item $prevItem\n";
                 continue;
             }
 
@@ -211,16 +204,12 @@ class ArrayNode extends Node
             $found = array_search($prevItem, $other->array);
             if ($found !== false) {
                 // move
-                echo "Move $prevItem from $i to $found\n";
+                $list[] = ['type' => 3, 'from' => $i, 'to' => $found, 'path' => $this->getPath()];
                 moveElement($prevHash, $i, $found);
-
-                print_r($prevHash);
             }
 
-            echo "Replace $prevItem with $nextItem\n";
+            $list[] = ['type' => 4, 'value' => $nextItem, 'path' => $this->getPath()];
         }
-
-        return false;
     }
 
 }
@@ -297,12 +286,11 @@ class HtmlNode extends Node
         }
     }
 
-    public function compare(HtmlNode $other): bool
+    public function compare(HtmlNode $other, &$list)
     {
         for ($i = 0; $i < count($this->children); $i++) {
-            compare($this->children[$i], $other->children[$i]);
+            compare($this->children[$i], $other->children[$i], $list);
         }
-        return false;
     }
 
 }

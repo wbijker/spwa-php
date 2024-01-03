@@ -7,8 +7,7 @@ class View
 {
     public static function render($model)
     {
-        return node("html", ["lang" => "en"], [
-            node("body", null, [
+        return node("body", null, [
                 node("div", null, [
                     node("div", null, [
                         node("span", null, [
@@ -18,7 +17,7 @@ class View
                         node("ul", null, [
                             multiple($model->items, fn($item) => node("li", null, [text($item)]), fn($item) => $item),
 
-                        ])])])])]);
+                        ])])])]);
     }
 }
 
