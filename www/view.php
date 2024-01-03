@@ -1,5 +1,14 @@
 <?php
 
+
+function moveElement(&$array, int $from, int $to): void
+{
+    // Remove the element from the array and keep the value
+    $element = array_splice($array, $from, 1)[0];
+    // Insert the element at the new position
+    array_splice($array, $to, 0, [$element]);
+}
+
 function compare($prev, $next)
 {
     // $prev and $next should always be of the same type
@@ -9,7 +18,7 @@ function compare($prev, $next)
 
 
     if (get_class($prev) == TextNode::class) {
-        echo "Comparing binding:: $next->value with $prev->value\n";
+//        echo "Comparing binding:: $next->value with $prev->value\n";
         return;
     }
 
@@ -20,13 +29,13 @@ function compare($prev, $next)
             if ($next->condition) {
                 // remove $prev->else
                 // insert $next->then
-                echo "Need to replace next\n";
-                print_r($next->then);
+//                echo "Need to replace next\n";
+//                print_r($next->then);
                 return;
             }
             // remove $prev->then
             // insert $next->else
-            echo "Need to replace else\n";
+//            echo "Need to replace else\n";
             return;
         }
         return;
@@ -36,28 +45,50 @@ function compare($prev, $next)
 
         echo "comparing array\n";
         // hash each value and compare: delete, insert, move
-        $prevHash = array_map(fn($item) => md5($item), $prev->array);
-        $nextHash = array_map(fn($item) => md5($item), $next->array);
+        $prevHash = array_map($prev->keyCallback, $prev->array);
+        $nextHash = array_map($next->keyCallback, $next->array);
 
-        // prev hashes that are not in next
-        $toDelete = array_diff($prevHash, $nextHash);
-        // map back to prev array
-        echo "Indexes";
-        print_r($prev->getPath());
 
-        echo "To delete:\n";
-        print_r(array_map(fn($hash) => $prev->array[array_search($hash, $prevHash)], $toDelete));
+        print_r($prevHash);
+        print_r($nextHash);
 
-        // next hashes that are not in prev
-        $toInsert = array_diff($nextHash, $prevHash);
-        echo "To insert:\n";
-        print_r(array_map(fn($hash) => $next->array[array_search($hash, $nextHash)], $toInsert));
+        for ($i = 0; $i < max(count($prevHash), count($nextHash)); $i++) {
+            $prevItem = $prevHash[$i];
+            $nextItem = $nextHash[$i];
+
+            if ($prevItem == null) {
+                echo "Insert $nextItem at $i\n";
+                continue;
+            }
+            if ($nextItem == null) {
+                echo "Delete $prevItem at $i\n";
+                continue;
+            }
+
+            if ($prevItem == $nextItem) {
+                echo "Same item $prevItem\n";
+                continue;
+            }
+
+            // search for prev in next
+            // DOM that already existed is present in the new list
+            $found = array_search($prevItem, $next->array);
+            if ($found !== false) {
+                // move
+                echo "Move $prevItem from $i to $found\n";
+                moveElement($prevHash, $i, $found);
+
+                print_r($prevHash);
+            }
+
+            echo "Replace $prevItem with $nextItem\n";
+        }
 
         return;
     }
 
     if (get_class($prev) == HtmlNode::class) {
-        echo "Comparing $prev->tag\n";
+//        echo "Comparing $prev->tag\n";
 
         for ($i = 0; $i < count($prev->children); $i++) {
             compare($prev->children[$i], $next->children[$i]);
@@ -152,6 +183,11 @@ class ArrayNode extends Node
      */
     public $callback;
     /**
+     * @var $keyCallback callback
+     */
+    public $keyCallback;
+
+    /**
      * @var Node[] $children
      */
     public array $children = [];
@@ -160,18 +196,24 @@ class ArrayNode extends Node
      * @param array|null $array $array
      * @param callback $callback
      */
-    public function __construct(?array $array, callable $callback)
+    public function __construct(?array $array, callable $callback, callable $keyCallback = null)
     {
         $this->array = $array;
         $this->callback = $callback;
         if ($this->array != null)
             $this->children = array_map($callback, $array);
+
+        // use the provided key or use the default md5 on the serialized data
+        $this->keyCallback = $keyCallback ?? fn($item) => md5(json_encode($item));
     }
 
 
     function render(): void
     {
-        foreach ($this->children as $child) {
+        foreach ($this->children as $index => $child) {
+            $key = call_user_func($this->keyCallback, $this->array[$index]);
+            print_r($key);
+            echo "<!-- $key -->";
             $child->render();
         }
     }
@@ -276,7 +318,7 @@ function conditional($exp, $then, $else): ConditionalNode
     return new ConditionalNode($exp, $then, $else);
 }
 
-function multiple($array, $callback): ArrayNode
+function multiple($array, $callback, $keyCallback = null): ArrayNode
 {
-    return new ArrayNode($array, $callback);
+    return new ArrayNode($array, $callback, $keyCallback);
 }
