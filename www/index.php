@@ -35,6 +35,16 @@ $prev->render();
 ?>
 
 <script>
+    function createNode(value) {
+        if (typeof value == 'string')
+            return document.createTextNode(value);
+
+        const node = document.createElement(value.tag);
+        for (const child of value.children) {
+            node.appendChild(createNode(child));
+        }
+        return node;
+    }
 
     function transversePaths(arr) {
         let it = document.body;
@@ -45,16 +55,24 @@ $prev->render();
     }
 
     function applyPatch(patch) {
-        console.log('Patch ', patch);
-
+        // update text
         if (patch.type === 0) {
             const textNode = transversePaths(patch.path);
             textNode.nodeValue = patch.value;
         }
 
+        // delete node
         if (patch.type === 2) {
             const node = transversePaths(patch.path);
             node.parentNode.removeChild(node);
+        }
+
+        // insert node
+        if (patch.type === 3) {
+            const node = transversePaths(patch.path);
+            console.log(node);
+            const newNode = createNode(patch.value);
+            node.insertBefore(newNode, node.childNodes[patch.index]);
         }
 
     }
@@ -64,14 +82,9 @@ $prev->render();
     const button = document.createElement('button');
     button.innerText = 'Update';
     button.addEventListener('click', function () {
-
-        applyPatch(diff[0]);
-        applyPatch(diff[1]);
-
-        // for (const patch of diff) {
-        //
-        // }
-
+        for (const patch of diff) {
+            applyPatch(patch);
+        }
     });
     document.body.appendChild(button);
 </script>

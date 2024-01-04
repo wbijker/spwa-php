@@ -43,13 +43,14 @@ abstract class Node
 
     function getPath(): array
     {
-        $paths = [$this->index];
-        $parent = $this->parent;
-        while ($parent != null && $parent->parent != null) {
-            $paths[] = $parent->index;
-            $parent = $parent->parent;
+        $it = $this;
+        while ($it->parent != null) {
+            // do not count virtual nodes like conditional and array nodes
+            if (get_class($it) != ConditionalNode::class && get_class($it) != ArrayNode::class) {
+                $paths[] = $it->index;
+            }
+            $it = $it->parent;
         }
-        // root level parent is always 0 - ignore
         return array_reverse($paths);
     }
 
@@ -74,6 +75,9 @@ class TextNode extends Node
     function compare(TextNode $other, &$list): void
     {
         if ($this->value != $other->value) {
+//            echo "The text are not the same!\n";
+//            print_r($this->parent->parent->parent->parent->serialize());
+
             $list[] = ['type' => UPDATE_TEXT, 'value' => $other->value, 'path' => $this->getPath()];
         }
     }
@@ -193,7 +197,7 @@ class ArrayNode extends Node
     {
         parent::fillPath($parent, $index);
         foreach ($this->children as $index => $child) {
-            $child->fillPath($this, $index);
+            $child->fillPath($parent, $index);
         }
     }
 
@@ -214,10 +218,10 @@ class ArrayNode extends Node
                 continue;
             }
             if ($action->action == DELETE) {
-                $list[] = ['type' => DELETE_NODE, 'index' => $action->i, 'path' => $path];
+                $list[] = ['type' => DELETE_NODE, 'index' => $action->i, 'path' => $this->children[$action->i]->getPath() ];
             }
             if ($action->action == INSERT) {
-                $list[] = ['type' => INSERT_NODE, 'index' => $action->j, 'value' => $other->children[$action->i]->serialize(), 'path' => $path];
+                $list[] = ['type' => INSERT_NODE, 'index' => $action->j, 'value' => $other->children[$action->j]->serialize(), 'path' => $path];
             }
         }
     }
@@ -311,8 +315,9 @@ class HtmlNode extends Node
     {
         return [
             'tag' => $this->tag,
+            'index' => $this->index,
             'attributes' => $this->attributes,
-            'children' => array_map(fn($child) => $child->serialize(), $this->children)
+            'children' => array_map(fn($child) => $child->serialize(), $this->children),
         ];
     }
 }
