@@ -70,7 +70,6 @@ $prev->render();
         // insert node
         if (patch.type === 3) {
             const node = transversePaths(patch.path);
-            console.log(node);
             const newNode = createNode(patch.value);
             node.insertBefore(newNode, node.childNodes[patch.index]);
         }

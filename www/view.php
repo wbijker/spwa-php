@@ -209,7 +209,7 @@ class ArrayNode extends Node
         $nextHash = array_map($other->keyCallback, $other->array);
 
         $diff = lavenshteinDiff($prevHash, $nextHash);
-        foreach ($diff as $index => $action) {
+        foreach ($diff as $action) {
 
             if ($action->action == SKIP || $action->action == REPLACE) {
                 // although the key is the same, there might still be differences
@@ -218,9 +218,17 @@ class ArrayNode extends Node
                 continue;
             }
             if ($action->action == DELETE) {
-                $list[] = ['type' => DELETE_NODE, 'index' => $action->i, 'path' => $this->children[$action->i]->getPath() ];
+                // update index for all children greater than $index
+                for ($i = $action->i + 1; $i < count($this->children); $i++) {
+                    $this->children[$i]->index--;
+                }
+                $list[] = ['type' => DELETE_NODE, 'index' => $action->i, 'path' => $this->children[$action->i]->getPath()];
             }
             if ($action->action == INSERT) {
+                for ($i = $action->i + 1; $i < count($this->children); $i++) {
+                    $this->children[$i]->index++;
+                }
+
                 $list[] = ['type' => INSERT_NODE, 'index' => $action->j, 'value' => $other->children[$action->j]->serialize(), 'path' => $path];
             }
         }
