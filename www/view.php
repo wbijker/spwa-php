@@ -1,4 +1,11 @@
 <?php
+require_once 'levenshtein.php';
+
+const UPDATE_TEXT = 0;
+const UPDATE_ATTR = 1;
+const DELETE_NODE = 2;
+const INSERT_NODE = 3;
+
 
 function moveElement(&$array, int $from, int $to): void
 {
@@ -65,7 +72,7 @@ class TextNode extends Node
     function compare(TextNode $other, &$list): void
     {
         if ($this->value != $other->value) {
-            $list[] = ['type' => 0, 'value' => $other->value, 'path' => $this->getPath()];
+            $list[] = ['type' => UPDATE_TEXT, 'value' => $other->value, 'path' => $this->getPath()];
         }
     }
 }
@@ -92,10 +99,10 @@ class ConditionalNode extends Node
     {
         parent::fillPath($parent, $index);
         if ($this->then != null)
-            $this->then->fillPath($this, 0);
+            $this->then->fillPath($parent, 0);
 
         if ($this->else != null)
-            $this->else->fillPath($this, 0);
+            $this->else->fillPath($parent, 0);
     }
 
     public function compare(ConditionalNode $other, &$list): void
@@ -122,6 +129,8 @@ class ConditionalNode extends Node
         $call = $this->condition ? $this->then : $this->else;
         if (is_callable($call))
             call_user_func($call);
+        // place holder
+        else echo "<!--if-->";
     }
 }
 
@@ -178,40 +187,28 @@ class ArrayNode extends Node
 
     function compare(ArrayNode $other, &$list)
     {
+        $path = $this->getPath();
         // hash each value and compare: delete, insert, move
         $prevHash = array_map($this->keyCallback, $this->array);
         $nextHash = array_map($other->keyCallback, $other->array);
 
-        for ($i = 0; $i < max(count($prevHash), count($nextHash)); $i++) {
-            $prevItem = $prevHash[$i];
-            $nextItem = $nextHash[$i];
+        $diff = lavenshteinDiff($prevHash, $nextHash);
+        foreach ($diff as $index => $action) {
 
-            if ($prevItem == null) {
-                $list[] = ['type' => 1, 'value' => $nextItem, 'path' => $this->getPath()];
+            if ($action->action == SKIP || $action->action == REPLACE) {
+                // although the key is the same, there might still be differences
+                // check for potential updates
+                $this->children[$action->i]->compare($other->children[$action->j], $list);
                 continue;
             }
-            if ($nextItem == null) {
-                $list[] = ['type' => 2, 'path' => $this->getPath()];
-                continue;
+            if ($action->action == DELETE) {
+                $list[] = ['type' => DELETE_NODE, 'index' => $action->i, 'path' => $path];
             }
-
-            if ($prevItem == $nextItem) {
-                continue;
+            if ($action->action == INSERT) {
+                $list[] = ['type' => INSERT_NODE, 'index' => $action->j, 'value' => $other->array[$action->i], 'path' => $path];
             }
-
-            // search for prev in next
-            // DOM that already existed is present in the new list
-            $found = array_search($prevItem, $other->array);
-            if ($found !== false) {
-                // move
-                $list[] = ['type' => 3, 'from' => $i, 'to' => $found, 'path' => $this->getPath()];
-                moveElement($prevHash, $i, $found);
-            }
-
-            $list[] = ['type' => 4, 'value' => $nextItem, 'path' => $this->getPath()];
         }
     }
-
 }
 
 class HtmlNode extends Node

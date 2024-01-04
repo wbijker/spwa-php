@@ -73,7 +73,7 @@ function populateMatrix(array $arr1, array $arr2): array
  * @param string[] $arr2
  * @return array
  */
-function operations(array $arr1, array $arr2): array
+function lavenshteinDiff(array $arr1, array $arr2): array
 {
     $dp = populateMatrix($arr1, $arr2);
     $i = count($arr1);
@@ -88,9 +88,3 @@ function operations(array $arr1, array $arr2): array
 
     return array_reverse($operations);
 }
-
-$prev = ['tea', 'water', 'coffee', 'milk'];
-$next = ['hotchoc', 'coffee', 'milk', 'tea', 'juice', 'milk'];
-
-$operations = operations($prev, $next);
-print_r($operations);
