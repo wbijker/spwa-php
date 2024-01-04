@@ -32,6 +32,8 @@ abstract class Node
 
     abstract function render(): void;
 
+    abstract function serialize();
+
 
     function fillPath(?Node $parent, int $index): void
     {
@@ -74,6 +76,11 @@ class TextNode extends Node
         if ($this->value != $other->value) {
             $list[] = ['type' => UPDATE_TEXT, 'value' => $other->value, 'path' => $this->getPath()];
         }
+    }
+
+    function serialize()
+    {
+        return $this->value;
     }
 }
 
@@ -131,6 +138,11 @@ class ConditionalNode extends Node
             call_user_func($call);
         // place holder
         else echo "<!--if-->";
+    }
+
+    function serialize()
+    {
+        return null;
     }
 }
 
@@ -205,9 +217,14 @@ class ArrayNode extends Node
                 $list[] = ['type' => DELETE_NODE, 'index' => $action->i, 'path' => $path];
             }
             if ($action->action == INSERT) {
-                $list[] = ['type' => INSERT_NODE, 'index' => $action->j, 'value' => $other->array[$action->i], 'path' => $path];
+                $list[] = ['type' => INSERT_NODE, 'index' => $action->j, 'value' => $other->children[$action->i]->serialize(), 'path' => $path];
             }
         }
+    }
+
+    function serialize()
+    {
+        return array_map(fn($child) => $child->serialize(), $this->children);
     }
 }
 
@@ -290,6 +307,14 @@ class HtmlNode extends Node
         }
     }
 
+    function serialize()
+    {
+        return [
+            'tag' => $this->tag,
+            'attributes' => $this->attributes,
+            'children' => array_map(fn($child) => $child->serialize(), $this->children)
+        ];
+    }
 }
 
 

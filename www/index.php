@@ -32,5 +32,46 @@ $list = [];
 compare($prev, $next, $list);
 
 $prev->render();
+?>
 
-print_r($list);
+<script>
+
+    function transversePaths(arr) {
+        let it = document.body;
+        for (const path of arr) {
+            it = it.childNodes[path];
+        }
+        return it;
+    }
+
+    function applyPatch(patch) {
+        console.log('Patch ', patch);
+
+        if (patch.type === 0) {
+            const textNode = transversePaths(patch.path);
+            textNode.nodeValue = patch.value;
+        }
+
+        if (patch.type === 2) {
+            const node = transversePaths(patch.path);
+            node.parentNode.removeChild(node);
+        }
+
+    }
+
+    const diff = <?php echo json_encode($list) ?>;
+
+    const button = document.createElement('button');
+    button.innerText = 'Update';
+    button.addEventListener('click', function () {
+
+        applyPatch(diff[0]);
+        applyPatch(diff[1]);
+
+        // for (const patch of diff) {
+        //
+        // }
+
+    });
+    document.body.appendChild(button);
+</script>
