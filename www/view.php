@@ -279,12 +279,29 @@ class HtmlNode extends Node
         "wbr"
     ];
 
+    function formatEvent($value)
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+        if (is_string($value)) {
+            return [$value];
+        }
+        return [];
+    }
 
     function render(): void
     {
         echo "<$this->tag";
         if ($this->attributes != null) {
             foreach ($this->attributes as $key => $value) {
+
+                // check for event handlers
+                if ($key == 'onClick') {
+                    echo " onclick='eventHandler(event, " . json_encode($this->formatEvent($value)) . ")'";
+                    continue;
+                }
+
                 echo " $key=\"$value\"";
             }
         }
