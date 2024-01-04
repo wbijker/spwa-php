@@ -1,22 +1,15 @@
-<?php
-/** @var HomePage $model */
-?>
 <div>
     <div>
-        <span onClick="buttonClick">
-            The current count is <?= $model->counter ?>
+        <span click="buttonClick(1)">
+            The current count is $counter
         </span>
-        <?php if ($model->counter > 10):?>
-            <span class="ref">
-                Value is greater than 10
-            </span>
-        <?php endif;?>
+        <span class="ref" if="$counter > 1">
+            Value is greater than $10
+        </span>
     </div>
     <ul>
-        <?php foreach ($model->items as $item):?>
-            <li>
-                <?= $item ?>
-            </li>
-        <?php endforeach;?>
+        <li foreach="$items as $item">
+            $item
+        </li>
     </ul>
 </div>

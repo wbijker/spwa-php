@@ -367,3 +367,38 @@ function multiple($array, $callback, $keyCallback = null): ArrayNode
 {
     return new ArrayNode($array, $callback, $keyCallback);
 }
+
+
+function buildTree(DOMNode $node)
+{
+    if ($node instanceof DOMElement) {
+        $children = array_map(fn($child) => buildTree($child), iterator_to_array($node->childNodes));
+        $c = implode(", ", $children);
+        return "node(\"" . $node->tagName . "\", null, [" . $c . "])";
+
+    }
+
+    if ($node instanceof DOMText) {
+        // replace newline with \n
+        // and carriage return with \r
+        $text = str_replace("\n", "\\n", $node->textContent);
+        $text = str_replace("\r", "\\r", $text);
+        return "text(\"" . $text . "\")";
+    }
+
+}
+
+function compileView()
+{
+    // execute view
+    ob_start();
+    require 'views/home.php';
+    $html = ob_get_clean();
+
+    $dom = new DOMDocument();
+    @$dom->loadHTML($html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+
+    echo buildTree($dom->documentElement);
+
+
+}
