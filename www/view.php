@@ -378,18 +378,22 @@ function buildAttr($attrs): string
 }
 
 
-function buildNode(DOMNode $node, $index = 0): string
+function indent($index, $first = false): string
 {
-    $indent = str_repeat(" ", $index * 4);
-    $children = array_map(fn($child) => buildTree($child, $index + 1), iterator_to_array($node->childNodes));
-    $c = implode("," . PHP_EOL, $children);
-
-    return $indent . "node(\"" . $node->tagName . "\", " . buildAttr($node->attributes) . ", [" . PHP_EOL . $c . PHP_EOL . $indent . "])";
+    return str_repeat(" ", $first ? 0 : $index * 4);
 }
 
-function buildTree(DOMNode $node, $index = 0)
+function buildNode(DOMNode $node, $index = 0, $first = false): string
 {
-    $indent = str_repeat(" ", $index * 4);
+    $children = array_map(fn($child) => buildTree($child, $index + 1, false), iterator_to_array($node->childNodes));
+    $c = implode("," . PHP_EOL, $children);
+
+    return indent($index, $first) . "node(\"" . $node->tagName . "\", " . buildAttr($node->attributes) . ", [" . PHP_EOL . $c . PHP_EOL . indent($index) . "])";
+}
+
+function buildTree(DOMNode $node, $index = 0, $first = false): ?string
+{
+    $indent = indent($index, $first);
 
     if ($node instanceof DOMElement) {
         // handle special conditional cases
@@ -399,11 +403,11 @@ function buildTree(DOMNode $node, $index = 0)
             // remove if expression from final output
             $node->removeAttribute("if");
 
-            $then = buildNode($node, $index);
+            $then = buildNode($node, $index, true);
             return $indent . "conditional($exp, " . $then . ", null)";
         }
 
-        return buildNode($node, $index);
+        return buildNode($node, $index, $first);
     }
 
     if ($node instanceof DOMText) {
