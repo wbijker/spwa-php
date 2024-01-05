@@ -177,7 +177,7 @@ class ArrayNode extends Node
         $this->array = $array;
         $this->callback = $callback;
         if ($this->array != null)
-            $this->children = array_map($callback, $array);
+            $this->children = array_map($callback, $array, array_keys($array));
 
         // use the provided key or use the default md5 on the serialized data
         $this->keyCallback = $keyCallback ?? fn($item) => md5(json_encode($item));
@@ -410,7 +410,7 @@ function extractForVars(string $str): array
     if (preg_match($pattern, $str, $matches)) {
         // Format: $exp as $item
         if (count($matches) == 3) {
-            return ["$matches[1]", "$matches[2]", null];
+            return ["$matches[1]", "$matches[2]", '$index'];
         }
         if (count($matches) == 5) {
             return ["$matches[1]", "$matches[4]", "$matches[2]"];
@@ -438,13 +438,8 @@ function buildTree(DOMNode $node, $index = 0, $first = false): ?string
         $for = getAndRemoveAttr($node, 'for');
         if ($for != null) {
             // for should always use syntax
-            // $model->items as $index => $item or $model->items as $item
-            // extract loop, index, and item-expressions
-
             $vars = extractForVars($for);
-//            $then = buildNode($node, $index, true);
-//            return $indent . "multiple($for, fn(\$item) => " . $then . ")";
-            return $indent . "text('for')";
+            return $indent . "multiple($vars[0], fn($vars[1], $vars[2]) => " . buildNode($node, $index, true) . ")";
         }
 
         return buildNode($node, $index, $first);
