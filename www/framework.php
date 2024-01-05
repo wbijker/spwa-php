@@ -234,13 +234,27 @@ function renderPage(Page $page)
         const inputs = {};
 
         function handleInput(e, name) {
-            inputs[name] = e.target.value;
+            inputs[name] = {
+                change: true,
+                value: e.target.value
+            }
         }
 
         function eventHandler(e, path) {
-            postData('/', {path, event: serializeEvent(e), inputs}, (err, data) => {
+            const changes = {};
+            for (const name in inputs) {
+                if (inputs[name].change) {
+                    changes[name] = inputs[name].value
+                }
+            }
+            postData('/', {path, event: serializeEvent(e), inputs: changes}, (err, data) => {
                 for (const patch of data) {
                     applyPatch(patch);
+                }
+
+                // mark all inputs as not changed
+                for (const name in inputs) {
+                    inputs[name].change = false;
                 }
             });
         }
