@@ -80,7 +80,7 @@ abstract class Page
         }
 
         // only generate template again if input file is newer than compiled file
-        if (true || !file_exists($compiledPath) || filemtime($viewPath) > filemtime($compiledPath)) {
+        if (!file_exists($compiledPath) || filemtime($viewPath) > filemtime($compiledPath)) {
             $this->compileView($viewPath, $name, $className);
         }
 
@@ -113,6 +113,7 @@ function renderPage(Page $page)
 
         // transverse old structure to find path
         $node = transverse($prev, $json['path']);
+
         $event = $node->attributes['click'];
         if (is_callable($event)) {
             call_user_func($event);
@@ -150,7 +151,9 @@ function renderPage(Page $page)
         }
 
         function transversePaths(arr) {
-            let it = document.body;
+            // root node is []
+            let it = document.body.childNodes[0];
+
             for (const path of arr) {
                 it = it.childNodes[path];
             }

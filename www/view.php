@@ -28,32 +28,18 @@ function compare($prev, $next, &$list): void
 abstract class Node
 {
     public ?Node $parent = null;
-    public int $index = 0;
-
-    abstract function render(): void;
-
-    abstract function serialize();
-
+    // @var int[] $index
+    public array $path = [];
 
     function fillPath(?Node $parent, int $index): void
     {
         $this->parent = $parent;
-        $this->index = $index;
+        $this->path = $parent != null ? array_merge($parent->path, [$index]) : [];
     }
 
-    function getPath(): array
-    {
-        $it = $this;
-        while ($it->parent != null) {
-            // do not count virtual nodes like conditional and array nodes
-            if (get_class($it) != ConditionalNode::class && get_class($it) != ArrayNode::class) {
-                $paths[] = $it->index;
-            }
-            $it = $it->parent;
-        }
-        return array_reverse($paths);
-    }
+    abstract function render(): void;
 
+    abstract function serialize();
 
 }
 
@@ -78,7 +64,7 @@ class TextNode extends Node
 //            echo "The text are not the same!\n";
 //            print_r($this->parent->parent->parent->parent->serialize());
 
-            $list[] = ['type' => UPDATE_TEXT, 'value' => $other->value, 'path' => $this->getPath()];
+            $list[] = ['type' => UPDATE_TEXT, 'value' => $other->value, 'path' => $this->path];
         }
     }
 
@@ -203,7 +189,6 @@ class ArrayNode extends Node
 
     function compare(ArrayNode $other, &$list)
     {
-        $path = $this->getPath();
         // hash each value and compare: delete, insert, move
         $prevHash = array_map($this->keyCallback, $this->array);
         $nextHash = array_map($other->keyCallback, $other->array);
@@ -222,14 +207,14 @@ class ArrayNode extends Node
                 for ($i = $action->i + 1; $i < count($this->children); $i++) {
                     $this->children[$i]->index--;
                 }
-                $list[] = ['type' => DELETE_NODE, 'index' => $action->i, 'path' => $this->children[$action->i]->getPath()];
+                $list[] = ['type' => DELETE_NODE, 'index' => $action->i, 'path' => $this->children[$action->i]->path];
             }
             if ($action->action == INSERT) {
                 for ($i = $action->i + 1; $i < count($this->children); $i++) {
                     $this->children[$i]->index++;
                 }
 
-                $list[] = ['type' => INSERT_NODE, 'index' => $action->j, 'value' => $other->children[$action->j]->serialize(), 'path' => $path];
+                $list[] = ['type' => INSERT_NODE, 'index' => $action->j, 'value' => $other->children[$action->j]->serialize(), 'path' => $this->path];
             }
         }
     }
@@ -279,20 +264,12 @@ class HtmlNode extends Node
         "wbr"
     ];
 
-    function formatEvent($value)
-    {
-        if (is_array($value)) {
-            return $value;
-        }
-        if (is_string($value)) {
-            return [$value];
-        }
-        return [];
-    }
-
     function render(): void
     {
         echo "<$this->tag";
+        $this->attributes = $this->attributes ?? [];
+        $this->attributes['path'] = json_encode($this->path);
+
         if ($this->attributes != null) {
             foreach ($this->attributes as $key => $value) {
 
@@ -300,7 +277,7 @@ class HtmlNode extends Node
                 if ($key == 'click') {
                     // click value injected a function
                     if (is_callable($value)) {
-                        echo " onclick='eventHandler(event, " . json_encode($this->getPath()) . ")'";
+                        echo " onclick='eventHandler(event, " . json_encode($this->path) . ")'";
                         continue;
                     }
                     continue;
@@ -328,6 +305,7 @@ class HtmlNode extends Node
     function fillPath(?Node $parent, int $index): void
     {
         parent::fillPath($parent, $index);
+
         foreach ($this->children as $index => $child) {
             $child->fillPath($this, $index);
         }
