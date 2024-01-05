@@ -368,13 +368,15 @@ function multiple($array, $callback, $keyCallback = null): ArrayNode
     return new ArrayNode($array, $callback, $keyCallback);
 }
 
-
-function buildTree(DOMNode $node)
+function buildTree(DOMNode $node, $index = 0)
 {
+    $indent = str_repeat(" ",  $index * 4);
+
     if ($node instanceof DOMElement) {
-        $children = array_map(fn($child) => buildTree($child), iterator_to_array($node->childNodes));
-        $c = implode(", ", $children);
-        return "node(\"" . $node->tagName . "\", null, [" . $c . "])";
+
+        $children = array_map(fn($child) => buildTree($child, $index + 1), iterator_to_array($node->childNodes));
+        $c = implode("," . PHP_EOL, $children);
+        return $indent . "node(\"" . $node->tagName . "\", null, [" . PHP_EOL . $c . PHP_EOL . $indent . "])";
 
     }
 
@@ -383,22 +385,10 @@ function buildTree(DOMNode $node)
         // and carriage return with \r
         $text = str_replace("\n", "\\n", $node->textContent);
         $text = str_replace("\r", "\\r", $text);
-        return "text(\"" . $text . "\")";
+        return $indent . "text(\"" . $text . "\")";
     }
 
+    return null;
 }
 
-function compileView()
-{
-    // execute view
-    ob_start();
-    require 'views/home.php';
-    $html = ob_get_clean();
 
-    $dom = new DOMDocument();
-    @$dom->loadHTML($html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
-
-    echo buildTree($dom->documentElement);
-
-
-}

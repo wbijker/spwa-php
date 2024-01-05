@@ -1,15 +1,12 @@
 <div>
     <div>
-        <span click="buttonClick(1)">
-            The current count is $counter
+        <span>
+            The current count is $model->counter
         </span>
-        <span class="ref" if="$counter > 1">
-            Value is greater than $10
+        <span class="ref" if="$model->counter > 1">
+            Value is greater than 10
         </span>
     </div>
-    <ul>
-        <li foreach="$items as $item">
-            $item
-        </li>
-    </ul>
+
 </div>
+

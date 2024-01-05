@@ -1,10 +1,8 @@
 <?php
 
-require_once 'view-compiled.php';
-
 class HomePage extends Page
 {
-
+    public string $newItem;
     public int $counter = 12;
     public array $items = ['Coffee'];
 
@@ -15,7 +13,7 @@ class HomePage extends Page
 
     public function render(): HtmlNode
     {
-        return View::render($this);
+        return $this->view('home');
     }
 
 }

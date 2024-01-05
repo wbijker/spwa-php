@@ -1,5 +1,11 @@
 <?php
 
+function className($name)
+{
+    return ucfirst($name) . "View";
+}
+
+
 abstract class Page
 {
     abstract function render();
@@ -22,6 +28,38 @@ abstract class Page
             }
         }
     }
+
+    function view($name): HtmlNode
+    {
+        // execute view
+        ob_start();
+        require 'views/'.$name.'.php';
+        $html = ob_get_clean();
+
+        $dom = new DOMDocument();
+        @$dom->loadHTML($html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+
+        $template = buildTree($dom->documentElement, 2);
+        $className = className($name);
+        $content = <<<EOD
+    <?php
+    class $className
+    {
+        static function template(\$model): HtmlNode
+        {
+            return $template;
+        }
+    }
+    EOD;
+
+        $compiled = 'views/'.$name.'.compiled.php';
+        file_put_contents($compiled, $content);
+
+        require_once $compiled;
+        return $className::template($this);
+    }
+
+
 }
 
 
