@@ -8,7 +8,7 @@ function className($name)
 
 abstract class Page
 {
-    abstract function render();
+    abstract function render(): HtmlNode;
 
     public function save()
     {
@@ -80,19 +80,26 @@ abstract class Page
         }
 
         // only generate template again if input file is newer than compiled file
-        if (!file_exists($compiledPath) || filemtime($viewPath) > filemtime($compiledPath)) {
+        if (true || !file_exists($compiledPath) || filemtime($viewPath) > filemtime($compiledPath)) {
             $this->compileView($viewPath, $name, $className);
         }
 
         require_once $compiledPath;
         return $className::template($this);
     }
+}
 
-
+function transverse(HtmlNode $node, array $path): HtmlNode
+{
+    $it = $node;
+    foreach ($path as $index) {
+        $it = $it->children[$index];
+    }
+    return $it;
 }
 
 
-function renderPage($page)
+function renderPage(Page $page)
 {
     $page->restore();
     $prev = $page->render();
@@ -104,21 +111,15 @@ function renderPage($page)
         // read JSON body
         $json = json_decode(file_get_contents('php://input'), true);
 
-        if (is_array($json['params'])) {
-            // Extract the method name and parameters from the $json['params'] array.
-            $methodName = $json['params'][0];
-            $methodArgs = array_slice($json['params'], 1);
-
-            // Check if the method exists in the $page object.
-            if (method_exists($page, $methodName)) {
-                // Dynamically call the method with the provided arguments.
-                call_user_func_array([$page, $methodName], $methodArgs);
-            } else {
-                // Handle the case where the method doesn't exist.
-                // This might involve logging an error, throwing an exception, etc.
-                // For example:
-                throw new Exception("Method $methodName does not exist on the page object.");
-            }
+        // transverse old structure to find path
+        $node = transverse($prev, $json['path']);
+        $event = $node->attributes['click'];
+        if (is_callable($event)) {
+            call_user_func($event);
+        } else {
+            // Handle the case where the method doesn't exist.
+            // This might involve logging an error, throwing an exception, etc.
+            // throw new Exception("Method $methodName does not exist on the page object.");
         }
 
         $next = $page->render();
@@ -222,8 +223,8 @@ function renderPage($page)
             }
         }
 
-        function eventHandler(e, params) {
-            postData('/', {params, event: serializeEvent(e)}, (err, data) => {
+        function eventHandler(e, path) {
+            postData('/', {path, event: serializeEvent(e)}, (err, data) => {
                 for (const patch of data) {
                     applyPatch(patch);
                 }

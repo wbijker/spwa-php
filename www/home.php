@@ -6,9 +6,9 @@ class HomePage extends Page
     public int $counter = 12;
     public array $items = ['Coffee'];
 
-    public function buttonClick()
+    public function inc(int $amount = 1)
     {
-        $this->counter++;
+        $this->counter += $amount;
     }
 
     public function render(): HtmlNode

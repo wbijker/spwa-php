@@ -297,8 +297,12 @@ class HtmlNode extends Node
             foreach ($this->attributes as $key => $value) {
 
                 // check for event handlers
-                if ($key == 'onClick') {
-                    echo " onclick='eventHandler(event, " . json_encode($this->formatEvent($value)) . ")'";
+                if ($key == 'click') {
+                    // click value injected a function
+                    if (is_callable($value)) {
+                        echo " onclick='eventHandler(event, " . json_encode($this->getPath()) . ")'";
+                        continue;
+                    }
                     continue;
                 }
 
@@ -373,7 +377,16 @@ function buildAttr($attrs): string
     if (empty($attrs) || count($attrs) == 0)
         return "null";
 
-    $attrs = array_map(fn($attr) => "\"" . $attr->name . "\" => \"" . $attr->value . "\"", iterator_to_array($attrs));
+    $arr = iterator_to_array($attrs);
+    $attrs = array_map(function ($attr) {
+
+        if ($attr->name == "click") {
+            // need to store the event handler within
+            return "\"" . $attr->name . "\" => fn() => " . $attr->value;
+        }
+
+        return "\"" . $attr->name . "\" => \"" . $attr->value . "\"";
+    }, $arr);
     return "[" . implode(", ", $attrs) . "]";
 }
 
