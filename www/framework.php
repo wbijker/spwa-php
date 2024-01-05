@@ -134,7 +134,7 @@ function renderPage(Page $page)
         compare($prev, $next, $patches);
         // persist state
         $page->save();
-        echo json_encode($patches);
+        echo json_encode(['patches' => $patches, 'js' => JsRuntime::$pendingCalls]);
         return;
     }
 
@@ -161,6 +161,14 @@ function renderPage(Page $page)
 
             for (const path of arr) {
                 it = it.childNodes[path];
+            }
+            return it;
+        }
+
+        function getJsFunction(path) {
+            let it = window;
+            for (const name of path) {
+                it = it[name];
             }
             return it;
         }
@@ -248,14 +256,23 @@ function renderPage(Page $page)
                 }
             }
             postData('/', {path, event: serializeEvent(e), inputs: changes}, (err, data) => {
-                for (const patch of data) {
+                for (const patch of data.patches) {
                     applyPatch(patch);
+                }
+
+                // execute JS calls
+                for (const call of data.js) {
+                    const path = call[0];
+                    const args = call[1];
+                    const fn = getJsFunction(path);
+                    fn.apply(null, args);
                 }
 
                 // mark all inputs as not changed
                 for (const name in inputs) {
                     inputs[name].change = false;
                 }
+
             });
         }
 

@@ -9,6 +9,7 @@ class HomePage extends Page
     public function inc(int $amount = 1)
     {
         $this->counter += $amount;
+        JS::log("Counter is now $this->counter");
     }
 
     public function render(): HtmlNode
