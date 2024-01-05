@@ -9,11 +9,11 @@
             Value is greater or equal than 10!
         </span>
     </div>
+    <input type="text" bound="text"/>
     <ul>
         <li class="bg-orange-600" for="$model->items as $index => $item">
             $item
         </li>
     </ul>
+    <button click="$model->items[] = $model->text">Add</button>
 </div>
-
-

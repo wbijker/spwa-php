@@ -2,7 +2,7 @@
 
 class HomePage extends Page
 {
-    public string $newItem;
+    public string $text = "initial...";
     public int $counter = 12;
     public array $items = ['Coffee'];
 

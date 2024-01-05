@@ -98,7 +98,6 @@ function transverse(HtmlNode $node, array $path): HtmlNode
     return $it;
 }
 
-
 function renderPage(Page $page)
 {
     $page->restore();
@@ -114,7 +113,13 @@ function renderPage(Page $page)
         // transverse old structure to find path
         $node = transverse($prev, $json['path']);
 
+        // fill inputs
+        foreach ($json['inputs'] as $name => $value) {
+            $page->$name = $value;
+        }
+
         $event = $node->attributes['click'];
+
         if (is_callable($event)) {
             call_user_func($event);
         } else {
@@ -226,14 +231,18 @@ function renderPage(Page $page)
             }
         }
 
+        const inputs = {};
+
+        function handleInput(e, name) {
+            inputs[name] = e.target.value;
+        }
+
         function eventHandler(e, path) {
-            postData('/', {path, event: serializeEvent(e)}, (err, data) => {
+            postData('/', {path, event: serializeEvent(e), inputs}, (err, data) => {
                 for (const patch of data) {
                     applyPatch(patch);
                 }
             });
-
-
         }
 
         function postData(url, data, callback) {

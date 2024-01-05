@@ -283,6 +283,11 @@ class HtmlNode extends Node
                     continue;
                 }
 
+                if ($key == 'bound') {
+                    echo " oninput=\"handleInput(event, '$value')\"";
+                    continue;
+                }
+
                 echo " $key=\"$value\"";
             }
         }
@@ -382,16 +387,15 @@ function buildNode(DOMNode $node, $index = 0, $first = false): string
     return indent($index, $first) . "node(\"" . $node->tagName . "\", " . buildAttr($node->attributes) . ", [" . PHP_EOL . $c . PHP_EOL . indent($index) . "])";
 }
 
-function getAndRemoveAttr(DOMElement $node, $attr): ?string
+function getAttr(DOMElement $node, string $attr, bool $remove): ?string
 {
     $value = $node->attributes->getNamedItem($attr);
     if ($value == null)
         return null;
 
-
-    $value = $value->value;
-    $node->removeAttribute($attr);
-    return $value;
+    if ($remove )
+        $node->removeAttribute($attr);
+    return $value->value;
 }
 
 function extractForVars(string $str): array
@@ -418,19 +422,25 @@ function buildTree(DOMNode $node, $index = 0, $first = false): ?string
     $indent = indent($index, $first);
 
     if ($node instanceof DOMElement) {
-        // handle special conditional cases
 
-        $ifExp = getAndRemoveAttr($node, 'if');
+        // handle special attributes cases
+        $ifExp = getAttr($node, 'if', true);
         if ($ifExp != null) {
             $then = buildNode($node, $index, true);
             return $indent . "conditional($ifExp, " . $then . ", null)";
         }
 
-        $for = getAndRemoveAttr($node, 'for');
+        $for = getAttr($node, 'for', true);
         if ($for != null) {
             // for should always use syntax
             $vars = extractForVars($for);
             return $indent . "multiple($vars[0], fn($vars[1], $vars[2]) => " . buildNode($node, $index, true) . ")";
+        }
+
+        $bound = getAttr($node, 'bound', false);
+        if ($bound != null) {
+            // add value attribute to fill initial value
+            $node->setAttribute('value', "\$model->".$bound);
         }
 
         return buildNode($node, $index, $first);
