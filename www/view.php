@@ -391,20 +391,60 @@ function buildNode(DOMNode $node, $index = 0, $first = false): string
     return indent($index, $first) . "node(\"" . $node->tagName . "\", " . buildAttr($node->attributes) . ", [" . PHP_EOL . $c . PHP_EOL . indent($index) . "])";
 }
 
+function getAndRemoveAttr(DOMElement $node, $attr): ?string
+{
+    $value = $node->attributes->getNamedItem($attr);
+    if ($value == null)
+        return null;
+
+
+    $value = $value->value;
+    $node->removeAttribute($attr);
+    return $value;
+}
+
+function extractForVars(string $str): array
+{
+    $pattern = '/(\S+)\s+as\s+(\S+)(\s+=>\s+(\S+))?/';
+
+    if (preg_match($pattern, $str, $matches)) {
+        // Format: $exp as $item
+        if (count($matches) == 3) {
+            return ["$matches[1]", "$matches[2]", null];
+        }
+        if (count($matches) == 5) {
+            return ["$matches[1]", "$matches[4]", "$matches[2]"];
+        }
+    }
+
+    // Format not recognized
+    return [null, null, null];
+}
+
+
 function buildTree(DOMNode $node, $index = 0, $first = false): ?string
 {
     $indent = indent($index, $first);
 
     if ($node instanceof DOMElement) {
         // handle special conditional cases
-        $if = $node->attributes->getNamedItem("if");
-        if ($if != null) {
-            $exp = $node->attributes->getNamedItem("if")->value;
-            // remove if expression from final output
-            $node->removeAttribute("if");
 
+        $ifExp = getAndRemoveAttr($node, 'if');
+        if ($ifExp != null) {
             $then = buildNode($node, $index, true);
-            return $indent . "conditional($exp, " . $then . ", null)";
+            return $indent . "conditional($ifExp, " . $then . ", null)";
+        }
+
+        $for = getAndRemoveAttr($node, 'for');
+        if ($for != null) {
+            // for should always use syntax
+            // $model->items as $index => $item or $model->items as $item
+            // extract loop, index, and item-expressions
+
+            $vars = extractForVars($for);
+//            $then = buildNode($node, $index, true);
+//            return $indent . "multiple($for, fn(\$item) => " . $then . ")";
+            return $indent . "text('for')";
         }
 
         return buildNode($node, $index, $first);
