@@ -368,16 +368,42 @@ function multiple($array, $callback, $keyCallback = null): ArrayNode
     return new ArrayNode($array, $callback, $keyCallback);
 }
 
+function buildAttr($attrs): string
+{
+    if (empty($attrs) || count($attrs) == 0)
+        return "null";
+
+    $attrs = array_map(fn($attr) => "\"" . $attr->name . "\" => \"" . $attr->value . "\"", iterator_to_array($attrs));
+    return "[" . implode(", ", $attrs) . "]";
+}
+
+
+function buildNode(DOMNode $node, $index = 0): string
+{
+    $indent = str_repeat(" ", $index * 4);
+    $children = array_map(fn($child) => buildTree($child, $index + 1), iterator_to_array($node->childNodes));
+    $c = implode("," . PHP_EOL, $children);
+
+    return $indent . "node(\"" . $node->tagName . "\", " . buildAttr($node->attributes) . ", [" . PHP_EOL . $c . PHP_EOL . $indent . "])";
+}
+
 function buildTree(DOMNode $node, $index = 0)
 {
-    $indent = str_repeat(" ",  $index * 4);
+    $indent = str_repeat(" ", $index * 4);
 
     if ($node instanceof DOMElement) {
+        // handle special conditional cases
+        $if = $node->attributes->getNamedItem("if");
+        if ($if != null) {
+            $exp = $node->attributes->getNamedItem("if")->value;
+            // remove if expression from final output
+            $node->removeAttribute("if");
 
-        $children = array_map(fn($child) => buildTree($child, $index + 1), iterator_to_array($node->childNodes));
-        $c = implode("," . PHP_EOL, $children);
-        return $indent . "node(\"" . $node->tagName . "\", null, [" . PHP_EOL . $c . PHP_EOL . $indent . "])";
+            $then = buildNode($node, $index);
+            return $indent . "conditional($exp, " . $then . ", null)";
+        }
 
+        return buildNode($node, $index);
     }
 
     if ($node instanceof DOMText) {
