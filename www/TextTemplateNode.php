@@ -3,6 +3,7 @@
 class TextTemplateNode extends TemplateNode
 {
     public string $value;
+    private ResolvedNode $resolved;
 
     public function __construct(string $value)
     {
@@ -12,12 +13,12 @@ class TextTemplateNode extends TemplateNode
     function compare(TextTemplateNode $other, &$list): void
     {
         if ($this->value != $other->value) {
-            $list[] = ['type' => UPDATE_TEXT, 'value' => $other->value, 'path' => $this->path];
+            $list[] = ['type' => UPDATE_TEXT, 'value' => $other->value, 'path' => $this->resolved->path];
         }
     }
 
     function resolve(ResolvedNode $parent): void
     {
-        $parent->addChild(new TextData($this->value));
+        $this->resolved = $parent->addChild(new TextData($this->value));
     }
 }

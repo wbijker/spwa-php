@@ -89,7 +89,7 @@ abstract class Page
     }
 }
 
-function transverse(HtmlTemplateNode $node, array $path): HtmlTemplateNode
+function traverse(ResolvedNode $node, array $path): ResolvedNode
 {
     $it = $node;
     foreach ($path as $index) {
@@ -101,49 +101,42 @@ function transverse(HtmlTemplateNode $node, array $path): HtmlTemplateNode
 function renderPage(Page $page)
 {
     $page->restore();
-    $prevTemplate = $page->render();
-//    $prev->fillPath(null, 0);
+
+    $template = $page->render();
+    $resolved = new ResolvedNode(null, new RootData());
+    $template->resolve($resolved);
 
     // GET or POST
     $method = $_SERVER['REQUEST_METHOD'];
     if ($method === 'POST') {
         // read JSON body
         $json = json_decode(file_get_contents('php://input'), true);
-
-        // transverse old structure to find path
-        $node = transverse($prevTemplate, $json['path']);
-
         // fill inputs
         foreach ($json['inputs'] as $name => $value) {
             $page->$name = $value;
         }
 
-        $event = $node->attributes['click'];
+        // transverse old structure to find path
+        $node = traverse($resolved, $json['path']);
 
-        if (is_callable($event)) {
-            call_user_func($event);
-        } else {
-            // Handle the case where the method doesn't exist.
-            // This might involve logging an error, throwing an exception, etc.
-            // throw new Exception("Method $methodName does not exist on the page object.");
+        if ($node->data instanceof TagData) {
+            $event = $node->data->attributes['click'];
+            if (is_callable($event)) {
+                call_user_func($event);
+            }
         }
-
+        // Handle the case where the method doesn't exist.
+        // This might involve logging an error, throwing an exception, etc.
         $next = $page->render();
-//        $next->fillPath(null, 0);
-
         $patches = [];
-        compare($prevTemplate, $next, $patches);
+        compare($template, $next, $patches);
         // persist state
         $page->save();
         echo json_encode(['patches' => $patches, 'js' => JsRuntime::$pendingCalls]);
         return;
     }
 
-    // add JS runtime
-    // later CSS runtime?
-    $root = new ResolvedNode(null, new RootData());
-    $prevTemplate->resolve($root);
-    $root->render();
+    $resolved->render();
 
     ?>
 
@@ -160,8 +153,7 @@ function renderPage(Page $page)
         }
 
         function transversePaths(arr) {
-            // root node is []
-            let it = document.body.childNodes[0];
+            let it = document.body;
 
             for (const path of arr) {
                 it = it.childNodes[path];
@@ -179,24 +171,26 @@ function renderPage(Page $page)
 
         function applyPatch(patch) {
             // update text
-            if (patch.type === 0) {
-                const textNode = transversePaths(patch.path);
-                textNode.nodeValue = patch.value;
+            const node = transversePaths(patch.path);
+            switch (patch.type) {
+                // update text
+                case 0:
+                    node.textContent = patch.value;
+                    break;
+                // update attr
+                case 1:
+                    // node.textContent = patch.value;
+                    break;
+                // delete node
+                case 2:
+                    node.parentNode.removeChild(node);
+                    break;
+                // insert node
+                case 3:
+                    const newNode = createNode(patch.value);
+                    node.insertBefore(newNode, node.childNodes[patch.index]);
+                    break;
             }
-
-            // delete node
-            if (patch.type === 2) {
-                const node = transversePaths(patch.path);
-                node.parentNode.removeChild(node);
-            }
-
-            // insert node
-            if (patch.type === 3) {
-                const node = transversePaths(patch.path);
-                const newNode = createNode(patch.value);
-                node.insertBefore(newNode, node.childNodes[patch.index]);
-            }
-
         }
 
         function serializeEvent(e) {
