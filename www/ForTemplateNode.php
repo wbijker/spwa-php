@@ -66,6 +66,8 @@ class ForTemplateNode extends TemplateNode
 
     function resolve(ResolvedNode $parent): void
     {
+        // add a marker for the start of this for loop
+        $parent->addChild(new MarkerData("for"));
         foreach ($this->children as $index => $child) {
             $child->resolve($parent);
         }

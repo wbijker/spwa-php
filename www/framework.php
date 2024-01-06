@@ -130,7 +130,7 @@ function renderPage(Page $page)
 
         $next = $page->render();
 //        $next->fillPath(null, 0);
-        
+
         $patches = [];
         compare($prevTemplate, $next, $patches);
         // persist state
@@ -141,7 +141,7 @@ function renderPage(Page $page)
 
     // add JS runtime
     // later CSS runtime?
-    $root = new ResolvedNode(null,0, null);
+    $root = new ResolvedNode(null, new RootData());
     $prevTemplate->resolve($root);
     $root->render();
 

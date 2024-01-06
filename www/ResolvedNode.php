@@ -1,72 +1,21 @@
 <?php
 
-class TagData
+abstract class NodeData
 {
-    public string $tag;
-    public array $attributes;
-
-    /**
-     * @param string $tag
-     * @param array|null $attributes
-     */
-    public function __construct(string $tag, ?array $attributes)
+    function render(ResolvedNode $owner)
     {
-        $this->tag = $tag;
-        $this->attributes = $attributes ?? [];
-        $this->children = $children ?? [];
+        foreach ($owner->children as $child) {
+            $child->render();
+        }
     }
 }
 
-class TextData
+class RootData extends NodeData
 {
-    public string $text;
-
-    /**
-     * @param string $text
-     */
-    public function __construct(string $text)
-    {
-        $this->text = $text;
-    }
 }
 
-// Resolved node refer to a node that has been resolved to represent an actual node in the DOM
-class ResolvedNode
+class TagData extends NodeData
 {
-    public ?ResolvedNode $parent = null;
-    // the dom position relative to the parent
-    public int $index;
-    public array $path;
-    // @var TagNode|TextData $data;
-    public $data;
-    /**
-     * @var ResolvedNode[] $children
-     */
-    public array $children = [];
-
-
-    function __construct(?ResolvedNode $parent, int $index, $data)
-    {
-        $this->parent = $parent;
-        $this->index = $index;
-        $this->path = $data == null
-            ? []
-            : array_merge($parent == null ? [] : $parent->path, [$index]);
-        $this->data = $data;
-    }
-
-
-    /**
-     * @param TagData|TextData $data
-     * @return ResolvedNode
-     */
-    function addChild($data): ResolvedNode
-    {
-        $child = new ResolvedNode($this, count($this->children), $data);
-        $this->children[] = $child;
-        return $child;
-    }
-
     static private array $selfClosingTags = [
         "area",
         "base",
@@ -84,55 +33,127 @@ class ResolvedNode
         "wbr"
     ];
 
+    public string $tag;
+    public array $attributes;
+
+    /**
+     * @param string $tag
+     * @param array|null $attributes
+     */
+    public function __construct(string $tag, ?array $attributes)
+    {
+        $this->tag = $tag;
+        $this->attributes = $attributes ?? [];
+    }
+
+    function render(ResolvedNode $owner)
+    {
+        echo "<" . $this->tag;
+        $this->attributes['path'] = json_encode($owner->path);
+
+        foreach ($this->attributes as $key => $value) {
+
+            // check for event handlers
+            if ($key == 'click') {
+                // click value injected a function
+                if (is_callable($value)) {
+                    echo " onclick='eventHandler(event, " . json_encode($owner->path) . ")'";
+                    continue;
+                }
+                continue;
+            }
+
+            if ($key == 'bound') {
+                echo " oninput=\"handleInput(event, '$value')\"";
+                continue;
+            }
+
+            echo " $key=\"$value\"";
+        }
+
+        // self closing tags
+        if (in_array($this->tag, self::$selfClosingTags)) {
+            echo "/>";
+            return;
+        }
+
+        echo ">";
+        parent::render($owner);
+        echo "</" . $this->tag . ">";
+    }
+}
+
+class MarkerData extends NodeData
+{
+    public string $marker;
+
+    /**
+     * @param string $marker
+     */
+    public function __construct(string $marker)
+    {
+        $this->marker = $marker;
+    }
+
+    function render(ResolvedNode $owner)
+    {
+        echo "<!--$this->marker-->";
+    }
+}
+
+class TextData extends NodeData
+{
+    public string $text;
+
+    /**
+     * @param string $text
+     */
+    public function __construct(string $text)
+    {
+        $this->text = $text;
+    }
+
+    function render(ResolvedNode $owner)
+    {
+        echo htmlentities($this->text);
+    }
+}
+
+// Resolved node refer to a node that has been resolved to represent an actual node in the DOM
+class ResolvedNode
+{
+    public ?ResolvedNode $parent = null;
+    public array $path;
+    public NodeData $data;
+    /**
+     * @var ResolvedNode[] $children
+     */
+    public array $children = [];
+
+
+    function __construct(?ResolvedNode $parent, NodeData $data)
+    {
+        $this->parent = $parent;
+        $this->path = $data instanceof RootData
+            ? []
+            : array_merge($parent == null ? [] : $parent->path, [count($parent->children)]);
+        $this->data = $data;
+    }
+
+
+    /**
+     * @param NodeData $data
+     * @return ResolvedNode
+     */
+    function addChild(NodeData $data): ResolvedNode
+    {
+        $child = new ResolvedNode($this, $data);
+        $this->children[] = $child;
+        return $child;
+    }
+
     public function render()
     {
-        if ($this->data instanceof TextData) {
-            echo htmlentities($this->data->text);
-            //.json_encode($this->path);
-            return;
-        }
-        if ($this->data instanceof TagData) {
-            echo "<" . $this->data->tag;
-            $this->data->attributes['path'] = json_encode($this->path);
-
-            foreach ($this->data->attributes as $key => $value) {
-
-                // check for event handlers
-                if ($key == 'click') {
-                    // click value injected a function
-                    if (is_callable($value)) {
-                        echo " onclick='eventHandler(event, " . json_encode($this->path) . ")'";
-                        continue;
-                    }
-                    continue;
-                }
-
-                if ($key == 'bound') {
-                    echo " oninput=\"handleInput(event, '$value')\"";
-                    continue;
-                }
-
-                echo " $key=\"$value\"";
-            }
-
-            // self closing tags
-            if (in_array($this->data->tag, self::$selfClosingTags)) {
-                echo "/>";
-                return;
-            }
-
-            echo ">";
-            foreach ($this->children as $child) {
-                $child->render();
-            }
-            echo "</".$this->data->tag.">";
-            return;
-        }
-
-        // $data is null for the root
-        foreach ($this->children as $child) {
-            $child->render();
-        }
-
+        $this->data->render($this);
     }
 }
