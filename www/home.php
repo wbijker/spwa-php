@@ -12,7 +12,12 @@ class HomePage extends Page
         JS::log("Counter is now $this->counter");
     }
 
-    public function render(): HtmlNode
+    public function delete(string $item, int $index)
+    {
+        JS::log("Deleting $item at $index");
+    }
+
+    public function render(): HtmlTemplateNode
     {
         return $this->view('home');
     }

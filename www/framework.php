@@ -8,7 +8,7 @@ function className($name)
 
 abstract class Page
 {
-    abstract function render(): HtmlNode;
+    abstract function render(): HtmlTemplateNode;
 
     public function save()
     {
@@ -58,7 +58,7 @@ abstract class Page
     
     class $className
     {
-        static function template($typeClass \$model): HtmlNode
+        static function template($typeClass \$model): TemplateNode
         {
             return $template;
         }
@@ -69,7 +69,7 @@ abstract class Page
         file_put_contents($compiledPath, $content);
     }
 
-    function view($name): HtmlNode
+    function view($name): HtmlTemplateNode
     {
         $viewPath = 'views/' . $name . '.php';
         $compiledPath = 'views/' . $name . '.compiled.php';
@@ -89,7 +89,7 @@ abstract class Page
     }
 }
 
-function transverse(HtmlNode $node, array $path): HtmlNode
+function transverse(HtmlTemplateNode $node, array $path): HtmlTemplateNode
 {
     $it = $node;
     foreach ($path as $index) {
@@ -101,8 +101,8 @@ function transverse(HtmlNode $node, array $path): HtmlNode
 function renderPage(Page $page)
 {
     $page->restore();
-    $prev = $page->render();
-    $prev->fillPath(null, 0);
+    $prevTemplate = $page->render();
+//    $prev->fillPath(null, 0);
 
     // GET or POST
     $method = $_SERVER['REQUEST_METHOD'];
@@ -111,7 +111,7 @@ function renderPage(Page $page)
         $json = json_decode(file_get_contents('php://input'), true);
 
         // transverse old structure to find path
-        $node = transverse($prev, $json['path']);
+        $node = transverse($prevTemplate, $json['path']);
 
         // fill inputs
         foreach ($json['inputs'] as $name => $value) {
@@ -129,9 +129,10 @@ function renderPage(Page $page)
         }
 
         $next = $page->render();
-        $next->fillPath(null, 0);
+//        $next->fillPath(null, 0);
+        
         $patches = [];
-        compare($prev, $next, $patches);
+        compare($prevTemplate, $next, $patches);
         // persist state
         $page->save();
         echo json_encode(['patches' => $patches, 'js' => JsRuntime::$pendingCalls]);
@@ -140,7 +141,10 @@ function renderPage(Page $page)
 
     // add JS runtime
     // later CSS runtime?
-    $prev->render();
+    $root = new ResolvedNode(null,0, null);
+    $prevTemplate->resolve($root);
+    $root->render();
+
     ?>
 
     <script>
