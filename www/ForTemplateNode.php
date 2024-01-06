@@ -16,6 +16,7 @@ class ForTemplateNode extends TemplateNode
      * @var TemplateNode[] $children
      */
     public array $children = [];
+    private ResolvedNode $resolved;
 
     /**
      * @param array|null $array $array
@@ -59,7 +60,12 @@ class ForTemplateNode extends TemplateNode
                     $this->children[$i]->index++;
                 }
 
-                $list[] = ['type' => INSERT_NODE, 'index' => $action->j, 'value' => $other->children[$action->j]->serialize(), 'path' => $this->path];
+                $root = new ResolvedNode(null, new RootData());
+                $newChild = $other->children[$action->j];
+                $newChild->resolve($root);
+
+
+                $list[] = ['type' => INSERT_NODE, 'index' => $action->j, 'value' => $root->children[0]->serialize(), 'path' => $this->resolved->path];
             }
         }
     }
@@ -67,8 +73,8 @@ class ForTemplateNode extends TemplateNode
     function resolve(ResolvedNode $parent): void
     {
         // add a marker for the start of this for loop
-        $parent->addChild(new MarkerData("for"));
-        foreach ($this->children as $index => $child) {
+        $this->resolved = $parent->addChild(new MarkerData("for"));
+        foreach ($this->children as $child) {
             $child->resolve($parent);
         }
     }

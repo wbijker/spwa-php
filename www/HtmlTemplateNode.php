@@ -32,7 +32,7 @@ class HtmlTemplateNode extends TemplateNode
     function resolve(ResolvedNode $parent): void
     {
         $entry = $parent->addChild(new TagData($this->tag, $this->attributes));
-        foreach ($this->children as $index => $child) {
+        foreach ($this->children as $child) {
             $child->resolve($entry);
         }
     }

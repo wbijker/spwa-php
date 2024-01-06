@@ -142,14 +142,19 @@ function renderPage(Page $page)
 
     <script>
         function createNode(value) {
-            if (typeof value == 'string')
-                return document.createTextNode(value);
-
-            const node = document.createElement(value.tag);
-            for (const child of value.children) {
-                node.appendChild(createNode(child));
+            if (value.type === 0) {
+                const node = document.createElement(value.tag);
+                for (const child of value.children) {
+                    node.appendChild(createNode(child));
+                }
+                return node;
             }
-            return node;
+            if (value.type === 1) {
+                return document.createTextNode(value.text);
+            }
+            if (value.type === 2) {
+                return document.createComment(value.text);
+            }
         }
 
         function transversePaths(arr) {
@@ -188,7 +193,17 @@ function renderPage(Page $page)
                 // insert node
                 case 3:
                     const newNode = createNode(patch.value);
-                    node.insertBefore(newNode, node.childNodes[patch.index]);
+                    // node should be the comment marking the start of the for loop
+
+                    let before = node.nextSibling;
+                    let i = 0;
+                    while (before && i++ < patch.index) {
+                        before = before.nextSibling;
+                    }
+                    if (before)
+                        node.parentNode.insertBefore(newNode, before);
+                    else
+                        node.parentNode.appendChild(newNode);
                     break;
             }
         }

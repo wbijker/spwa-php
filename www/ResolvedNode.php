@@ -8,6 +8,11 @@ abstract class NodeData
             $child->render();
         }
     }
+
+    function serialize(ResolvedNode $owner): array
+    {
+        return [];
+    }
 }
 
 class RootData extends NodeData
@@ -16,6 +21,16 @@ class RootData extends NodeData
 
 class TagData extends NodeData
 {
+    function serialize(ResolvedNode $owner): array
+    {
+        return [
+            'type' => 0,
+            'tag' => $this->tag,
+            'attributes' => $this->attributes,
+            'children' => array_map(fn($child) => $child->serialize(), $owner->children)
+        ];
+    }
+
     static private array $selfClosingTags = [
         "area",
         "base",
@@ -85,6 +100,11 @@ class TagData extends NodeData
 
 class MarkerData extends NodeData
 {
+    function serialize(ResolvedNode $owner): array
+    {
+        return ['type' => 2, 'text' => $this->marker];
+    }
+
     public string $marker;
 
     /**
@@ -103,6 +123,12 @@ class MarkerData extends NodeData
 
 class TextData extends NodeData
 {
+
+    function serialize(ResolvedNode $owner): array
+    {
+        return ['type' => 1, 'text' => $this->text];
+    }
+
     public string $text;
 
     /**
@@ -155,5 +181,10 @@ class ResolvedNode
     public function render()
     {
         $this->data->render($this);
+    }
+
+    public function serialize(): array
+    {
+        return $this->data->serialize($this);
     }
 }
