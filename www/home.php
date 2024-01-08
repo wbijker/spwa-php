@@ -14,6 +14,7 @@ class HomePage extends Page
 
     public function delete(string $item, int $index)
     {
+        unset($this->items[$index]);
         JS::log("Deleting $item at $index");
     }
 

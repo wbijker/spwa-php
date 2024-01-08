@@ -12,11 +12,9 @@
     </div>
     <input type="text" bound="text"/>
     <ul>
-        <li>First static item</li>
         <li class="bg-orange-600" for="$model->items as $index => $item" click="$model->delete($item, $index)">
             $item
         </li>
-        <li>Last static item</li>
     </ul>
     <button click="$model->items[] = $model->text">Add</button>
 </div>
