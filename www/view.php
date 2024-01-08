@@ -5,6 +5,7 @@ const UPDATE_TEXT = 0;
 const UPDATE_ATTR = 1;
 const DELETE_NODE = 2;
 const INSERT_NODE = 3;
+const DELETE_ATTR = 4;
 
 
 function compare($prev, $next, &$list): void

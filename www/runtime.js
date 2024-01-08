@@ -1,6 +1,21 @@
 function createNode(value) {
     if (value.type === 0) {
         const node = document.createElement(value.tag);
+        for (const key in value.attributes) {
+
+            // handle special cases
+            if (key === 'click') {
+                node.setAttribute('onclick', `eventHandler('${value.attributes[key]}', event)`);
+                continue;
+            }
+            if (key === 'bound') {
+                node.setAttribute('oninput', `handleInput(event, '${value.attributes[key]}')`);
+                continue;
+            }
+
+            node.setAttribute(key, value.attributes[key]);
+        }
+
         for (const child of value.children) {
             node.appendChild(createNode(child));
         }
@@ -73,7 +88,7 @@ function applyPatch(patch) {
             break;
         // update attr
         case 1:
-            // node.textContent = patch.value;
+            node.setAttribute(patch.key, patch.value);
             break;
         // delete node
         case 2:
@@ -89,6 +104,10 @@ function applyPatch(patch) {
                 node.parentNode.insertBefore(newNode, before);
             else
                 node.parentNode.appendChild(newNode);
+            break;
+        case 4:
+            // delete attr
+            node.removeAttribute(patch.key);
             break;
     }
 }
