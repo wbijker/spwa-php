@@ -40,34 +40,31 @@ class ForTemplateNode extends TemplateNode
         $nextHash = array_map($other->keyCallback, array_values($other->array));
 
         $diff = lavenshteinDiff($prevHash, $nextHash);
+        // first do updates on the existing DOM
+        // and then do inserts and deletes as it will shift the updates indexes
+        $last = [];
 
         foreach ($diff as $action) {
 
             if ($action->action == SKIP || $action->action == REPLACE) {
                 // although the key is the same, there might still be differences
                 // check for potential updates
-                $this->children[$action->i]->compare($other->children[$action->j], $list);
+                $this->children[$action->i]->compare($other->children[$action->j], $updates);
                 continue;
             }
             if ($action->action == DELETE) {
-                // update index for all children greater than $index
-                for ($i = $action->i + 1; $i < count($this->children); $i++) {
-                    $this->children[$i]->index--;
-                }
-                $list[] = ['type' => DELETE_NODE, 'index' => $action->i, 'path' => $this->resolved->path];
+                $last[] = ['type' => DELETE_NODE, 'index' => $action->j, 'path' => $this->resolved->path];
             }
             if ($action->action == INSERT) {
-                for ($i = $action->i + 1; $i < count($this->children); $i++) {
-                    $this->children[$i]->index++;
-                }
-
                 $root = new ResolvedNode(null, new RootData());
                 $newChild = $other->children[$action->j];
                 $newChild->resolve($root);
 
-                $list[] = ['type' => INSERT_NODE, 'index' => $action->j, 'value' => $root->children[0]->serialize(), 'path' => $this->resolved->path];
+                $last[] = ['type' => INSERT_NODE, 'index' => $action->j, 'value' => $root->children[0]->serialize(), 'path' => $this->resolved->path];
             }
         }
+        // append $last to $list
+        $list = array_merge($list, $last);
     }
 
     function resolve(ResolvedNode $parent): void

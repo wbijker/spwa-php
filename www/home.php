@@ -15,7 +15,7 @@ class HomePage extends Page
     public function reset()
     {
         $this->counter = 0;
-        $this->items = ['Coffee', 'Tea', 'Milk', 'Water', 'Hot Chocolate', 'Iced Coffee'];
+        $this->items = ['1. Coffee', '2. Tea', '3. Milk', '4. Water', '5. Hot Chocolate', '6. Iced Coffee'];
     }
 
     public function delete(string $item, int $index)
