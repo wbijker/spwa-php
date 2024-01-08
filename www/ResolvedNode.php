@@ -64,7 +64,7 @@ class TagData extends NodeData
     function render(ResolvedNode $owner)
     {
         echo "<" . $this->tag;
-        $this->attributes['path'] = json_encode($owner->path);
+//        $this->attributes['path'] = json_encode($owner->path);
 
         foreach ($this->attributes as $key => $value) {
 
@@ -72,7 +72,7 @@ class TagData extends NodeData
             if ($key == 'click') {
                 // click value injected a function
                 if (is_callable($value)) {
-                    echo " onclick='eventHandler(event, " . json_encode($owner->path) . ")'";
+                    echo " onclick=\"eventHandler('$key', event)\"";
                     continue;
                 }
                 continue;

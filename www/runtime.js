@@ -23,6 +23,25 @@ function transversePaths(arr) {
     return it;
 }
 
+function childIndex(node) {
+    for (var i = 0; i < node.parentNode.childNodes.length; i++) {
+        if (node.parentNode.childNodes[i] === node) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+function pathToBody(node) {
+    var path = [];
+    var it = node;
+    while (it !== document.body) {
+        path.unshift(childIndex(it));
+        it = it.parentNode;
+    }
+    return path;
+}
+
 function getJsFunction(path) {
     let it = window;
     for (const name of path) {
@@ -127,14 +146,15 @@ function handleInput(e, name) {
     }
 }
 
-function eventHandler(e, path) {
+function eventHandler(action, e) {
     const changes = {};
     for (const name in inputs) {
         if (inputs[name].change) {
             changes[name] = inputs[name].value
         }
     }
-    postData('/', {path, event: serializeEvent(e), inputs: changes}, (err, data) => {
+    const path = pathToBody(e.target);
+    postData('/', {action, path, event: serializeEvent(e), inputs: changes}, (err, data) => {
         for (const patch of data.patches) {
             applyPatch(patch);
         }
