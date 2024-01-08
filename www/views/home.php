@@ -6,6 +6,7 @@
         </span>
         <button click="$model->inc(1)">Increase</button>
         <button click="$model->inc(-1)">Decrease</button>
+        <button click="$model->reset()">Reset</button>
         <span class="ref" if="$model->counter >= 10">
             Value is greater or equal than 10!
         </span>

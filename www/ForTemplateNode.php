@@ -36,10 +36,11 @@ class ForTemplateNode extends TemplateNode
     function compare(ForTemplateNode $other, &$list)
     {
         // hash each value and compare: delete, insert, move
-        $prevHash = array_map($this->keyCallback, $this->array);
-        $nextHash = array_map($other->keyCallback, $other->array);
+        $prevHash = array_map($this->keyCallback, array_values($this->array));
+        $nextHash = array_map($other->keyCallback, array_values($other->array));
 
         $diff = lavenshteinDiff($prevHash, $nextHash);
+
         foreach ($diff as $action) {
 
             if ($action->action == SKIP || $action->action == REPLACE) {
@@ -53,7 +54,7 @@ class ForTemplateNode extends TemplateNode
                 for ($i = $action->i + 1; $i < count($this->children); $i++) {
                     $this->children[$i]->index--;
                 }
-                $list[] = ['type' => DELETE_NODE, 'index' => $action->i, 'path' => $this->children[$action->i]->path];
+                $list[] = ['type' => DELETE_NODE, 'index' => $action->i, 'path' => $this->resolved->path];
             }
             if ($action->action == INSERT) {
                 for ($i = $action->i + 1; $i < count($this->children); $i++) {
@@ -63,7 +64,6 @@ class ForTemplateNode extends TemplateNode
                 $root = new ResolvedNode(null, new RootData());
                 $newChild = $other->children[$action->j];
                 $newChild->resolve($root);
-
 
                 $list[] = ['type' => INSERT_NODE, 'index' => $action->j, 'value' => $root->children[0]->serialize(), 'path' => $this->resolved->path];
             }

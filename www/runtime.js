@@ -58,7 +58,7 @@ function applyPatch(patch) {
             break;
         // delete node
         case 2:
-            let child = getSibling(node, patch.index)
+            let child = getSibling(node.nextSibling, patch.index)
             node.parentNode.removeChild(child);
             break;
         // insert node
