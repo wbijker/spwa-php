@@ -22,7 +22,6 @@ function nextBoundary(string $string, bool $whitespaces, int $offset = 0)
 
 class HtmlTokenizer
 {
-
     const MODE_CONTENT = 0;
     const NODE_OPEN = 1;
     const NODE_CLOSE = 2;
@@ -36,26 +35,33 @@ class HtmlTokenizer
     const TOKEN_CONTENT = 4;
 
 
-    function feed(int $type, string $value, int &$mode)
+    static function feed(int $type, string $value, int &$mode)
     {
+//        [14] => slash
+//        [15] => close
+
         switch ($type) {
             case self::TOKEN_OPEN:
                 // next content token is the tag name
                 $mode = self::NODE_OPEN;
                 break;
             case self::TOKEN_CLOSE:
+                // >
                 $mode = self::MODE_CONTENT;
                 break;
             case self::TOKEN_EQUAL:
                 $mode = self::NODE_ATTR_VALUE;
                 break;
             case self::TOKEN_SLASH:
+                // </..>
                 if ($mode === self::NODE_OPEN) {
                     $mode = self::NODE_CLOSE;
+                } else {
+                    echo "Self close tag\n";
                 }
+                // <... />
                 break;
             case self::TOKEN_CONTENT:
-
                 switch ($mode) {
                     case self::MODE_CONTENT:
                         echo "Content " . $value . "\n";
@@ -65,6 +71,7 @@ class HtmlTokenizer
                         echo "Open tag with " . $value . "\n";
                         break;
                     case self::NODE_CLOSE:
+                        // <div>..</div>
                         echo "Close tag with " . $value . "\n";
                         break;
                     case self::NODE_ATTR_NAME: // attribute name
@@ -95,22 +102,27 @@ class HtmlTokenizer
             [$match, $index] = $next;
             $content = substr($html, $prev, $index - $prev);
             if (trim($content) !== "") {
+                self::feed(self::TOKEN_CONTENT, $content, $mode);
                 $ret[] = $content;
             }
 
             switch ($match) {
                 case "<":
+                    self::feed(self::TOKEN_OPEN, $content, $mode);
                     $ret[] = 'open';
                     $whitespaces = true;
                     break;
                 case ">":
+                    self::feed(self::TOKEN_CLOSE, $content, $mode);
                     $ret[] = 'close';
                     $whitespaces = false;
                     break;
                 case "=":
+                    self::feed(self::TOKEN_EQUAL, $content, $mode);
                     $ret[] = 'attr';
                     break;
                 case "/":
+                    self::feed(self::TOKEN_SLASH, $content, $mode);
                     $ret[] = 'slash';
                     break;
             }
