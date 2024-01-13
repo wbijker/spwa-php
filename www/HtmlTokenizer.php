@@ -7,7 +7,7 @@
  */
 function nextBoundary(string $string, bool $whitespaces, int $offset = 0)
 {
-    $base = '/[<=>"\']';
+    $base = '/[<=>\/"\']';
 
     $wpreg = $base . '|\s+/';
     $reg = $base . '/';
@@ -19,8 +19,65 @@ function nextBoundary(string $string, bool $whitespaces, int $offset = 0)
     return false;
 }
 
+
 class HtmlTokenizer
 {
+
+    const MODE_CONTENT = 0;
+    const NODE_OPEN = 1;
+    const NODE_CLOSE = 2;
+    const NODE_ATTR_NAME = 3;
+    const NODE_ATTR_VALUE = 4;
+
+    const TOKEN_OPEN = 0;
+    const TOKEN_CLOSE = 1;
+    const TOKEN_EQUAL = 2;
+    const TOKEN_SLASH = 3;
+    const TOKEN_CONTENT = 4;
+
+
+    function feed(int $type, string $value, int &$mode)
+    {
+        switch ($type) {
+            case self::TOKEN_OPEN:
+                // next content token is the tag name
+                $mode = self::NODE_OPEN;
+                break;
+            case self::TOKEN_CLOSE:
+                $mode = self::MODE_CONTENT;
+                break;
+            case self::TOKEN_EQUAL:
+                $mode = self::NODE_ATTR_VALUE;
+                break;
+            case self::TOKEN_SLASH:
+                if ($mode === self::NODE_OPEN) {
+                    $mode = self::NODE_CLOSE;
+                }
+                break;
+            case self::TOKEN_CONTENT:
+
+                switch ($mode) {
+                    case self::MODE_CONTENT:
+                        echo "Content " . $value . "\n";
+                        break;
+                    case self::NODE_OPEN: // tag name
+                        $mode = self::NODE_ATTR_NAME;
+                        echo "Open tag with " . $value . "\n";
+                        break;
+                    case self::NODE_CLOSE:
+                        echo "Close tag with " . $value . "\n";
+                        break;
+                    case self::NODE_ATTR_NAME: // attribute name
+                        echo "Attribute name " . $value . "\n";
+                        break;
+                    case self::NODE_ATTR_VALUE:
+                        echo "Attribute value " . $value . "\n";
+                        $mode = self::NODE_ATTR_NAME;
+                        break;
+                }
+                break;
+        }
+    }
 
     static function tokenizeHtml(string $html): array
     {
@@ -28,6 +85,7 @@ class HtmlTokenizer
         $offset = 0;
         $prev = 0;
         $whitespaces = true;
+        $mode = self::MODE_CONTENT;
 
         while ($offset < strlen($html)) {
             $next = nextBoundary($html, $whitespaces, $offset);
@@ -52,8 +110,8 @@ class HtmlTokenizer
                 case "=":
                     $ret[] = 'attr';
                     break;
-                case "/>":
-                    $ret[] = 'selfclose';
+                case "/":
+                    $ret[] = 'slash';
                     break;
             }
 
