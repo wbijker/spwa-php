@@ -4,8 +4,8 @@ function createNode(value) {
         for (const key in value.attributes) {
 
             // handle special cases
-            if (key === 'click') {
-                node.setAttribute('onclick', `eventHandler('${value.attributes[key]}', event)`);
+            if (key === 'click' || key === 'keydown') {
+                node.setAttribute('on' + key, `eventHandler('${value.attributes[key]}', event)`);
                 continue;
             }
             if (key === 'bound') {

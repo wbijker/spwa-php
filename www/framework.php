@@ -38,6 +38,7 @@ abstract class Page
         $html = ob_get_clean();
 
         $dom = new DOMDocument();
+
         @$dom->loadHTML($html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
 
         $template = buildTree($dom->documentElement, 2, true);
@@ -140,6 +141,6 @@ function renderPage(Page $page)
 
     ?>
 
-    <script src="runtime.js"></script>
+    <script src="runtime.js?v=1"></script>
     <?php
 }

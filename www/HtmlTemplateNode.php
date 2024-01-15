@@ -28,6 +28,7 @@ class HtmlTemplateNode extends TemplateNode
         foreach ($this->attributes as $key => $value) {
 
             if ($key === 'bound') {
+                $list[] = ['type' => 6, 'path' => $this->resolved->path];
                 continue;
             }
             if ($key === 'click') {

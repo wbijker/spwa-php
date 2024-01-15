@@ -18,7 +18,6 @@ function compare($prev, $next, &$list): void
     $prev->compare($next, $list, $list);
 }
 
-
 function buildAttr($attrs): string
 {
     if (empty($attrs) || count($attrs) == 0)
@@ -27,7 +26,7 @@ function buildAttr($attrs): string
     $arr = iterator_to_array($attrs);
     $attrs = array_map(function ($attr) {
 
-        if ($attr->name == "click") {
+        if ($attr->name == "click" || $attr->name == "keydown") {
             // need to store the event handler within
             return "\"" . $attr->name . "\" => fn() => " . $attr->value;
         }
