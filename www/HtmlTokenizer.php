@@ -20,6 +20,61 @@ function nextBoundary(string $string, bool $whitespaces, int $offset = 0)
 }
 
 
+abstract class HtmlDomNode
+{
+    public ?HtmlDomNode $parent = null;
+
+    /**
+     * @param HtmlDomNode|null $parent
+     */
+    public function __construct(?HtmlDomNode $parent)
+    {
+        $this->parent = $parent;
+    }
+
+
+}
+
+;
+
+class HtmlTextNode extends HtmlDomNode
+{
+    public string $text;
+
+    public function __construct(?HtmlDomNode $parent, string $text)
+    {
+        parent::__construct($parent);
+        $this->text = $text;
+    }
+}
+
+;
+
+class HtmlTagNode extends HtmlDomNode
+{
+    public string $name;
+    public array $attributes;
+    public array $children;
+
+//    public DomNode $parent;
+
+    public function __construct(?HtmlDomNode $parent, string $name, array $attributes = [], array $children = [])
+    {
+        parent::__construct($parent);
+        $this->name = $name;
+        $this->attributes = $attributes;
+        $this->children = $children;
+    }
+
+    public function addChild(HtmlDomNode $node)
+    {
+        $this->children[] = $node;
+//        $node->parent = $this;
+    }
+
+
+}
+
 class HtmlTokenizer
 {
     const MODE_CONTENT = 0;
@@ -35,11 +90,8 @@ class HtmlTokenizer
     const TOKEN_CONTENT = 4;
 
 
-    static function feed(int $type, string $value, int &$mode)
+    static function feed(int $type, string $value, int &$mode, &$node)
     {
-//        [14] => slash
-//        [15] => close
-
         switch ($type) {
             case self::TOKEN_OPEN:
                 // next content token is the tag name
@@ -57,28 +109,40 @@ class HtmlTokenizer
                 if ($mode === self::NODE_OPEN) {
                     $mode = self::NODE_CLOSE;
                 } else {
-                    echo "Self close tag\n";
+                    $node = $node->parent;
                 }
                 // <... />
                 break;
             case self::TOKEN_CONTENT:
                 switch ($mode) {
                     case self::MODE_CONTENT:
-                        echo "Content " . $value . "\n";
+                        if ($node != null) {
+                            $node->addChild(new HtmlTextNode($node, $value));
+                        }
                         break;
                     case self::NODE_OPEN: // tag name
                         $mode = self::NODE_ATTR_NAME;
-                        echo "Open tag with " . $value . "\n";
+                        $child = new HtmlTagNode($node, $value, [], []);
+                        if ($node != null) {
+                            $node->addChild($child);
+                        }
+                        $node = $child;
                         break;
                     case self::NODE_CLOSE:
-                        // <div>..</div>
-                        echo "Close tag with " . $value . "\n";
+                        // need to check $value
+                        // transverse up
+                        $node = $node->parent;
                         break;
                     case self::NODE_ATTR_NAME: // attribute name
-                        echo "Attribute name " . $value . "\n";
+                        if ($node != null) {
+                            $node->attributes[] = [$value, null];
+                        }
                         break;
                     case self::NODE_ATTR_VALUE:
-                        echo "Attribute value " . $value . "\n";
+                        if ($node != null && count($node->attributes) > 0) {
+                            // fill last attr
+                            $node->attributes[count($node->attributes) - 1][1] = $value;
+                        }
                         $mode = self::NODE_ATTR_NAME;
                         break;
                 }
@@ -86,13 +150,16 @@ class HtmlTokenizer
         }
     }
 
-    static function tokenizeHtml(string $html): array
+    static function tokenizeHtml(string $html): HtmlDomNode
     {
         $ret = [];
         $offset = 0;
         $prev = 0;
         $whitespaces = true;
         $mode = self::MODE_CONTENT;
+        // define one root node
+        $root = new HtmlTagNode(null, '', [], []);
+        $node = $root;
 
         while ($offset < strlen($html)) {
             $next = nextBoundary($html, $whitespaces, $offset);
@@ -102,27 +169,27 @@ class HtmlTokenizer
             [$match, $index] = $next;
             $content = substr($html, $prev, $index - $prev);
             if (trim($content) !== "") {
-                self::feed(self::TOKEN_CONTENT, $content, $mode);
+                self::feed(self::TOKEN_CONTENT, $content, $mode, $node);
                 $ret[] = $content;
             }
 
             switch ($match) {
                 case "<":
-                    self::feed(self::TOKEN_OPEN, $content, $mode);
+                    self::feed(self::TOKEN_OPEN, $content, $mode, $node);
                     $ret[] = 'open';
                     $whitespaces = true;
                     break;
                 case ">":
-                    self::feed(self::TOKEN_CLOSE, $content, $mode);
+                    self::feed(self::TOKEN_CLOSE, $content, $mode, $node);
                     $ret[] = 'close';
                     $whitespaces = false;
                     break;
                 case "=":
-                    self::feed(self::TOKEN_EQUAL, $content, $mode);
+                    self::feed(self::TOKEN_EQUAL, $content, $mode, $node);
                     $ret[] = 'attr';
                     break;
                 case "/":
-                    self::feed(self::TOKEN_SLASH, $content, $mode);
+                    self::feed(self::TOKEN_SLASH, $content, $mode, $node);
                     $ret[] = 'slash';
                     break;
             }
@@ -131,7 +198,7 @@ class HtmlTokenizer
             $prev = $offset;
         }
 
-        return $ret;
+        return $root;
     }
 
 }
