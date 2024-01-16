@@ -23,17 +23,17 @@ function buildAttr($attrs): string
     if (empty($attrs) || count($attrs) == 0)
         return "null";
 
-    $arr = iterator_to_array($attrs);
-    $attrs = array_map(function ($attr) {
-
-        if ($attr->name == "click" || $attr->name == "keydown") {
+    $mapped = array_map(function ($attr) {
+        [$name, $value] = $attr;
+        if ($name == "click" || $name == "keydown") {
             // need to store the event handler within
-            return "\"" . $attr->name . "\" => fn() => " . $attr->value;
+            return "\"" . $name . "\" => fn() => " . $value;
         }
 
-        return "\"" . $attr->name . "\" => \"" . $attr->value . "\"";
-    }, $arr);
-    return "[" . implode(", ", $attrs) . "]";
+        return "\"" . $name . "\" => \"" . $value . "\"";
+    }, $attrs);
+
+    return "[" . implode(", ", $mapped) . "]";
 }
 
 
@@ -42,23 +42,21 @@ function indent($index, $first = false): string
     return str_repeat(" ", $first ? 0 : $index * 4);
 }
 
-function buildNode(DOMNode $node, $index = 0, $first = false): string
+function buildNode(HtmlTagNode $node, $index = 0, $first = false): string
 {
-    $children = array_map(fn($child) => buildTree($child, $index + 1, false), iterator_to_array($node->childNodes));
+    $children = array_map(fn($child) => buildTree($child, $index + 1, false), $node->children);
     $c = implode("," . PHP_EOL, $children);
 
-    return indent($index, $first) . "TemplateNode::html(\"" . $node->tagName . "\", " . buildAttr($node->attributes) . ", [" . PHP_EOL . $c . PHP_EOL . indent($index) . "])";
+    return indent($index, $first) . "TemplateNode::html(\"" . $node->name . "\", " . buildAttr($node->attributes) . ", [" . PHP_EOL . $c . PHP_EOL . indent($index) . "])";
 }
 
-function getAttr(DOMElement $node, string $attr, bool $remove): ?string
+function getAttr(HtmlDomNode $node, string $attr, bool $remove): ?string
 {
-    $value = $node->attributes->getNamedItem($attr);
-    if ($value == null)
+    $match = array_filter($node->attributes, fn($attr) => $attr[0] == $attr);
+    if (count($match) == 0)
         return null;
 
-    if ($remove)
-        $node->removeAttribute($attr);
-    return $value->value;
+    return $match[0][1];
 }
 
 function extractForVars(string $str): array
@@ -80,11 +78,11 @@ function extractForVars(string $str): array
 }
 
 
-function buildTree(DOMNode $node, $index = 0, $first = false): ?string
+function buildTree(HtmlDomNode $node, $index = 0, $first = false): ?string
 {
     $indent = indent($index, $first);
 
-    if ($node instanceof DOMElement) {
+    if ($node instanceof HtmlTagNode) {
 
         // handle special attributes cases
         $ifExp = getAttr($node, 'if', true);
@@ -109,10 +107,10 @@ function buildTree(DOMNode $node, $index = 0, $first = false): ?string
         return buildNode($node, $index, $first);
     }
 
-    if ($node instanceof DOMText) {
+    if ($node instanceof HtmlTextNode) {
         // replace newline with \n
         // and carriage return with \r
-        $text = str_replace("\n", "\\n", $node->textContent);
+        $text = str_replace("\n", "\\n", $node->text);
         $text = str_replace("\r", "\\r", $text);
         return $indent . "TemplateNode::text(\"" . $text . "\")";
     }

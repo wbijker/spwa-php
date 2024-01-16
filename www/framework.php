@@ -37,11 +37,10 @@ abstract class Page
         require $viewPath;
         $html = ob_get_clean();
 
-        $dom = new DOMDocument();
+        $root = HtmlTokenizer::parseHtml($html);
+        print_r($root);
 
-        @$dom->loadHTML($html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
-
-        $template = buildTree($dom->documentElement, 2, true);
+        $template = buildTree($root, 2, true);
         $endTime = microtime(true);
 
         $date = date('Y-m-d H:i:s');
