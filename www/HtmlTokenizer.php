@@ -3,16 +3,22 @@
  * @param array $needles
  * @param string $string
  * @param int $offset
- * @return int|false
+ * @return array|false
  */
-function nextBoundary(string $string, bool $whitespaces, int $offset = 0)
+function nextBoundary(string $string, bool $whitespaces, ?string $quote, int $offset)
 {
-    $base = '/[<=>\/"\']';
+    if ($quote !== null) {
+        $next = strpos($string, $quote, $offset);
+        if ($next === false) {
+            return false;
+        }
+        return [$quote, $next];
+    }
 
-    $wpreg = $base . '|\s+/';
-    $reg = $base . '/';
+    $whitespaceReg = '/[<=>\/"\']|\s+/';
+    $reg = '/[<\/]/';
 
-    if (preg_match($whitespaces ? $wpreg : $reg, $string, $matches, PREG_OFFSET_CAPTURE, $offset)) {
+    if (preg_match($whitespaces ? $whitespaceReg : $reg, $string, $matches, PREG_OFFSET_CAPTURE, $offset)) {
         return $matches[0];
     }
 
@@ -32,10 +38,10 @@ abstract class HtmlDomNode
         $this->parent = $parent;
     }
 
+    abstract function render();
 
 }
 
-;
 
 class HtmlTextNode extends HtmlDomNode
 {
@@ -46,9 +52,12 @@ class HtmlTextNode extends HtmlDomNode
         parent::__construct($parent);
         $this->text = $text;
     }
-}
 
-;
+    function render()
+    {
+        echo htmlentities($this->text);
+    }
+}
 
 class HtmlTagNode extends HtmlDomNode
 {
@@ -69,10 +78,35 @@ class HtmlTagNode extends HtmlDomNode
     public function addChild(HtmlDomNode $node)
     {
         $this->children[] = $node;
-//        $node->parent = $this;
     }
 
+    public function setAttribute(string $name, ?string $value)
+    {
+        $this->attributes[$name] = $this->attributes[$name] ?? [];
+        if ($value != null) {
+            $this->attributes[$name][] = $value;
+        }
+    }
 
+    public function setLastAttributeValue($value)
+    {
+        $this->attributes[array_key_last($this->attributes)][] = $value;
+    }
+
+    function render()
+    {
+        echo "<$this->name";
+        foreach ($this->attributes as $name => $values) {
+            foreach ($values as $value) {
+                echo " $name=\"$value\"";
+            }
+        }
+        echo ">";
+        foreach ($this->children as $child) {
+            $child->render();
+        }
+        echo "</$this->name>";
+    }
 }
 
 class HtmlTokenizer
@@ -135,13 +169,13 @@ class HtmlTokenizer
                         break;
                     case self::NODE_ATTR_NAME: // attribute name
                         if ($node != null) {
-                            $node->attributes[] = [$value, null];
+                            $node->setAttribute($value, null);
                         }
                         break;
                     case self::NODE_ATTR_VALUE:
                         if ($node != null && count($node->attributes) > 0) {
                             // fill last attr
-                            $node->attributes[count($node->attributes) - 1][1] = $value;
+                            $node->setLastAttributeValue($value);
                         }
                         $mode = self::NODE_ATTR_NAME;
                         break;
@@ -150,52 +184,71 @@ class HtmlTokenizer
         }
     }
 
-    static function tokenizeHtml(string $html): HtmlDomNode
+
+    static function parseTokens(string $html): array
     {
         $ret = [];
         $offset = 0;
         $prev = 0;
         $whitespaces = true;
-        $mode = self::MODE_CONTENT;
-        // define one root node
-        $root = new HtmlTagNode(null, '', [], []);
-        $node = $root;
+        $quote = null;
 
         while ($offset < strlen($html)) {
-            $next = nextBoundary($html, $whitespaces, $offset);
+            $next = nextBoundary($html, $whitespaces, $quote, $offset);
             if ($next === false) {
                 break;
             }
+
             [$match, $index] = $next;
+
             $content = substr($html, $prev, $index - $prev);
             if (trim($content) !== "") {
-                self::feed(self::TOKEN_CONTENT, $content, $mode, $node);
-                $ret[] = $content;
+//                echo "<span style='color: orange'>".htmlentities($content)."</span>";
+                $ret[] = [self::TOKEN_CONTENT, $content];
             }
-
+//            echo "<b>".htmlentities($match)."</b>";
             switch ($match) {
                 case "<":
-                    self::feed(self::TOKEN_OPEN, $content, $mode, $node);
-                    $ret[] = 'open';
+                    $ret[] = [self::TOKEN_OPEN, $match];
                     $whitespaces = true;
                     break;
                 case ">":
-                    self::feed(self::TOKEN_CLOSE, $content, $mode, $node);
-                    $ret[] = 'close';
+                    $ret[] = [self::TOKEN_CLOSE, $match];
                     $whitespaces = false;
                     break;
                 case "=":
-                    self::feed(self::TOKEN_EQUAL, $content, $mode, $node);
-                    $ret[] = 'attr';
+                    $ret[] = [self::TOKEN_EQUAL, $match];
                     break;
                 case "/":
-                    self::feed(self::TOKEN_SLASH, $content, $mode, $node);
-                    $ret[] = 'slash';
+                    $ret[] = [self::TOKEN_SLASH, $match];
+                    break;
+                case "'":
+                case '"':
+                    if ($quote === null) {
+                        $quote = $match;
+                    } else if ($quote === $match) {
+                        $quote = null;
+                    }
                     break;
             }
 
             $offset = $index + strlen($match);
             $prev = $offset;
+        }
+
+        return $ret;
+    }
+
+    static function parseHtml(string $html): HtmlTagNode
+    {
+        $mode = self::MODE_CONTENT;
+        // define one root node
+        $root = new HtmlTagNode(null, '', [], []);
+        $node = $root;
+
+        $tokens = self::parseTokens($html);
+        foreach ($tokens as $token) {
+            self::feed($token[0], $token[1], $mode, $node);
         }
 
         return $root;
