@@ -54,7 +54,7 @@ class HtmlTemplateNode extends TemplateNode
 
     public function compare(HtmlTemplateNode $other, &$list)
     {
-        $this->compareAttrs($other->attributes, $list);
+//        $this->compareAttrs($other->attributes, $list);
 
         for ($i = 0; $i < count($this->children); $i++) {
             compare($this->children[$i], $other->children[$i], $list);

@@ -8,6 +8,46 @@ const INSERT_NODE = 3;
 const DELETE_ATTR = 4;
 
 
+class PhpArray
+{
+    private array $array = [];
+
+    /**
+     * @param array $array
+     */
+    public function __construct(array $array)
+    {
+        $this->array = $array;
+    }
+
+    function set($key, $value): void
+    {
+        $this->array[$key] = $value;
+    }
+
+    function render(bool $ignoreEmpty): string
+    {
+        $mapped = array_map(function ($key, $value) use ($ignoreEmpty) {
+            if ($value instanceof PhpArray) {
+                if ($ignoreEmpty && count($value->array) == 0)
+                    return null;
+
+                return "\"$key\" => " . $value->render($ignoreEmpty);
+            }
+
+            if ($ignoreEmpty && $value == null)
+                return null;
+
+            return "\"$key\" => $value";
+        }, array_keys($this->array), $this->array);
+
+        // filter out null values
+        $mapped = array_filter($mapped, fn($value) => $value != null);
+
+        return "[" . implode(", ", $mapped) . "]";
+    }
+}
+
 function compare($prev, $next, &$list): void
 {
     // $prev and $next should always be of the same type
@@ -18,24 +58,51 @@ function compare($prev, $next, &$list): void
     $prev->compare($next, $list, $list);
 }
 
+
 function buildAttr($attrs): string
 {
-    if (empty($attrs) || count($attrs) == 0)
-        return "null";
+    // categorize attributes
+    $static = [];
+    $dynamic = [];
+    $events = [];
+    $bound = [];
+    $ignore = false;
 
-    // todo: handle multiple attr values
-    $mapped = array_map(function ($key, $values) {
+    foreach ($attrs as $name => $value) {
 
-        if ($key == "@click" || $key == "@keydown") {
-            // need to store the event handler within
-            return "\"" . $key . "\" => fn() => " . $values[0];
+        if (substr($name, 0, 1) == '@') {
+            $name = substr($name, 1);
+
+            if ($name == 'click' || $name == 'keydown') {
+                $events[$name] = "fn() => " . $value[0];
+                continue;
+            }
+
+            if ($name == 'ignore') {
+                $ignore = true;
+                continue;
+            }
+
+            if ($name == 'bound') {
+                $bound[$name] = $value[0];
+                continue;
+            }
+
+            $dynamic[$name] = $value[0] ?? "true";
+            continue;
         }
 
-        return "\"" . $key . "\" => \"" . $values[0] . "\"";
+        $static[$name] = "\"$value[0]\"";
+    }
 
-    }, array_keys($attrs), $attrs);
-
-    return "[" . implode(", ", $mapped) . "]";
+    $arr = new PhpArray([
+        "static" => new PhpArray($static),
+        "dynamic" => new PhpArray($dynamic),
+        "events" => new PhpArray($events),
+        "bound" => new PhpArray($bound),
+        "ignore" => $ignore
+    ]);
+    return $arr->render(true);
 }
 
 
@@ -100,11 +167,11 @@ function buildTree(HtmlDomNode $node, $index = 0, $first = false): ?string
             return $indent . "TemplateNode::for($vars[0], fn($vars[1], $vars[2]) => " . buildNode($node, $index, true) . ")";
         }
 
-        $bound = getAttr($node, '@bound');
-        if ($bound != null) {
-            // add value attribute to fill initial value
-            $node->setAttribute('value', $bound);
-        }
+//        $bound = getAttr($node, '@bound');
+//        if ($bound != null) {
+//            // add value attribute to fill initial value
+//            $node->setAttribute('value', $bound);
+//        }
 
         return buildNode($node, $index, $first);
     }

@@ -1,6 +1,6 @@
 <div class="bg-red-200">
     <div>
-        <span>
+        <span @ignore>
 
             The current count is $model->counter
         </span>
