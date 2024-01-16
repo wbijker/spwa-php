@@ -74,7 +74,7 @@ class TagData extends NodeData
                 if (is_callable($value)) {
 
                     $ev = substr($key, 1);
-                    echo " on".$ev."=\"eventHandler('$ev', event)\"";
+                    echo " on" . $ev . "=\"eventHandler('$ev', event)\"";
                     continue;
                 }
                 continue;

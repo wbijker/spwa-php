@@ -38,8 +38,10 @@ abstract class Page
         $html = ob_get_clean();
 
         $root = HtmlTokenizer::parseHtml($html);
+        if (count($root->children) != 1)
+            throw new Exception("View must have exactly one root element");
 
-        $template = buildTree($root, 2, true);
+        $template = buildTree($root->children[0], 2, true);
         $endTime = microtime(true);
 
         $date = date('Y-m-d H:i:s');
@@ -119,7 +121,7 @@ function renderPage(Page $page)
         $node = traverse($resolved, $json['path']);
 
         if ($node->data instanceof TagData) {
-            $event = $node->data->attributes['click'];
+            $event = $node->data->attributes['@click'];
             if (is_callable($event)) {
                 call_user_func($event);
             }
