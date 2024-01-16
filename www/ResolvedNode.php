@@ -69,10 +69,12 @@ class TagData extends NodeData
         foreach ($this->attributes as $key => $value) {
 
             // check for event handlers
-            if ($key == 'click' || $key == 'keydown') {
+            if ($key == '@click' || $key == '@keydown') {
                 // click value injected a function
                 if (is_callable($value)) {
-                    echo " on".$key."=\"eventHandler('$key', event)\"";
+
+                    $ev = substr($key, 1);
+                    echo " on".$ev."=\"eventHandler('$ev', event)\"";
                     continue;
                 }
                 continue;

@@ -23,15 +23,17 @@ function buildAttr($attrs): string
     if (empty($attrs) || count($attrs) == 0)
         return "null";
 
-    $mapped = array_map(function ($attr) {
-        [$name, $value] = $attr;
-        if ($name == "click" || $name == "keydown") {
+    // todo: handle multiple attr values
+    $mapped = array_map(function ($key, $values) {
+
+        if ($key == "@click" || $key == "@keydown") {
             // need to store the event handler within
-            return "\"" . $name . "\" => fn() => " . $value;
+            return "\"" . $key . "\" => fn() => " . $values[0];
         }
 
-        return "\"" . $name . "\" => \"" . $value . "\"";
-    }, $attrs);
+        return "\"" . $key . "\" => \"" . $values[0] . "\"";
+
+    }, array_keys($attrs), $attrs);
 
     return "[" . implode(", ", $mapped) . "]";
 }
@@ -50,13 +52,13 @@ function buildNode(HtmlTagNode $node, $index = 0, $first = false): string
     return indent($index, $first) . "TemplateNode::html(\"" . $node->name . "\", " . buildAttr($node->attributes) . ", [" . PHP_EOL . $c . PHP_EOL . indent($index) . "])";
 }
 
-function getAttr(HtmlDomNode $node, string $attr, bool $remove): ?string
+function getAttr(HtmlTagNode $node, string $attr): ?string
 {
-    $match = array_filter($node->attributes, fn($attr) => $attr[0] == $attr);
-    if (count($match) == 0)
+    $values = $node->getAndRemoveAttr($attr);
+    if (empty($values))
         return null;
 
-    return $match[0][1];
+    return $values[0];
 }
 
 function extractForVars(string $str): array
@@ -85,23 +87,23 @@ function buildTree(HtmlDomNode $node, $index = 0, $first = false): ?string
     if ($node instanceof HtmlTagNode) {
 
         // handle special attributes cases
-        $ifExp = getAttr($node, 'if', true);
+        $ifExp = getAttr($node, '@if');
         if ($ifExp != null) {
             $then = buildNode($node, $index, true);
             return $indent . "TemplateNode::if($ifExp, " . $then . ", null)";
         }
 
-        $for = getAttr($node, 'for', true);
+        $for = getAttr($node, '@for');
         if ($for != null) {
             // for should always use syntax
             $vars = extractForVars($for);
             return $indent . "TemplateNode::for($vars[0], fn($vars[1], $vars[2]) => " . buildNode($node, $index, true) . ")";
         }
 
-        $bound = getAttr($node, 'bound', false);
+        $bound = getAttr($node, '@bound');
         if ($bound != null) {
             // add value attribute to fill initial value
-            $node->setAttribute('value', "\$model->" . $bound);
+            $node->setAttribute('value', $bound);
         }
 
         return buildNode($node, $index, $first);

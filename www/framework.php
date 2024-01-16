@@ -38,7 +38,6 @@ abstract class Page
         $html = ob_get_clean();
 
         $root = HtmlTokenizer::parseHtml($html);
-        print_r($root);
 
         $template = buildTree($root, 2, true);
         $endTime = microtime(true);

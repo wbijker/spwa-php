@@ -93,6 +93,12 @@ class HtmlTagNode extends HtmlDomNode
         $this->attributes[array_key_last($this->attributes)][] = $value;
     }
 
+    function getAndRemoveAttr(string $attr) {
+        $value = $this->attributes[$attr];
+        unset($this->attributes[$attr]);
+        return $value;
+    }
+
     function render()
     {
         echo "<$this->name";

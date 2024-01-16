@@ -12,7 +12,7 @@ class HomePage extends Page
         JS::log("Counter is now $this->counter");
     }
 
-    function addItem() {
+    public function addItem() {
         $this->items[] = $this->text;
         $this->text = "";
     }
