@@ -121,7 +121,8 @@ function renderPage(Page $page)
         $node = traverse($resolved, $json['path']);
 
         if ($node->data instanceof TagData) {
-            $event = $node->data->attributes['@click'];
+            $action = $json['action'];
+            $event = $node->data->attributes['events'][$action];
             if (is_callable($event)) {
                 call_user_func($event);
             }

@@ -1,5 +1,8 @@
 <div class="bg-red-200">
-    <div>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+
+    <div class="bg-gray-200">
         <span @ignore>
 
             The current count is $model->counter

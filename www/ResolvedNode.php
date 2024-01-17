@@ -64,29 +64,22 @@ class TagData extends NodeData
     function render(ResolvedNode $owner)
     {
         echo "<" . $this->tag;
-//        $this->attributes['path'] = json_encode($owner->path);
+        $list = $this->attributes['static'] ?? [];
 
-        foreach ($this->attributes as $key => $value) {
-
-            // check for event handlers
-            if ($key == '@click' || $key == '@keydown') {
-                // click value injected a function
-                if (is_callable($value)) {
-
-                    $ev = substr($key, 1);
-                    echo " on" . $ev . "=\"eventHandler('$ev', event)\"";
-                    continue;
-                }
-                continue;
+        $events = $this->attributes['events'] ?? [];
+        foreach ($events as $key => $value) {
+            // events injected a function
+            if (is_callable($value)) {
+                $list['on' . $key] = "eventHandler('$key', event)";
             }
-
-            if ($key == 'bound') {
-                echo " oninput=\"handleInput(event, '$value')\"";
-                continue;
-            }
-
-            echo " $key=\"$value\"";
         }
+
+        $bound = $this->attributes['bound'];
+        if ($bound != null) {
+            $list['oninput'] = "handleInput(event, '$bound')";
+        }
+
+        echo " ".implode(" ",array_map(fn($key) => "$key=\"$list[$key]\"", array_keys($list)));
 
         // self closing tags
         if (in_array($this->tag, self::$selfClosingTags)) {
