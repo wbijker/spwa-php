@@ -118,7 +118,13 @@ function renderPage(Page $page)
             $node = traverse($resolved, explode(",", $path));
             if ($node->data instanceof TagData) {
                 // bound is a reference type and should update the model
-                $node->data->attributes['bound'] = $value;
+                // bound could also be a function. Callable syntax $fn = [$hap, 'eet'];
+                $b = &$node->data->attributes['bound'];
+                if (is_callable($b)) {
+                    call_user_func($b, $value);
+                } else {
+                    $b = $value;
+                }
             }
         }
 
