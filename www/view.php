@@ -62,8 +62,7 @@ function compare($prev, $next, &$list): void
 function buildAttr($attrs): string
 {
     // categorize attributes
-    $static = [];
-    $dynamic = [];
+    $list = [];
     $events = [];
     $bound = [];
     $ignore = false;
@@ -88,16 +87,15 @@ function buildAttr($attrs): string
                 continue;
             }
 
-            $dynamic[$name] = $value[0] ?? "true";
+            $list[$name] = $value[0] ?? "true";
             continue;
         }
 
-        $static[$name] = "\"$value[0]\"";
+        $list[$name] = "\"$value[0]\"";
     }
 
     $arr = new PhpArray([
-        "static" => new PhpArray($static),
-        "dynamic" => new PhpArray($dynamic),
+        "attrs" => new PhpArray($list),
         "events" => new PhpArray($events),
         "bound" => $bound,
         "ignore" => $ignore

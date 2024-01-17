@@ -65,7 +65,7 @@ class TagData extends NodeData
     function render(ResolvedNode $owner)
     {
         echo "<" . $this->tag;
-        $list = $this->attributes['static'] ?? [];
+        $list = $this->attributes['attrs'] ?? [];
 
         $events = $this->attributes['events'] ?? [];
         foreach ($events as $key => $value) {
