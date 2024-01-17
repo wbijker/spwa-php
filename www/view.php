@@ -84,7 +84,7 @@ function buildAttr($attrs): string
             }
 
             if ($name == 'bound') {
-                $bound[$name] = $value[0];
+                $bound = $value[0];
                 continue;
             }
 
@@ -99,7 +99,7 @@ function buildAttr($attrs): string
         "static" => new PhpArray($static),
         "dynamic" => new PhpArray($dynamic),
         "events" => new PhpArray($events),
-        "bound" => new PhpArray($bound),
+        "bound" => $bound,
         "ignore" => $ignore
     ]);
     return $arr->render(true);

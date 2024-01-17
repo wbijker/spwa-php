@@ -113,8 +113,13 @@ function renderPage(Page $page)
         // read JSON body
         $json = json_decode(file_get_contents('php://input'), true);
         // fill inputs
-        foreach ($json['inputs'] as $name => $value) {
-            $page->$name = $value;
+
+        foreach ($json['inputs'] as $path => $value) {
+            $node = traverse($resolved, explode(",", $path));
+            if ($node->data instanceof TagData) {
+                // bound is a reference type and should update the model
+                $node->data->attributes['bound'] = $value;
+            }
         }
 
         // transverse old structure to find path
@@ -142,6 +147,6 @@ function renderPage(Page $page)
 
     ?>
 
-    <script src="runtime.js?v=1"></script>
+    <script src="runtime.js?v=2"></script>
     <?php
 }

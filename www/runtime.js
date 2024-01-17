@@ -158,7 +158,8 @@ function serializeEvent(e) {
 
 const inputs = {};
 
-function handleInput(e, name) {
+function handleInput(e, path) {
+    const name = path.join(',');
     inputs[name] = {
         change: true,
         value: e.target.value

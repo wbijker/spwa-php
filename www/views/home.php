@@ -14,7 +14,7 @@
             Value is greater or equal than 10!
         </span>
     </div>
-    <input type="text" @bound="$model->text" @keydown="$model->addItem()"/>
+    <input type="text" @bound="&$model->text"/>
     <ul>
         <li class="bg-orange-600" @for="$model->items as $index => $item" @click="$model->delete($item, $index)">
             $item

@@ -26,7 +26,8 @@ class TagData extends NodeData
         return [
             'type' => 0,
             'tag' => $this->tag,
-            'attributes' => $this->attributes,
+            'attributes' => $this->attributes['static'] ?? [],
+            'events' => array_keys($this->attributes['events'] ?? []),
             'children' => array_map(fn($child) => $child->serialize(), $owner->children)
         ];
     }
@@ -75,11 +76,11 @@ class TagData extends NodeData
         }
 
         $bound = $this->attributes['bound'];
-        if ($bound != null) {
-            $list['oninput'] = "handleInput(event, '$bound')";
+        if (isset($bound)) {
+            $list['oninput'] = "handleInput(event, " . json_encode($owner->path) . ")";
         }
 
-        echo " ".implode(" ",array_map(fn($key) => "$key=\"$list[$key]\"", array_keys($list)));
+        echo " " . implode(" ", array_map(fn($key) => "$key=\"$list[$key]\"", array_keys($list)));
 
         // self closing tags
         if (in_array($this->tag, self::$selfClosingTags)) {
