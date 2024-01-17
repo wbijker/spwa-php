@@ -10,9 +10,34 @@ class HomePage extends Page
     {
         $this->counter += $amount;
         JS::log("Counter is now $this->counter");
+        JS::log("And text is  $this->text");
     }
 
-    public function addItem() {
+    const COLORS = [
+        'bg-blue',
+        'bg-red',
+        'bg-green',
+        'bg-yellow',
+        'bg-orange',
+        'bg-pink',
+        'bg-purple',
+        'bg-indigo',
+        'bg-gray',
+        'bg-black',
+    ];
+
+    function getColor(): string
+    {
+        $abs = abs($this->counter);
+        $index = floor($abs / 10) % 10;
+        $segment = $abs % 10;
+
+        $color = self::COLORS[$index] . '-' . (($segment+1) * 100);
+        return $color;
+    }
+
+    public function addItem()
+    {
         $this->items[] = $this->text;
         $this->text = "";
     }

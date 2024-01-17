@@ -25,27 +25,20 @@ class HtmlTemplateNode extends TemplateNode
 
     public function compareAttrs(?array $other, &$list)
     {
-        foreach ($this->attributes as $key => $value) {
+        $prev = $this->attributes['attrs'] ?? [];
+        $next = $other['attrs'] ?? [];
 
-            if ($key === 'bound') {
-                $list[] = ['type' => 6, 'path' => $this->resolved->path];
-                continue;
-            }
-            if ($key === 'click') {
-                continue;
-            }
-
-            if (!isset($other[$key])) {
+        foreach ($prev as $key => $value) {
+            if (!isset($next[$key])) {
                 $list[] = ['type' => DELETE_ATTR, 'attr' => $key, 'path' => $this->resolved->path];
                 continue;
             }
-            if ($other[$key] != $value) {
-                // change
-                $list[] = ['type' => UPDATE_ATTR, 'attr' => $key, 'value' => $value, 'path' => $this->resolved->path];
+            if ($next[$key] != $value) {
+                $list[] = ['type' => UPDATE_ATTR, 'attr' => $key, 'value' => $next[$key], 'path' => $this->resolved->path];
             }
         }
-        foreach ($other as $key => $value) {
-            if (!isset($this->attributes[$key])) {
+        foreach ($next as $key => $value) {
+            if (!isset($prev[$key])) {
                 // insert
                 $list[] = ['type' => UPDATE_ATTR, 'attr' => $key, 'value' => $value, 'path' => $this->resolved->path];
             }
@@ -54,7 +47,8 @@ class HtmlTemplateNode extends TemplateNode
 
     public function compare(HtmlTemplateNode $other, &$list)
     {
-//        $this->compareAttrs($other->attributes, $list);
+        $this->compareAttrs($other->attributes, $list);
+
 
         for ($i = 0; $i < count($this->children); $i++) {
             compare($this->children[$i], $other->children[$i], $list);

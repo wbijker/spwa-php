@@ -88,7 +88,7 @@ function applyPatch(patch) {
             break;
         // update attr
         case 1:
-            node.setAttribute(patch.key, patch.value);
+            node.setAttribute(patch.attr, patch.value);
             break;
         // delete node
         case 2:

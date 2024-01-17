@@ -15,8 +15,8 @@
         </span>
     </div>
     <input type="text" @bound="&$model->text"/>
-    <ul>
-        <li class="bg-orange-600" @for="$model->items as $index => $item" @click="$model->delete($item, $index)">
+    <ul @class="$model->getColor()">
+        <li @for="$model->items as $index => $item" @click="$model->delete($item, $index)">
             $item
         </li>
     </ul>

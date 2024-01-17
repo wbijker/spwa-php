@@ -153,6 +153,6 @@ function renderPage(Page $page)
 
     ?>
 
-    <script src="runtime.js?v=2"></script>
+    <script src="runtime.js?v=3"></script>
     <?php
 }

@@ -49,7 +49,7 @@ class ForTemplateNode extends TemplateNode
             if ($action->action == SKIP || $action->action == REPLACE) {
                 // although the key is the same, there might still be differences
                 // check for potential updates
-                $this->children[$action->i]->compare($other->children[$action->j], $updates);
+                $this->children[$action->i]->compare($other->children[$action->j], $list);
                 continue;
             }
             if ($action->action == DELETE) {
