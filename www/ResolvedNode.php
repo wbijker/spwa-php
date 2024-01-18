@@ -19,6 +19,11 @@ class RootData extends NodeData
 {
 }
 
+function flattenAttributes(array $attrs): array
+{
+    return $attrs;
+}
+
 class TagData extends NodeData
 {
     function serialize(ResolvedNode $owner): array
@@ -59,7 +64,7 @@ class TagData extends NodeData
     public function __construct(string $tag, ?array $attributes)
     {
         $this->tag = $tag;
-        $this->attributes = $attributes ?? [];
+        $this->attributes = flattenAttributes($attributes ?? []);
     }
 
     function render(ResolvedNode $owner)
@@ -77,8 +82,7 @@ class TagData extends NodeData
 
         $bound = $this->attributes['bound'];
         if (isset($bound)) {
-            $list['oninput'] = "handleInput(event, " . json_encode($owner->path) . ")";
-            $list['value'] = $bound;
+            $list['oninput'] = "handleInput(event, " . str_replace("\"", "'", json_encode($bound)) .")";
         }
 
         echo " " . implode(" ", array_map(fn($key) => "$key=\"$list[$key]\"", array_keys($list)));

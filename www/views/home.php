@@ -14,7 +14,8 @@
             Value is greater or equal than 10!
         </span>
     </div>
-    <input type="text" @bound="&$model->text"/>
+
+    <input type="text" @bound="$model->text"/>
     <ul @class="$model->getColor()">
         <li @for="$model->items as $index => $item" @click="$model->delete($item, $index)">
             $item

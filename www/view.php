@@ -83,7 +83,19 @@ function buildAttr($attrs): string
             }
 
             if ($name == 'bound') {
-                $bound = $value[0];
+                $found = extractBound($value[0]);
+                if ($found != null) {
+                    $items = array_map(function($i) {
+                        if (is_string($i))
+                            return "\"$i\"";
+                        return $i;
+                    }, $found);
+
+                    $bound = "[".implode(", ", $items)."]";
+                    $access = implode(",", array_map(fn($i) => "[$i]", array_slice($found, 1)));
+
+                    $list['value'] = '$model->' . $found[0] . $access;
+                }
                 continue;
             }
 
@@ -124,6 +136,25 @@ function getAttr(HtmlTagNode $node, string $attr): ?string
         return null;
 
     return $values[0];
+}
+
+function extractBound(string $str): ?array
+{
+    // you can bind to primitive and array
+    // Step 1: Match the word and the entire bracketed section
+    if (preg_match('/\$model->(\w+)((?:\[\d+\])*)/', $str, $matches)) {
+        // $matches[1] is the word
+        $result = [$matches[1]];
+
+        // Step 2: Extract the numbers from the bracketed section
+        if (preg_match_all('/\[(\d+)\]/', $matches[2], $numberMatches)) {
+            // Merge the numbers into the result array
+            $result = array_merge($result, $numberMatches[1]);
+        }
+        return $result;
+    }
+
+    return null;
 }
 
 function extractForVars(string $str): array

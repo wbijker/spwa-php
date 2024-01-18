@@ -101,6 +101,7 @@ function traverse(ResolvedNode $node, array $path): ResolvedNode
 
 function renderPage(Page $page)
 {
+    // restore model to last saved state
     $page->restore();
 
     $template = $page->render();

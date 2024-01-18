@@ -9,8 +9,6 @@ class HomePage extends Page
     public function inc(int $amount = 1)
     {
         $this->counter += $amount;
-        JS::log("Counter is now $this->counter");
-        JS::log("And text is  $this->text");
     }
 
     const COLORS = [
