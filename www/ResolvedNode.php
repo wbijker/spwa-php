@@ -21,6 +21,13 @@ class RootData extends NodeData
 
 function flattenAttributes(array $attrs): array
 {
+    // convert array to single value
+    $list = $attrs['attrs'] ?? [];
+    foreach ($list as $key => $value) {
+        if (is_array($value)) {
+            $list[$key] = implode(" ", $value);
+        }
+    }
     return $attrs;
 }
 
@@ -82,7 +89,7 @@ class TagData extends NodeData
 
         $bound = $this->attributes['bound'];
         if (isset($bound)) {
-            $list['oninput'] = "handleInput(event, '" . $bound ."')";
+            $list['oninput'] = "handleInput(event, '" . $bound . "')";
         }
 
         echo " " . implode(" ", array_map(fn($key) => "$key=\"$list[$key]\"", array_keys($list)));

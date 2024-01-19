@@ -7,6 +7,101 @@ const DELETE_NODE = 2;
 const INSERT_NODE = 3;
 const DELETE_ATTR = 4;
 
+function removeEmptyValues(array $array): array
+{
+    return array_filter($array, fn($value) => !empty($value));
+}
+
+interface PhpObject
+{
+    function render(): string;
+}
+
+class PhpFunction implements PhpObject
+{
+    public string $name;
+    public array $args;
+
+    /**
+     * @param string $name
+     * @param array $args
+     */
+    public function __construct(string $name, array $args)
+    {
+        $this->name = $name;
+        $this->args = $args;
+    }
+
+
+    function render(): string
+    {
+        $args = implode(", ", array_map(fn($arg) => Php::render($arg), $this->args));
+        return "$this->name($args)";
+    }
+}
+
+class PhpLiteral implements PhpObject
+{
+    public string $value;
+
+    /**
+     * @param string $value
+     */
+    public function __construct(string $value)
+    {
+        $this->value = $value;
+    }
+
+    function render(): string
+    {
+        return $this->value;
+    }
+}
+
+class Php
+{
+    static function literal($str): PhpLiteral
+    {
+        return new PhpLiteral($str);
+    }
+
+    static function function (string $name, array $args): PhpFunction
+    {
+        return new PhpFunction($name, $args);
+    }
+
+    static function render($data): string
+    {
+        if (is_string($data)) {
+            return "\"$data\"";
+        }
+        if ($data instanceof PhpObject) {
+            return $data->render();
+        }
+        if (is_null($data)) {
+            return "null";
+        }
+        if (is_numeric($data)) {
+            return $data;
+        }
+        if (is_bool($data)) {
+            return $data ? "true" : "false";
+        }
+        if (is_array($data)) {
+            $mapped = array_map(function ($key, $value) {
+                if (is_numeric($key)) {
+                    return self::render($value);
+                }
+                return self::render($key) . " => " . self::render($value);
+            }, array_keys($data), $data);
+
+            return "[" . implode(", ", $mapped) . "]";
+        }
+
+        return "null";
+    }
+}
+
 
 class PhpArray
 {
@@ -19,6 +114,7 @@ class PhpArray
     {
         $this->array = $array;
     }
+
 
     function set($key, $value): void
     {
@@ -59,6 +155,12 @@ function compare($prev, $next, &$list): void
 }
 
 
+function classNames(...$classes): string
+{
+    // remove empty values
+    return implode(" ", array_filter($classes, fn($value) => !empty($value)));
+}
+
 function buildAttr($attrs): string
 {
     // categorize attributes
@@ -86,27 +188,50 @@ function buildAttr($attrs): string
                 // remove $model from bound
                 $prop = extractBound($value[0]);
                 if ($prop != null) {
-                    $bound = "'" . $prop . "'";
+                    $bound = $prop;
                     $list['value'] = $value[0];
 
                 }
                 continue;
             }
 
-            $list[$name] = $value[0] ?? "true";
+            // only class can have multiple values
+            if ($name == 'class') {
+                $list[$name] ??= [];
+                $list[$name][] = Php::literal(implode(", ", $value));
+            } else {
+                $list[$name] = Php::literal($value[0]);
+            }
             continue;
         }
 
-        $list[$name] = "\"$value[0]\"";
+
+        if ($name == 'class') {
+            $list[$name] ??= [];
+            $list[$name][] = implode(", ", $value);
+        } else {
+            $list[$name] = $value[0];
+        }
     }
 
-    $arr = new PhpArray([
-        "attrs" => new PhpArray($list),
-        "events" => new PhpArray($events),
+    // remove array for all single items
+    foreach ($list as $key => $value) {
+        if (is_array($value)) {
+
+            if (count($value) == 1) {
+                $list[$key] = $value[0];
+            } else {
+                $list[$key] = Php::function("classNames", $value);
+            }
+        }
+    }
+
+    return Php::render(removeEmptyValues([
+        "attrs" => $list,
+        "events" => $events,
         "bound" => $bound,
         "ignore" => $ignore
-    ]);
-    return $arr->render(true);
+    ]));
 }
 
 

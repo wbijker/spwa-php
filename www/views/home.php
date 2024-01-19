@@ -1,10 +1,10 @@
 <div class="bg-red-200">
     <script src="https://cdn.tailwindcss.com"></script>
 
-
-    <div class="bg-gray-200">
-        <span @ignore>
-
+    <div>
+        <span @ignore
+              class="m-4 p-2 border-2"
+              @class="$model->counter > 5 ? 'text-red-600' : 'text-blue-600'">
             The current count is $model->counter
         </span>
         <button @click="$model->inc(1)">Increase</button>
