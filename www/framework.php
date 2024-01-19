@@ -81,7 +81,7 @@ abstract class Page
         }
 
         // only generate template again if input file is newer than compiled file
-        if (!file_exists($compiledPath) || filemtime($viewPath) > filemtime($compiledPath)) {
+        if (true || !file_exists($compiledPath) || filemtime($viewPath) > filemtime($compiledPath)) {
             $this->compileView($viewPath, $name, $className);
         }
 
@@ -99,61 +99,60 @@ function traverse(ResolvedNode $node, array $path): ResolvedNode
     return $it;
 }
 
-function renderPage(Page $page)
+function renderGet(Page $page)
 {
-    // restore model to last saved state
-    $page->restore();
+    $template = $page->render();
+    $resolved = new ResolvedNode(null, new RootData());
+    $template->resolve($resolved);
+    $resolved->render();
+
+    echo '<script src="runtime.js?v=3"></script>';
+}
+
+function renderPost(Page $page)
+{
+    // read JSON body
+    $json = json_decode(file_get_contents('php://input'), true);
+
+    // fill inputs before rendering
+    foreach ($json['inputs'] as $exp => $value) {
+        $page->$exp = $value;
+    }
 
     $template = $page->render();
     $resolved = new ResolvedNode(null, new RootData());
     $template->resolve($resolved);
 
-    // GET or POST
-    $method = $_SERVER['REQUEST_METHOD'];
-    if ($method === 'POST') {
-        // read JSON body
-        $json = json_decode(file_get_contents('php://input'), true);
-        // fill inputs
+    // transverse old structure to find path
+    $node = traverse($resolved, $json['path']);
 
-        foreach ($json['inputs'] as $path => $value) {
-            $node = traverse($resolved, explode(",", $path));
-            if ($node->data instanceof TagData) {
-                // bound is a reference type and should update the model
-                // bound could also be a function. Callable syntax $fn = [$hap, 'eet'];
-                $b = &$node->data->attributes['bound'];
-                if (is_callable($b)) {
-                    call_user_func($b, $value);
-                } else {
-                    $b = $value;
-                }
-            }
+    if ($node->data instanceof TagData) {
+        $action = $json['action'];
+        $event = $node->data->attributes['events'][$action];
+        if (is_callable($event)) {
+            call_user_func($event);
         }
+    }
+    // Handle the case where the method doesn't exist.
+    // This might involve logging an error, throwing an exception, etc.
+    $next = $page->render();
+    $patches = [];
+    compare($template, $next, $patches);
 
-        // transverse old structure to find path
-        $node = traverse($resolved, $json['path']);
+    // persist state
+    $page->save();
+    echo json_encode(['patches' => $patches, 'js' => JsRuntime::$pendingCalls]);
+}
 
-        if ($node->data instanceof TagData) {
-            $action = $json['action'];
-            $event = $node->data->attributes['events'][$action];
-            if (is_callable($event)) {
-                call_user_func($event);
-            }
-        }
-        // Handle the case where the method doesn't exist.
-        // This might involve logging an error, throwing an exception, etc.
-        $next = $page->render();
-        $patches = [];
-        compare($template, $next, $patches);
-        // persist state
-        $page->save();
-        echo json_encode(['patches' => $patches, 'js' => JsRuntime::$pendingCalls]);
+function renderPage(Page $page)
+{
+    // restore model to last saved state
+    $page->restore();
+
+    if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+        renderGet($page);
         return;
     }
 
-    $resolved->render();
-
-    ?>
-
-    <script src="runtime.js?v=3"></script>
-    <?php
+    renderPost($page);
 }

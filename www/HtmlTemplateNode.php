@@ -10,10 +10,6 @@ class HtmlTemplateNode extends TemplateNode
      */
     public ?array $children = [];
     private ResolvedNode $resolved;
-    /**
-     * @var mixed
-     */
-    private $bound;
 
     /**
      * @param string $tag
@@ -26,7 +22,6 @@ class HtmlTemplateNode extends TemplateNode
         $this->attributes = $attributes ?? [];
         // create copy of bound
         // removing the potential reference to the model
-        $this->bound = $this->attributes['bound'];
         $this->children = $children;
     }
 
@@ -54,16 +49,6 @@ class HtmlTemplateNode extends TemplateNode
 
     public function compare(HtmlTemplateNode $other, &$list)
     {
-        // compare resolved node' attributes
-        if ($this->bound != $other->bound) {
-            $list[] = [
-                'type' => UPDATE_ATTR,
-                'attr' => 'value',
-                'value' => $other->bound,
-                'path' => $this->resolved->path
-            ];
-        }
-
         $this->compareAttrs($other->attributes, $list);
 
         for ($i = 0; $i < count($this->children); $i++) {

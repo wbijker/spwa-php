@@ -82,7 +82,7 @@ class TagData extends NodeData
 
         $bound = $this->attributes['bound'];
         if (isset($bound)) {
-            $list['oninput'] = "handleInput(event, " . str_replace("\"", "'", json_encode($bound)) .")";
+            $list['oninput'] = "handleInput(event, '" . $bound ."')";
         }
 
         echo " " . implode(" ", array_map(fn($key) => "$key=\"$list[$key]\"", array_keys($list)));

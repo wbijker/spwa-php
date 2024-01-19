@@ -83,18 +83,12 @@ function buildAttr($attrs): string
             }
 
             if ($name == 'bound') {
-                $found = extractBound($value[0]);
-                if ($found != null) {
-                    $items = array_map(function($i) {
-                        if (is_string($i))
-                            return "\"$i\"";
-                        return $i;
-                    }, $found);
+                // remove $model from bound
+                $prop = extractBound($value[0]);
+                if ($prop != null) {
+                    $bound = "'" . $prop . "'";
+                    $list['value'] = $value[0];
 
-                    $bound = "[".implode(", ", $items)."]";
-                    $access = implode(",", array_map(fn($i) => "[$i]", array_slice($found, 1)));
-
-                    $list['value'] = '$model->' . $found[0] . $access;
                 }
                 continue;
             }
@@ -138,20 +132,13 @@ function getAttr(HtmlTagNode $node, string $attr): ?string
     return $values[0];
 }
 
-function extractBound(string $str): ?array
+function extractBound(string $str): ?string
 {
-    // you can bind to primitive and array
-    // Step 1: Match the word and the entire bracketed section
-    if (preg_match('/\$model->(\w+)((?:\[\d+\])*)/', $str, $matches)) {
+    // for now simple text binding like $model->name
+    // but in future we can support more complex expressions
+    if (preg_match('/\$model->(\w+)/', $str, $matches)) {
         // $matches[1] is the word
-        $result = [$matches[1]];
-
-        // Step 2: Extract the numbers from the bracketed section
-        if (preg_match_all('/\[(\d+)\]/', $matches[2], $numberMatches)) {
-            // Merge the numbers into the result array
-            $result = array_merge($result, $numberMatches[1]);
-        }
-        return $result;
+        return $matches[1];
     }
 
     return null;
