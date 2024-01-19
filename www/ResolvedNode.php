@@ -22,7 +22,8 @@ class RootData extends NodeData
 function flattenAttributes(array $attrs): array
 {
     // convert array to single value
-    $list = $attrs['attrs'] ?? [];
+    $attrs['attrs'] ??= [];
+    $list = $attrs['attrs'];
     foreach ($list as $key => $value) {
         if (is_array($value)) {
             $list[$key] = implode(" ", $value);
@@ -33,6 +34,7 @@ function flattenAttributes(array $attrs): array
 
 class TagData extends NodeData
 {
+    // for JS to constructor this node
     function serialize(ResolvedNode $owner): array
     {
         return [

@@ -175,7 +175,7 @@ function buildAttr($attrs): string
             $name = substr($name, 1);
 
             if ($name == 'click' || $name == 'keydown') {
-                $events[$name] = "fn() => " . $value[0];
+                $events[$name] = Php::literal("fn() => " . $value[0]);
                 continue;
             }
 
