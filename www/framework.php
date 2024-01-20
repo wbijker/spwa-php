@@ -29,9 +29,20 @@ abstract class Page
         }
     }
 
+    public $precalculations = [];
+
+    public function precalc(callable $callback)
+    {
+        // queue the current callback to be executed after the page is rendered
+        return array_push($this->precalculations, $callback) - 1;
+    }
+
     function compileView(string $viewPath, string $name, string $className)
     {
+        $typeClass = get_class($this);
         $start = microtime(true);
+        // instantiate a new page model for pre generation
+        $model = new $typeClass();
         // execute view
         ob_start();
         require $viewPath;
@@ -46,7 +57,6 @@ abstract class Page
 
         $date = date('Y-m-d H:i:s');
         $duration = ($endTime - $start) * 1000;
-        $typeClass = get_class($this);
 
         $content = <<<EOD
     <?php

@@ -1,3 +1,8 @@
+<?php
+/* @var $model HomePage */
+$pre = $model->precalc(fn($model) => $model->counter = 99);
+?>
+
 <div class="bg-red-200">
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -7,9 +12,14 @@
               @class="$model->counter > 5 ? 'text-red-600' : 'text-blue-600'">
             The current count is $model->counter
         </span>
+
+        <div>
+            <button>Click event precalc <?=$pre?></button>
+        </div>
         <button @click="$model->inc(1)">Increase</button>
         <button @click="$model->inc(-1)">Decrease</button>
         <button @click="$model->reset()">Reset</button>
+
         <span class="ref" @if="$model->counter >= 10">
             Value is greater or equal than 10!
         </span>
@@ -22,6 +32,11 @@
         </li>
     </ul>
     <button @click="$model->addItem()">Add</button>
-</div>
 
+    <?php foreach (range(0, 10) as $index): ?>
+        <div @click.pre="$model->index = <?= $index ?>">Tab <?= $index ?></div>
+    <?php endforeach; ?>
+
+    <div>Current selected tab: $model->index</div>
+</div>
 
