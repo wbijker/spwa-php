@@ -74,7 +74,15 @@ function getSibling(node, index) {
     return it;
 }
 
-function applyPatch(patch) {
+function applyPrecalc(index) {
+    for (const patch of patches[index]) {
+        applyPatch(patch, true);
+    }
+}
+
+function applyPatch(patch, precalc) {
+
+
     if (!patch.path) {
         return;
     }
@@ -90,6 +98,11 @@ function applyPatch(patch) {
         case 1:
             if (patch.attr === 'value') {
                 node.value = patch.value;
+                // does not automatically trigger an onInput event
+                // if the patch is precalculated it should
+                // dispatch the event manually
+                if (precalc)
+                    node.dispatchEvent(new Event('input'));
             }
             node.setAttribute(patch.attr, patch.value);
             break;
@@ -162,6 +175,7 @@ function serializeEvent(e) {
 const inputs = {};
 
 function handleInput(e, name) {
+    console.log('input', name, e.target.value);
     inputs[name] = {
         change: true,
         value: e.target.value

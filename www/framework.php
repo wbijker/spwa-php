@@ -85,11 +85,15 @@ abstract class Page
         require $viewPath;
         $html = ob_get_clean();
 
+        // variables declared in the PHP block before the actual HTML
+        // they may be referenced in the HTML
+        $vars = get_defined_vars();
+
         $root = HtmlTokenizer::parseHtml($html);
         if (count($root->children) != 1)
             throw new Exception("View must have exactly one root element");
 
-        $template = buildTree($root->children[0], 2, true);
+        $template = buildTree($root->children[0], $vars, 2, true);
         $endTime = microtime(true);
 
         $date = date('Y-m-d H:i:s');

@@ -1,6 +1,8 @@
 <?php
 /* @var $model HomePage */
 $pre = $model->precalc(fn($model) => $model->counter = 99);
+
+
 ?>
 
 <div class="bg-red-200">
@@ -14,8 +16,10 @@ $pre = $model->precalc(fn($model) => $model->counter = 99);
         </span>
 
         <div>
-            <button @click="$pre">Reset to 99</button>
+            <input type="hidden" @bound="$model->counter"/>
+            <button @click.pre="$pre">Reset to 99</button>
         </div>
+
         <button @click="$model->inc(1)">Increase</button>
         <button @click="$model->inc(-1)">Decrease</button>
         <button @click="$model->reset()">Reset</button>
@@ -26,6 +30,9 @@ $pre = $model->precalc(fn($model) => $model->counter = 99);
     </div>
 
     <input type="text" @bound="$model->text"/>
+
+
+
     <ul @class="$model->getColor()">
         <li @for="$model->items as $index => $item" @click="$model->delete($item, $index)">
             $item
@@ -34,7 +41,7 @@ $pre = $model->precalc(fn($model) => $model->counter = 99);
     <button @click="$model->addItem()">Add</button>
 
     <?php foreach (range(0, 10) as $index): ?>
-        <div @click.pre="$model->index = <?= $index ?>">Tab <?= $index ?></div>
+        <div @click="$model->index = <?= $index ?>">Tab <?= $index ?></div>
     <?php endforeach; ?>
 
     <div>Current selected tab: $model->index</div>

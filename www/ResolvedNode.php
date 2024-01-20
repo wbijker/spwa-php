@@ -87,6 +87,11 @@ class TagData extends NodeData
             if (is_callable($value)) {
                 $list['on' . $key] = "eventHandler('$key', event)";
             }
+
+            // is a precalculated path?
+            if (is_numeric($value)) {
+                $list['on' . $key] = Php::function("applyPrecalc", [$value])->render();
+            }
         }
 
         $bound = $this->attributes['bound'];

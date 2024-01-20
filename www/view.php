@@ -161,7 +161,7 @@ function classNames(...$classes): string
     return implode(" ", array_filter($classes, fn($value) => !empty($value)));
 }
 
-function buildAttr($attrs): string
+function buildAttr($attrs, $vars): string
 {
     // categorize attributes
     $list = [];
@@ -176,6 +176,12 @@ function buildAttr($attrs): string
 
             if ($name == 'click' || $name == 'keydown') {
                 $events[$name] = Php::literal("fn() => " . $value[0]);
+                continue;
+            }
+
+            if ($name == "click.pre") {
+                $name = substr($value[0], 1);
+                $events['click'] = Php::literal($vars[$name]);
                 continue;
             }
 
@@ -240,12 +246,12 @@ function indent($index, $first = false): string
     return str_repeat(" ", $first ? 0 : $index * 4);
 }
 
-function buildNode(HtmlTagNode $node, $index = 0, $first = false): string
+function buildNode(HtmlTagNode $node, $vars, $index = 0, $first = false): string
 {
-    $children = array_map(fn($child) => buildTree($child, $index + 1, false), $node->children);
+    $children = array_map(fn($child) => buildTree($child, $vars, $index + 1, false), $node->children);
     $c = implode("," . PHP_EOL, $children);
 
-    return indent($index, $first) . "TemplateNode::html(\"" . $node->name . "\", " . buildAttr($node->attributes) . ", [" . PHP_EOL . $c . PHP_EOL . indent($index) . "])";
+    return indent($index, $first) . "TemplateNode::html(\"" . $node->name . "\", " . buildAttr($node->attributes, $vars) . ", [" . PHP_EOL . $c . PHP_EOL . indent($index) . "])";
 }
 
 function getAttr(HtmlTagNode $node, string $attr): ?string
@@ -288,7 +294,7 @@ function extractForVars(string $str): array
 }
 
 
-function buildTree(HtmlDomNode $node, $index = 0, $first = false): ?string
+function buildTree(HtmlDomNode $node, $vars, $index = 0, $first = false): ?string
 {
     $indent = indent($index, $first);
 
@@ -297,7 +303,7 @@ function buildTree(HtmlDomNode $node, $index = 0, $first = false): ?string
         // handle special attributes cases
         $ifExp = getAttr($node, '@if');
         if ($ifExp != null) {
-            $then = buildNode($node, $index, true);
+            $then = buildNode($node, $vars, $index, true);
             return $indent . "TemplateNode::if($ifExp, " . $then . ", null)";
         }
 
@@ -305,7 +311,7 @@ function buildTree(HtmlDomNode $node, $index = 0, $first = false): ?string
         if ($for != null) {
             // for should always use syntax
             $vars = extractForVars($for);
-            return $indent . "TemplateNode::for($vars[0], fn($vars[1], $vars[2]) => " . buildNode($node, $index, true) . ")";
+            return $indent . "TemplateNode::for($vars[0], fn($vars[1], $vars[2]) => " . buildNode($node, $vars, $index, true) . ")";
         }
 
 //        $bound = getAttr($node, '@bound');
@@ -314,7 +320,7 @@ function buildTree(HtmlDomNode $node, $index = 0, $first = false): ?string
 //            $node->setAttribute('value', $bound);
 //        }
 
-        return buildNode($node, $index, $first);
+        return buildNode($node, $vars, $index, $first);
     }
 
     if ($node instanceof HtmlTextNode) {
