@@ -5,10 +5,27 @@ function className($name)
     return ucfirst($name) . "View";
 }
 
+class Template
+{
+    public TemplateNode $node;
+    public array $patches;
+
+    /**
+     * @param TemplateNode $node
+     * @param array $patches
+     */
+    public function __construct(TemplateNode $node, array $patches)
+    {
+        $this->node = $node;
+        $this->patches = $patches;
+    }
+
+
+}
 
 abstract class Page
 {
-    abstract function render(): HtmlTemplateNode;
+    abstract function render(): Template;
 
     public function save()
     {
@@ -51,8 +68,10 @@ abstract class Page
             $patches = [];
             compare($prevView, $nextView, $patches);
 
-            file_put_contents("views/patch-$index.json", json_encode($patches, JSON_PRETTY_PRINT));
+            // save the patches to be included in the template
+            $model->precalculations[$index] = $patches;
         }
+        return $model->precalculations;
     }
 
     function compileView(string $viewPath, string $name, string $className)
@@ -76,7 +95,8 @@ abstract class Page
         $date = date('Y-m-d H:i:s');
         $duration = ($endTime - $start) * 1000;
 
-        $this->processPreCalc($model, $template);
+        $patches = $this->processPreCalc($model, $template);
+        $phpPatches = Php::render($patches);
 
         $content = <<<EOD
     <?php
@@ -86,21 +106,34 @@ abstract class Page
      * Input: $viewPath
      * Duration: $duration ms
     */
+
     
-    class $className
+    class $className 
     {
-        static function template($typeClass \$model): TemplateNode
+        static function create($typeClass \$model): Template
+        {
+            return new Template(self::render(\$model), self::patches());
+        }
+    
+        private static function render($typeClass \$model): TemplateNode
         {
             return $template;
+        }
+        
+        private static function patches(): array
+        {
+            return $phpPatches;
         }
     }
     EOD;
 
         $compiledPath = 'views/' . $name . '.compiled.php';
         file_put_contents($compiledPath, $content);
+
+
     }
 
-    function view($name): HtmlTemplateNode
+    function view($name): Template
     {
         $viewPath = 'views/' . $name . '.php';
         $compiledPath = 'views/' . $name . '.compiled.php';
@@ -116,7 +149,7 @@ abstract class Page
         }
 
         require_once $compiledPath;
-        return $className::template($this);
+        return $className::create($this);
     }
 }
 
@@ -133,10 +166,17 @@ function renderGet(Page $page)
 {
     $template = $page->render();
     $resolved = new ResolvedNode(null, new RootData());
-    $template->resolve($resolved);
+    $template->node->resolve($resolved);
     $resolved->render();
 
-    echo '<script src="runtime.js?v=3"></script>';
+    $json = json_encode($template->patches);
+    $content = <<<EOD
+        <script src="runtime.js?v=3"></script>
+        <script>
+            var patches = $json;
+        </script>
+EOD;
+    echo $content;
 }
 
 function renderPost(Page $page)
@@ -151,7 +191,7 @@ function renderPost(Page $page)
 
     $template = $page->render();
     $resolved = new ResolvedNode(null, new RootData());
-    $template->resolve($resolved);
+    $template->node->resolve($resolved);
 
     // transverse old structure to find path
     $node = traverse($resolved, $json['path']);
@@ -167,7 +207,7 @@ function renderPost(Page $page)
     // This might involve logging an error, throwing an exception, etc.
     $next = $page->render();
     $patches = [];
-    compare($template, $next, $patches);
+    compare($template->node, $next->node, $patches);
 
     // persist state
     $page->save();

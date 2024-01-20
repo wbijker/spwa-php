@@ -53,7 +53,7 @@ class HomePage extends Page
         JS::log("Deleting $item at $index");
     }
 
-    public function render(): HtmlTemplateNode
+    public function render(): Template
     {
         return $this->view('home');
     }

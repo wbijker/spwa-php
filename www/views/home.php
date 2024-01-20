@@ -14,7 +14,7 @@ $pre = $model->precalc(fn($model) => $model->counter = 99);
         </span>
 
         <div>
-            <button>Click event precalc <?=$pre?></button>
+            <button @click="$pre">Reset to 99</button>
         </div>
         <button @click="$model->inc(1)">Increase</button>
         <button @click="$model->inc(-1)">Decrease</button>
