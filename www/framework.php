@@ -37,6 +37,24 @@ abstract class Page
         return array_push($this->precalculations, $callback) - 1;
     }
 
+
+    function processPreCalc($model, $template)
+    {
+        $prevView = eval("return $template;");
+        $resolved = new ResolvedNode(null, new RootData());
+        $prevView->resolve($resolved);
+
+        foreach ($model->precalculations as $index => $callback) {
+            $callback($model);
+
+            $nextView = eval("return $template;");
+            $patches = [];
+            compare($prevView, $nextView, $patches);
+
+            file_put_contents("views/patch-$index.json", json_encode($patches, JSON_PRETTY_PRINT));
+        }
+    }
+
     function compileView(string $viewPath, string $name, string $className)
     {
         $typeClass = get_class($this);
@@ -57,6 +75,8 @@ abstract class Page
 
         $date = date('Y-m-d H:i:s');
         $duration = ($endTime - $start) * 1000;
+
+        $this->processPreCalc($model, $template);
 
         $content = <<<EOD
     <?php
