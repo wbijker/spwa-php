@@ -1,0 +1,10 @@
+{
+    "name": "spwa/web",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Spwa\\Web\\": "spwa/"
+        }
+    },
+    "require": {}
+}

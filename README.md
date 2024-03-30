@@ -5,6 +5,8 @@ A Server-Powered Web Applications (SPWA) framework using PHP.
 
 ```bash
 docker compose up
-```
 
+# or to rebuild
+docker compose build
+```
 
