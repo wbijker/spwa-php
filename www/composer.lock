@@ -12,7 +12,7 @@
             "dist": {
                 "type": "path",
                 "url": "../spwa",
-                "reference": "33792b5abd1d8cd19c58b28e3dc0b781191c62a9"
+                "reference": "ec5bfceb1af62a81e0673b6e143a5b0342bacf98"
             },
             "require": {
                 "php": ">=5.6"
@@ -23,7 +23,7 @@
                     "Spwa\\": "src/"
                 },
                 "files": [
-                    "src/Html/functions.php"
+                    "src/Template/functions.php"
                 ]
             },
             "transport-options": {

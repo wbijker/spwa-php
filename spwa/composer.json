@@ -7,7 +7,7 @@
       "Spwa\\": "src/"
     },
     "files": [
-      "src/Html/functions.php"
+      "src/Template/functions.php"
     ]
   },
   "require": {
