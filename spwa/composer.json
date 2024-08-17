@@ -1,0 +1,16 @@
+{
+  "name": "spwa/spwa",
+  "type": "library",
+  "version": "1.0.0",
+  "autoload": {
+    "psr-4": {
+      "Spwa\\": "src/"
+    },
+    "files": [
+      "src/Html/functions.php"
+    ]
+  },
+  "require": {
+    "php": ">=5.6"
+  }
+}
