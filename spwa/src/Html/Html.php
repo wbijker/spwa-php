@@ -8,4 +8,3 @@ class Html
         echo "div tag";
     }
 }
-

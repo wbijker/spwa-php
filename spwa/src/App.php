@@ -2,10 +2,17 @@
 
 namespace Spwa;
 
+use Spwa\Html\HtmlTagNode;
+use Spwa\Template\Node;
+
 class App
 {
-    static function render($component): void
+    static function render(Node $component): void
     {
-        $component->render();
+        // we need a entry node to start all rendering
+        $body = new HtmlTagNode("body", [], []);
+        $component->execute($body);
+
+        echo $body->render();
     }
 }
