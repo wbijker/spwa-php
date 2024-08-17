@@ -1,0 +1,43 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "b3fb2107d43d75a32569eb8b9faec956",
+    "packages": [
+        {
+            "name": "spwa/spwa",
+            "version": "1.0.0",
+            "dist": {
+                "type": "path",
+                "url": "../spwa",
+                "reference": "33792b5abd1d8cd19c58b28e3dc0b781191c62a9"
+            },
+            "require": {
+                "php": ">=5.6"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Spwa\\": "src/"
+                },
+                "files": [
+                    "src/Html/functions.php"
+                ]
+            },
+            "transport-options": {
+                "relative": true
+            }
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": [],
+    "plugin-api-version": "2.6.0"
+}

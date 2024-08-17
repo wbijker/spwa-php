@@ -1,18 +1,10 @@
 <?php
 
-require_once 'framework.php';
-require_once 'view.php';
-require_once 'home.php';
-require_once 'js.php';
+use Spwa\App;
+use App\Components\Welcome;
 
-require_once 'ResolvedNode.php';
-require_once 'TemplateNode.php';
-require_once 'HtmlTemplateNode.php';
-require_once 'ForTemplateNode.php';
-require_once 'IfTemplateNode.php';
-require_once 'TextTemplateNode.php';
-require_once 'HtmlTokenizer.php';
+require 'vendor/autoload.php';
 
-session_start();
+echo "Very good";
 
-renderPage(new HomePage());
+App::render(new Welcome());

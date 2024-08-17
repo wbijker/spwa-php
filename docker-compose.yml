@@ -2,27 +2,28 @@
 version: '3'
 
 services:
-  db:
-    container_name: mysql
-    # mysql does not have arm architecture
-    platform: linux/x86_64
-    image: mysql:5.7.38
-    environment:
-      MYSQL_ROOT_PASSWORD: docker
-      MYSQL_DATABASE: spwa-php
-      MYSQL_USER: spwa-php
-      MYSQL_PASSWORD: spwa-php
-    ports:
-      - "3306:3306"
+#  db:
+#    container_name: mysql
+#    # mysql does not have arm architecture
+#    platform: linux/x86_64
+#    image: mysql:5.7.38
+#    environment:
+#      MYSQL_ROOT_PASSWORD: docker
+#      MYSQL_DATABASE: spwa-php
+#      MYSQL_USER: spwa-php
+#      MYSQL_PASSWORD: spwa-php
+#    ports:
+#      - "3306:3306"
 
   php-apache:
     container_name: php7.4.33
     build:
       context: .
       dockerfile: Dockerfile
-    depends_on:
-      - db
+#    depends_on:
+#      - db
     volumes:
       - ./www:/var/www/html/
+      - ./spwa:/var/www/spwa/
     ports:
       - "8000:80"
