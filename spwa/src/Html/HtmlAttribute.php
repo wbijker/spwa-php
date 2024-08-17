@@ -15,6 +15,8 @@ class HtmlAttribute extends BaseAttribute
 
     function render(): string
     {
-        return "$this->name=\"$this->value\"";
+        $escapedName = htmlspecialchars($this->name, ENT_QUOTES, 'UTF-8');
+        $escapedValue = htmlspecialchars($this->value, ENT_QUOTES, 'UTF-8');
+        return "$escapedName=\"$escapedValue\"";
     }
 }

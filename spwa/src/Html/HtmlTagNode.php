@@ -2,6 +2,11 @@
 
 namespace Spwa\Html;
 
+function padSpace(string $implode): string
+{
+    return $implode ? " $implode" : "";
+}
+
 class HtmlTagNode extends HtmlNode
 {
     private string $tag;
@@ -34,9 +39,15 @@ class HtmlTagNode extends HtmlNode
 
     public function render(): string
     {
-        $attributes = implode(" ", array_map(fn(BaseAttribute $attr) => $attr->render(), $this->attributes));
+        $attributes = padSpace(implode(" ", array_map(fn(BaseAttribute $attr) => $attr->render(), $this->attributes)));
         $children = implode("\n", array_map(fn(HtmlNode $child) => $child->render(), $this->children));
 
         return "<$this->tag$attributes>$children</$this->tag>";
     }
+
+    public function addAttribute(string $name, string $value): void
+    {
+        $this->attributes[] = new HtmlAttribute($name, $value);
+    }
+
 }

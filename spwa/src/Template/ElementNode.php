@@ -3,7 +3,23 @@
 namespace Spwa\Template;
 
 use Spwa\Html\HtmlTagNode;
-use Spwa\Html\HtmlTextNode;
+
+class AttributeNode extends Node
+{
+    private string $name;
+    private string $value;
+
+    public function __construct(string $name, string $value)
+    {
+        $this->name = $name;
+        $this->value = $value;
+    }
+
+    function execute(HtmlTagNode $node): void
+    {
+        $node->addAttribute($this->name, $this->value);
+    }
+}
 
 class ElementNode extends Node
 {
