@@ -1,10 +1,8 @@
 <?php
 
 use Spwa\App;
-use App\Components\Welcome;
+use App\Components\WelcomePage;
 
 require 'vendor/autoload.php';
 
-echo "Very good";
-
-App::render(new Welcome());
+App::render(new WelcomePage());
