@@ -8,25 +8,40 @@ class ElementNode extends Node
 {
     public string $tag;
     /**
-     * @var Node[] $items
+     * @var Node[] $children
      */
-    private array $items;
+    private array $children = [];
+
+    /**
+     * @var NodeAttribute[] $attributes
+     */
+    private array $attributes = [];
 
     /**
      * @param string $tag
-     * @param Node[] $items
+     * @param Node|NodeAttribute[] $items
      */
     public function __construct(string $tag, array $items)
     {
         $this->tag = $tag;
-        $this->items = $items;
+
+        foreach ($items as $item) {
+            if ($item instanceof NodeAttribute) {
+                $this->attributes[] = $item;
+            } else {
+                $this->children[] = $item;
+            }
+        }
     }
 
     function execute(HtmlTagNode $node): void
     {
         $root = new HtmlTagNode($this->tag);
-        foreach ($this->items as $item) {
+        foreach ($this->children as $item) {
             $item->execute($root);
+        }
+        foreach ($this->attributes as $attribute) {
+            $root->addAttribute($attribute->name, $attribute->value);
         }
         $node->addChild($root);
     }

@@ -3,7 +3,7 @@
 namespace Spwa\Template;
 
 /**
- * @param Node[] $items
+ * @param Node|NodeAttribute[] $items
  * @return ElementNode
  */
 function div(...$items): ElementNode
@@ -16,9 +16,9 @@ function text(string $text): TextNode
     return new TextNode($text);
 }
 
-function _class(string ...$class): AttributeNode
+function _class(string ...$class): NodeAttribute
 {
     // filter out empty strings
     $classes = implode(" ", array_filter($class));
-    return new AttributeNode("class", $classes);
+    return new NodeAttribute("class", $classes);
 }

@@ -40,7 +40,7 @@ class HtmlTagNode extends HtmlNode
     public function render(): string
     {
         $attributes = padSpace(implode(" ", array_map(fn(BaseAttribute $attr) => $attr->render(), $this->attributes)));
-        $children = implode("\n", array_map(fn(HtmlNode $child) => $child->render(), $this->children));
+        $children = implode("", array_map(fn(HtmlNode $child) => $child->render(), $this->children));
 
         return "<$this->tag$attributes>$children</$this->tag>";
     }
