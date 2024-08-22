@@ -2,8 +2,6 @@
 
 namespace Spwa\Template;
 
-use Spwa\Html\HtmlNode;
-use Spwa\Html\HtmlTextNode;
 
 class TextNode extends Node
 {
@@ -14,8 +12,8 @@ class TextNode extends Node
         $this->text = $text;
     }
 
-    function execute(): HtmlNode
+    function render(): string
     {
-        return new HtmlTextNode($this->text);
+        return htmlspecialchars($this->text, ENT_QUOTES, 'UTF-8');
     }
 }

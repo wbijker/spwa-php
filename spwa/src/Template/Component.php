@@ -2,14 +2,12 @@
 
 namespace Spwa\Template;
 
-use Spwa\Html\HtmlNode;
-
 abstract class Component extends Node
 {
-    abstract function render(): ElementNode;
+    abstract function view(): ElementNode;
 
-    function execute(): HtmlNode
+    function render(): string
     {
-        return $this->render()->execute();
+        return $this->view()->render();
     }
 }

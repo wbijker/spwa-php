@@ -2,8 +2,10 @@
 
 namespace Spwa\Template;
 
-use Spwa\Html\HtmlNode;
-use Spwa\Html\HtmlTagNode;
+function padSpace(string $implode): string
+{
+    return $implode ? " $implode" : "";
+}
 
 class ElementNode extends Node
 {
@@ -35,16 +37,13 @@ class ElementNode extends Node
         }
     }
 
-    function execute(): HtmlNode
+    public function render(): string
     {
-        $root = new HtmlTagNode($this->tag);
-        foreach ($this->children as $item) {
-            $root->addChild($item->execute());
-        }
-        foreach ($this->attributes as $attribute) {
-            $root->addAttribute($attribute->name, $attribute->value);
-        }
-        return $root;
+        $attributes = padSpace(implode(" ", array_map(fn(NodeAttribute $attr) => $attr->render(), $this->attributes)));
+        $children = implode("", array_map(fn(Node $child) => $child->render(), $this->children));
+
+        return "<$this->tag$attributes>$children</$this->tag>";
     }
+
 }
 

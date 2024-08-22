@@ -8,11 +8,15 @@ Templates nodes include building blocks for html: ElementNode, TextNode, Compone
 and programmable nodes: IfNode, ForNode
  */
 
-use Spwa\Html\HtmlNode;
-use Spwa\Html\HtmlTagNode;
-
 abstract class Node
 {
-    abstract function execute(): HtmlNode;
+    abstract function render(): string;
+
+    /**
+     * The path in DOM to where this node is located.
+     * [2,1,0] means root.children[2].children[1].children[0]
+     * @var int[]
+     */
+    public array $path;
 }
 

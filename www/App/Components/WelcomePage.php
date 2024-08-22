@@ -8,8 +8,7 @@ use function Spwa\Template\{_class, div, text};
 
 class WelcomePage extends Component
 {
-
-    function render(): ElementNode
+    function view(): ElementNode
     {
         return div(
             div(
