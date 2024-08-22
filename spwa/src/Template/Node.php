@@ -8,10 +8,11 @@ Templates nodes include building blocks for html: ElementNode, TextNode, Compone
 and programmable nodes: IfNode, ForNode
  */
 
+use Spwa\Html\HtmlNode;
 use Spwa\Html\HtmlTagNode;
 
 abstract class Node
 {
-    abstract function execute(HtmlTagNode $node): void;
+    abstract function execute(): HtmlNode;
 }
 

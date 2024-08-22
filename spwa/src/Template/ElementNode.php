@@ -2,6 +2,7 @@
 
 namespace Spwa\Template;
 
+use Spwa\Html\HtmlNode;
 use Spwa\Html\HtmlTagNode;
 
 class ElementNode extends Node
@@ -34,16 +35,16 @@ class ElementNode extends Node
         }
     }
 
-    function execute(HtmlTagNode $node): void
+    function execute(): HtmlNode
     {
         $root = new HtmlTagNode($this->tag);
         foreach ($this->children as $item) {
-            $item->execute($root);
+            $root->addChild($item->execute());
         }
         foreach ($this->attributes as $attribute) {
             $root->addAttribute($attribute->name, $attribute->value);
         }
-        $node->addChild($root);
+        return $root;
     }
 }
 

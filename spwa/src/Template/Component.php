@@ -2,14 +2,14 @@
 
 namespace Spwa\Template;
 
-use Spwa\Html\HtmlTagNode;
+use Spwa\Html\HtmlNode;
 
 abstract class Component extends Node
 {
     abstract function render(): ElementNode;
 
-    function execute(HtmlTagNode $node): void
+    function execute(): HtmlNode
     {
-        $this->render()->execute($node);
+        return $this->render()->execute();
     }
 }

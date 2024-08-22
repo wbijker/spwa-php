@@ -2,7 +2,7 @@
 
 namespace Spwa\Template;
 
-use Spwa\Html\HtmlTagNode;
+use Spwa\Html\HtmlNode;
 use Spwa\Html\HtmlTextNode;
 
 class TextNode extends Node
@@ -14,8 +14,8 @@ class TextNode extends Node
         $this->text = $text;
     }
 
-    function execute(HtmlTagNode $node): void
+    function execute(): HtmlNode
     {
-        $node->addChild(new HtmlTextNode($this->text));
+        return new HtmlTextNode($this->text);
     }
 }
