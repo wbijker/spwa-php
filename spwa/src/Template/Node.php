@@ -11,12 +11,13 @@ and programmable nodes: IfNode, ForNode
 abstract class Node
 {
     abstract function render(): string;
+    abstract function resolvePaths(NodePath $parent): void;
 
     /**
      * The path in DOM to where this node is located.
      * [2,1,0] means root.children[2].children[1].children[0]
-     * @var int[]
+     * @var NodePath
      */
-    public array $path;
+    public NodePath $path;
 }
 

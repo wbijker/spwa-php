@@ -16,4 +16,9 @@ class TextNode extends Node
     {
         return htmlspecialchars($this->text, ENT_QUOTES, 'UTF-8');
     }
+
+
+    function resolvePaths(NodePath $parent): void
+    {
+    }
 }

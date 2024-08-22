@@ -6,8 +6,20 @@ abstract class Component extends Node
 {
     abstract function view(): ElementNode;
 
+    private ?ElementNode $result = null;
+
+    private function getView(): ElementNode
+    {
+        return $this->result ??= $this->view();
+    }
+
+    function resolvePaths(NodePath $parent): void
+    {
+//        $this->getView()->resolvePaths($index, $path);
+    }
+
     function render(): string
     {
-        return $this->view()->render();
+        return $this->getView()->render();
     }
 }

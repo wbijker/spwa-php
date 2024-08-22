@@ -45,5 +45,12 @@ class ElementNode extends Node
         return "<$this->tag$attributes>$children</$this->tag>";
     }
 
+    function resolvePaths(NodePath $parent): void
+    {
+//        $this->path = addPath($path, $index);
+//        foreach ($this->children as $index => $child) {
+//            $child->resolvePaths($index, $this->path);
+//        }
+    }
 }
 

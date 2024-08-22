@@ -3,14 +3,14 @@
 namespace Spwa;
 
 use Spwa\Template\Node;
+use Spwa\Template\NodePath;
 use Spwa\Template\TextNode;
 
 class App
 {
     static function render(Node $component): void
     {
-        print_r($component);
-
+        $component->resolvePaths(NodePath::empty());
         echo $component->render();
         // first need to execute to html nodes to determine the order of htmlNodes
         // we don't need to have separate nodes and html nodes
