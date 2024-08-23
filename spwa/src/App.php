@@ -10,7 +10,7 @@ class App
 {
     static function render(Node $component): void
     {
-        $component->resolvePaths(NodePath::empty());
+        $component->resolvePaths(new NodePath([0]));
         echo $component->render();
         // first need to execute to html nodes to determine the order of htmlNodes
         // we don't need to have separate nodes and html nodes

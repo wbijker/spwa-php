@@ -15,7 +15,7 @@ abstract class Component extends Node
 
     function resolvePaths(NodePath $parent): void
     {
-//        $this->getView()->resolvePaths($index, $path);
+        $this->getView()->resolvePaths($parent);
     }
 
     function render(): string

@@ -26,6 +26,7 @@ class ElementNode extends Node
      */
     public function __construct(string $tag, array $items)
     {
+        parent::__construct();
         $this->tag = $tag;
 
         foreach ($items as $item) {
@@ -39,18 +40,20 @@ class ElementNode extends Node
 
     public function render(): string
     {
+        $this->attributes[] = new NodeAttribute("path", $this->path->render());
+
         $attributes = padSpace(implode(" ", array_map(fn(NodeAttribute $attr) => $attr->render(), $this->attributes)));
         $children = implode("", array_map(fn(Node $child) => $child->render(), $this->children));
 
         return "<$this->tag$attributes>$children</$this->tag>";
     }
 
-    function resolvePaths(NodePath $parent): void
+    function resolvePaths(NodePath $path): void
     {
-//        $this->path = addPath($path, $index);
-//        foreach ($this->children as $index => $child) {
-//            $child->resolvePaths($index, $this->path);
-//        }
+        $this->path = $path;
+        foreach ($this->children as $index => $child) {
+            $child->resolvePaths($this->path->addClone($index));
+        }
     }
 }
 
