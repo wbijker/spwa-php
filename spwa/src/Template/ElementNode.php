@@ -34,6 +34,7 @@ class ElementNode extends Node
 
         foreach ($items as $item) {
             if ($item instanceof NodeAttribute) {
+                // text, event
                 $this->attributes[] = $item;
             } else {
                 $this->children[] = $item;

@@ -4,8 +4,10 @@ namespace Spwa\Dom;
 
 use Spwa\Template\Node;
 use Spwa\Template\NodeAttribute;
+use Spwa\Template\NodeAttributeText;
 use Spwa\Template\NodePath;
 use function Spwa\Template\padSpace;
+
 
 class HtmlElement extends HtmlNode
 {
@@ -16,9 +18,9 @@ class HtmlElement extends HtmlNode
     private array $children = [];
 
     /**
-     * @var NodeAttribute[] $attributes
+     * @var NodeAttributeText[] $textAttrs
      */
-    private array $attributes = [];
+    private array $textAttrs = [];
 
     /**
      * @param Node $owner
@@ -45,7 +47,7 @@ class HtmlElement extends HtmlNode
 
     function render(): string
     {
-        $this->attributes[] = new NodeAttribute("path", $this->path->render());
+        $this->attributes[] = new NodeAttributeText("path", $this->path->render());
 
         $attributes = padSpace(implode(" ", array_map(fn(NodeAttribute $attr) => $attr->render(), $this->attributes)));
         $children = implode("", array_map(fn(HtmlNode $child) => $child->render(), $this->children));

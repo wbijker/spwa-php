@@ -30,5 +30,11 @@ function _class(string ...$class): NodeAttribute
 {
     // filter out empty strings
     $classes = implode(" ", array_filter($class));
-    return new NodeAttribute("class", $classes);
+    return new NodeAttributeText("class", $classes);
+}
+
+// events
+function onClick(callable $handler): NodeAttribute
+{
+    return new NodeAttributeText("onclick", "event handler");
 }

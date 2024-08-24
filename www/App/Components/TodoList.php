@@ -7,6 +7,7 @@ use Spwa\Template\ElementNode;
 use function Spwa\Template\_class;
 use function Spwa\Template\_for;
 use function Spwa\Template\div;
+use function Spwa\Template\onClick;
 use function Spwa\Template\text;
 
 class TodoList extends Component
@@ -30,12 +31,14 @@ class TodoList extends Component
     {
         return div(
             div(
+                onClick(fn() => $this->counter--),
                 text("Counter: ".($this->counter - 1))
             ),
             div(
                 text("Counter: ".$this->counter)
             ),
             div(
+                onClick(fn() => $this->counter++),
                 text("Counter: ".($this->counter + 1))
             ),
             _class("bg-blue-500 ml-6"),
