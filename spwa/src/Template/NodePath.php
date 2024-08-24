@@ -26,6 +26,12 @@ class NodePath
         return new NodePath($add);
     }
 
+    public function set($index): NodePath {
+        $add = $this->path;
+        $add[count($add) - 1] = $index;
+        return new NodePath($add);
+    }
+
     public function render(): string
     {
         return "[".implode(",", $this->path)."]";

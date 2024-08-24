@@ -11,6 +11,16 @@ function div(...$items): ElementNode
     return new ElementNode("div", $items);
 }
 
+/**
+ * @template T
+ * @param T[] $items
+ * @param callable(T $item, int $index): Node $render
+ */
+function _for(array $items, callable $render): EachNode
+{
+    return new EachNode($items, $render);
+}
+
 function text(string $text): TextNode
 {
     return new TextNode($text);
