@@ -13,9 +13,10 @@ abstract class Component extends Node
         return $this->result ??= $this->view();
     }
 
-    function resolvePaths(NodePath $parent): void
+    function resolvePaths(NodePath $path): void
     {
-        $this->getView()->resolvePaths($parent);
+        parent::resolvePaths($path);
+        $this->getView()->resolvePaths($path);
     }
 
     function render(): string

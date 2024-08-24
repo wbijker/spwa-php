@@ -26,7 +26,6 @@ class ElementNode extends Node
      */
     public function __construct(string $tag, array $items)
     {
-        parent::__construct();
         $this->tag = $tag;
 
         foreach ($items as $item) {
@@ -50,7 +49,7 @@ class ElementNode extends Node
 
     function resolvePaths(NodePath $path): void
     {
-        $this->path = $path;
+        parent::resolvePaths($path);
         foreach ($this->children as $index => $child) {
             $child->resolvePaths($this->path->addClone($index));
         }

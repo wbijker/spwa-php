@@ -10,20 +10,24 @@ and programmable nodes: IfNode, ForNode
 
 abstract class Node
 {
-    public function __construct()
-    {
-        $this->path = new NodePath([]);
-    }
-
     abstract function render(): string;
-    abstract function resolvePaths(NodePath $path): void;
+
+    function resolvePaths(NodePath $path): void
+    {
+        $this->path = $path;
+    }
 
     /**
      * The path in DOM to where this node is located.
      * [2,1,0] means root.children[2].children[1].children[0]
      * @var NodePath
      */
-    public NodePath $path;
+    protected NodePath $path;
+
+    public function getPath(): NodePath
+    {
+        return $this->path ?? new NodePath([]);
+    }
 
 
 }
