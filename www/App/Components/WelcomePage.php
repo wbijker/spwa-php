@@ -8,6 +8,16 @@ use function Spwa\Template\{_class, div, text};
 
 class WelcomePage extends Component
 {
+
+
+    private TodoList $todo;
+
+    public function __construct()
+    {
+        // avoid component from being reconstructed when view is called
+        $this->todo = new TodoList(['Drink Coffee', 'Write Code', 'Drink More Coffee']);
+    }
+
     function view(): ElementNode
     {
         return div(
@@ -19,7 +29,7 @@ class WelcomePage extends Component
                 _class("bg-blue-500"),
                 text("Another text node"),
             ),
-            new TodoList(['Drink Coffee', 'Write Code', 'Drink More Coffee'])
+            $this->todo
         );
     }
 }

@@ -8,16 +8,9 @@ abstract class Component extends Node
 {
     abstract function view(): ElementNode;
 
-    private ?ElementNode $result = null;
-
-    private function getView(): ElementNode
-    {
-        return $this->result ??= $this->view();
-    }
-
     function render(NodePath $path, EventListeners $listeners): \Spwa\Dom\HtmlNode
     {
-        $template = $this->getView();
+        $template = $this->view();
         return $template->render($path, $listeners);
     }
 }

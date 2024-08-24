@@ -18,6 +18,11 @@ class NodePath
         $this->path = $path;
     }
 
+    static function root(): NodePath
+    {
+        return new NodePath([0]);
+    }
+
     public function addClone(int $index): NodePath
     {
         // creates a copy with the new element added

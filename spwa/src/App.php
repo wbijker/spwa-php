@@ -11,9 +11,25 @@ class App
 {
     static function render(Node $component): void
     {
+        // render previous
         $eventListeners = new EventListeners();
-        $dom = $component->render(new NodePath([0]), $eventListeners);
-        echo $dom->render();
+        $prev = $component->render(NodePath::root(), $eventListeners);
+
+        // find event from frontend.
+        // execute event that will likely change the dom
+        $event = $eventListeners->getEvent("click", new NodePath([0, 2, 0]));
+        if ($event) {
+            ($event->handler)();
+        }
+
+        // render the changes
+        $next = $component->render(NodePath::root(), $eventListeners);
+
+        echo $prev->render();
+
+        echo "<hr>";
+
+        echo $next->render();
     }
 }
 

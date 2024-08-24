@@ -33,8 +33,7 @@ function _class(string ...$class): NodeAttribute
     return new NodeAttributeText("class", $classes);
 }
 
-// events
 function onClick(callable $handler): NodeAttribute
 {
-    return new NodeAttributeText("onclick", "event handler");
+    return new NodeAttributeEvent("click", $handler);
 }

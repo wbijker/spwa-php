@@ -24,6 +24,11 @@ class ElementNode extends Node
     private array $attributes = [];
 
     /**
+     * @var NodeAttributeEvent[] $events
+     */
+    private array $events = [];
+
+    /**
      * @param string $tag
      * @param Node|NodeAttribute[] $items
      */
@@ -33,15 +38,15 @@ class ElementNode extends Node
         $this->items = $items;
 
         foreach ($items as $item) {
-            if ($item instanceof NodeAttribute) {
-                // text, event
+            if ($item instanceof NodeAttributeText) {
                 $this->attributes[] = $item;
+            } else if ($item instanceof NodeAttributeEvent) {
+                $this->events[] = $item;
             } else {
                 $this->children[] = $item;
             }
         }
     }
-
 
     function render(NodePath $path, EventListeners $listeners): HtmlNode
     {
@@ -51,6 +56,9 @@ class ElementNode extends Node
         }
         foreach ($this->children as $index => $child) {
             $element->addChild($child->render($path->addClone($index), $listeners));
+        }
+        foreach ($this->events as $event) {
+            $listeners->addEvent(new Event($event->name, $path, $event->handler));
         }
         return $element;
     }

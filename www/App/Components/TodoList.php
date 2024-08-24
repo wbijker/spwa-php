@@ -27,19 +27,30 @@ class TodoList extends Component
 
     var $counter = 0;
 
+    function dec(): void
+    {
+        $this->counter--;
+    }
+
+    function inc(): void
+    {
+        $this->counter++;
+    }
+
     function view(): ElementNode
     {
+        echo "Rendering TodoList with " . $this->counter . PHP_EOL;
         return div(
             div(
-                onClick(fn() => $this->counter--),
-                text("Counter: ".($this->counter - 1))
+                onClick(fn() => $this->dec()),
+                text("Counter: " . ($this->counter - 1))
             ),
             div(
-                text("Counter: ".$this->counter)
+                text("Counter: " . $this->counter)
             ),
             div(
-                onClick(fn() => $this->counter++),
-                text("Counter: ".($this->counter + 1))
+                onClick(fn() => $this->inc()),
+                text("Counter: " . ($this->counter + 1))
             ),
             _class("bg-blue-500 ml-6"),
             _for($this->items, fn($item) => div(
