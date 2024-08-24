@@ -18,7 +18,8 @@ class WelcomePage extends Component
             div(
                 _class("bg-blue-500"),
                 text("Another text node"),
-            )
+            ),
+            new TodoList(['Drink Coffee', 'Write Code', 'Drink More Coffee'])
         );
     }
 }
