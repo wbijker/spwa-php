@@ -12,6 +12,6 @@ use Spwa\Dom\HtmlNode;
 
 abstract class Node
 {
-    abstract function render(NodePath $path): HtmlNode;
+    abstract function render(NodePath $path, EventListeners $listeners): HtmlNode;
 }
 

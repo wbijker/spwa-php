@@ -2,6 +2,7 @@
 
 namespace Spwa;
 
+use Spwa\Template\EventListeners;
 use Spwa\Template\Node;
 use Spwa\Template\NodePath;
 use Spwa\Template\TextNode;
@@ -10,7 +11,8 @@ class App
 {
     static function render(Node $component): void
     {
-        $dom = $component->render(new NodePath([0]));
+        $eventListeners = new EventListeners();
+        $dom = $component->render(new NodePath([0]), $eventListeners);
         echo $dom->render();
     }
 }

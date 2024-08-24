@@ -24,8 +24,8 @@ class EachNode extends Node
         $this->nodes = array_map($itemRender, $items, array_keys($items));
     }
 
-    function render(NodePath $path): HtmlNode
+    function render(NodePath $path, EventListeners $listeners): HtmlNode
     {
-        return new HtmlFragment($this, $path, array_map(fn($item, $index) => $item->render($path->next($index)), $this->nodes, array_keys($this->nodes)));
+        return new HtmlFragment($this, $path, array_map(fn($item, $index) => $item->render($path->next($index), $listeners), $this->nodes, array_keys($this->nodes)));
     }
 }

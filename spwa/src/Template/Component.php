@@ -15,9 +15,9 @@ abstract class Component extends Node
         return $this->result ??= $this->view();
     }
 
-    function render(NodePath $path): \Spwa\Dom\HtmlNode
+    function render(NodePath $path, EventListeners $listeners): \Spwa\Dom\HtmlNode
     {
         $template = $this->getView();
-        return $template->render($path);
+        return $template->render($path, $listeners);
     }
 }
