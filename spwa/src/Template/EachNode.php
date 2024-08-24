@@ -2,6 +2,9 @@
 
 namespace Spwa\Template;
 
+use Spwa\Dom\HtmlFragment;
+use Spwa\Dom\HtmlNode;
+
 /**
  * @template T
  */
@@ -21,16 +24,8 @@ class EachNode extends Node
         $this->nodes = array_map($itemRender, $items, array_keys($items));
     }
 
-    function resolvePaths(NodePath $path): void
+    function render(NodePath $path): HtmlNode
     {
-        parent::resolvePaths($path);
-        foreach ($this->nodes as $index => $node) {
-            $node->resolvePaths($path->set($index));
-        }
-    }
-
-    function render(): string
-    {
-        return implode("", array_map(fn($item) => $item->render(), $this->nodes));
+        return new HtmlFragment($this, $path, array_map(fn($item, $index) => $item->render($path->next($index)), $this->nodes, array_keys($this->nodes)));
     }
 }

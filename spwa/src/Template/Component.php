@@ -2,6 +2,8 @@
 
 namespace Spwa\Template;
 
+use Spwa\Dom\HtmlText;
+
 abstract class Component extends Node
 {
     abstract function view(): ElementNode;
@@ -13,14 +15,9 @@ abstract class Component extends Node
         return $this->result ??= $this->view();
     }
 
-    function resolvePaths(NodePath $path): void
+    function render(NodePath $path): \Spwa\Dom\HtmlNode
     {
-        parent::resolvePaths($path);
-        $this->getView()->resolvePaths($path);
-    }
-
-    function render(): string
-    {
-        return $this->getView()->render();
+        $template = $this->getView();
+        return $template->render($path);
     }
 }

@@ -10,8 +10,8 @@ class App
 {
     static function render(Node $component): void
     {
-        $component->resolvePaths(new NodePath([0]));
-        echo $component->render();
+        $dom = $component->render(new NodePath([0]));
+        echo $dom->render();
     }
 }
 
@@ -35,7 +35,7 @@ abstract class Patch
     {
         return [
             "type" => $this->type(),
-            "path" => $this->node->path,
+//            "path" => $this->node->path,
             "data" => $this->data()
         ];
     }

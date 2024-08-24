@@ -26,10 +26,10 @@ class NodePath
         return new NodePath($add);
     }
 
-    public function set($index): NodePath {
-        $add = $this->path;
-        $add[count($add) - 1] = $index;
-        return new NodePath($add);
+    public function next(int $inc): NodePath {
+        $path = $this->path;
+        $path[count($path) - 1] += $inc;
+        return new NodePath($path);
     }
 
     public function render(): string
