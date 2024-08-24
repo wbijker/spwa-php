@@ -12,15 +12,6 @@ class App
     {
         $component->resolvePaths(new NodePath([0]));
         echo $component->render();
-        // first need to execute to html nodes to determine the order of htmlNodes
-        // we don't need to have separate nodes and html nodes
-        // leave at only html nodes
-        // the rendering function can be overridden in the html node
-
-        // html nodes can have path positions
-        // html node contains a link to the original template node.
-        // HtmlTagNode -> ElementNode
-        // HtmlTextNode -> TextNode
     }
 }
 

@@ -24,10 +24,20 @@ class TodoList extends Component
         $this->items = $items;
     }
 
+    var $counter = 0;
 
     function view(): ElementNode
     {
         return div(
+            div(
+                text("Counter: ".($this->counter - 1))
+            ),
+            div(
+                text("Counter: ".$this->counter)
+            ),
+            div(
+                text("Counter: ".($this->counter + 1))
+            ),
             _class("bg-blue-500 ml-6"),
             _for($this->items, fn($item) => div(
                 text($item),
