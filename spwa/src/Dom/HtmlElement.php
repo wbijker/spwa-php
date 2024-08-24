@@ -32,13 +32,23 @@ class HtmlElement extends HtmlNode
         $this->children = [];
         $this->attributes = [];
     }
-    
+
+    public function addChild(HtmlNode $child): void
+    {
+        $this->children[] = $child;
+    }
+
+    public function addAttribute(NodeAttribute $attribute): void
+    {
+        $this->attributes[] = $attribute;
+    }
+
     function render(): string
     {
         $this->attributes[] = new NodeAttribute("path", $this->path->render());
 
         $attributes = padSpace(implode(" ", array_map(fn(NodeAttribute $attr) => $attr->render(), $this->attributes)));
-        $children = implode("", array_map(fn(Node $child) => $child->render(), $this->children));
+        $children = implode("", array_map(fn(HtmlNode $child) => $child->render(), $this->children));
 
         return "<$this->tag$attributes>$children</$this->tag>";
     }
