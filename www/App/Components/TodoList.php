@@ -39,7 +39,6 @@ class TodoList extends Component
 
     function view(): ElementNode
     {
-        echo "Rendering TodoList with " . $this->counter . PHP_EOL;
         return div(
             div(
                 onClick(fn() => $this->dec()),

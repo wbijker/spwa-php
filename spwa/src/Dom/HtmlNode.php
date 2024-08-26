@@ -2,6 +2,7 @@
 
 namespace Spwa\Dom;
 
+use Spwa\Patches;
 use Spwa\Template\Node;
 use Spwa\Template\NodePath;
 

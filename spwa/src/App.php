@@ -2,6 +2,7 @@
 
 namespace Spwa;
 
+use Spwa\Template\Component;
 use Spwa\Template\EventListeners;
 use Spwa\Template\Node;
 use Spwa\Template\NodePath;
@@ -9,27 +10,44 @@ use Spwa\Template\TextNode;
 
 class App
 {
-    static function render(Node $component): void
+    static function render(Component $component): void
     {
         // render previous
-        $eventListeners = new EventListeners();
-        $prev = $component->render(NodePath::root(), $eventListeners);
+        $prevListeners = new EventListeners();
+        $view = $component->view();
+        $prev = $view->render(NodePath::root(), $prevListeners);
 
         // find event from frontend.
         // execute event that will likely change the dom
-        $event = $eventListeners->getEvent("click", new NodePath([0, 2, 0]));
+        $event = $prevListeners->getEvent("click", new NodePath([0, 2, 0]));
         if ($event) {
             ($event->handler)();
         }
 
+        // render again
+        $next = $component->view();
+        Node::compareNode($view, $next);
+
+        // abstract function compare(HtmlNode $next, Patches $patches): void;
+//        $prev->compare($prev);
+
         // render the changes
-        $next = $component->render(NodePath::root(), $eventListeners);
+//        $next = $component->render(NodePath::root(), $prevListeners);
 
-        echo $prev->render();
+        // 1. dont't construct a new component every time. / replace the new component with the old one
+        // 2. HtmlNode::rebuild() -> rebuild the dom with the new dom. function rebuild render(): () -> HtmlNode;
+        // 3. Walk HtmlNodes, and rebuild.
 
-        echo "<hr>";
+        // Chang is made on the old node instance.
+        // Event is attached there.
+        // then old event trigger a change on the app state - which then change the render output.
 
-        echo $next->render();
+
+//        echo $prev->render();
+//
+//        echo "<hr>";
+//
+//        echo $next->render();
     }
 }
 

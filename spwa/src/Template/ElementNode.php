@@ -16,12 +16,12 @@ class ElementNode extends Node
     /**
      * @var Node[] $children
      */
-    private array $children = [];
+    public array $children = [];
 
     /**
      * @var NodeAttribute[] $attributes
      */
-    private array $attributes = [];
+    public array $attributes = [];
 
     /**
      * @var NodeAttributeEvent[] $events
@@ -61,6 +61,28 @@ class ElementNode extends Node
             $listeners->addEvent(new Event($event->name, $path, $event->handler));
         }
         return $element;
+    }
+
+    function compare(ElementNode $other): void
+    {
+        if ($this->tag != $other->tag) {
+            // replace the whole node
+            return;
+        }
+        if (count($this->children) != count($other->children)) {
+            // replace the whole node
+            return;
+        }
+
+        // compare attributes
+
+        // compare children
+        $count = count($this->children);
+        for ($i = 0; $i < $count; $i++) {
+            $oldChild = $this->children[$i];
+            $newChild = $other->children[$i];
+            Node::compareNode($oldChild, $newChild);
+        }
     }
 }
 
