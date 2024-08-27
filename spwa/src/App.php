@@ -43,7 +43,7 @@ class App
         // then old event trigger a change on the app state - which then change the render output.
 
 
-//        echo $prev->render();
+        echo $prev->render();
 //
 //        echo "<hr>";
 //

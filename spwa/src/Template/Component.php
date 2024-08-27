@@ -4,9 +4,41 @@ namespace Spwa\Template;
 
 use ReflectionClass;
 
-abstract class Component extends Node
+// simulate default constructor behavior
+// by enforcing the presence of a parameterless constructor
+interface DefaultCtor
 {
+    public function __construct();
+}
+
+/**
+ * Represents a base component class.
+ *
+ * @template TProps
+ */
+abstract class Component implements DefaultCtor
+{
+    public function __construct()
+    {
+    }
+
+    /**
+     * The properties associated with the component.
+     *
+     * @var TProps
+     */
+    protected $props;
+
     abstract function view(): ElementNode;
+
+    /**
+     * @param TProps $props
+     * @return void
+     */
+    function setProps($props): void
+    {
+        $this->props = $props;
+    }
 
     function render(NodePath $path, EventListeners $listeners): \Spwa\Dom\HtmlNode
     {
@@ -14,21 +46,8 @@ abstract class Component extends Node
         return $template->render($path, $listeners);
     }
 
-    /**
-     * Create an instance of the given class with the provided parameters.
-     *
-     * @template T of Component
-     * @param class-string<T> $class
-     * @param mixed ...$parameters
-     * @return T
-     */
-    public static function make(string $class, ...$parameters)
+    function compare(Component $other)
     {
-        $reflectionClass = new ReflectionClass($class);
-        return $reflectionClass->newInstanceArgs($parameters);
-    }
-
-    function compare(Component $other) {
         $prev = $this->view();
         $next = $other->view();
         $prev->compare($next);
