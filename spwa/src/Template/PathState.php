@@ -14,7 +14,7 @@ class PathState
     {
         $key = $path->render();
         if (!isset($this->dic[$key])) {
-            $this->dic[$key] = new PathData([], null);
+            $this->dic[$key] = new PathData();
         }
         return $this->dic[$key];
     }
@@ -28,7 +28,7 @@ class PathState
     {
         $data = $this->get(new NodePath([0, 2, 0]));
         if ($data)
-            return $data->getEvent('click');
+            return $data->getEvent($event);
         return null;
     }
 }
