@@ -24,8 +24,11 @@ class ComponentNode extends Node
 
     function render(NodePath $path, PathState $state): HtmlNode
     {
-        $component = new $this->class();
-        $component->setProps($this->props);
-        return $component->render($path, $state);
+        $data = $state->set($path);
+        $instance = $data->component ?: new $this->class();
+        $data->component = $instance;
+
+        $instance->setProps($this->props);
+        return $instance->render($path, $state);
     }
 }

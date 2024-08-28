@@ -28,7 +28,7 @@ class App
         $next = $component->view();
         Node::compareNode($view, $next);
 
-        echo $next->render(NodePath::root(), new PathState())->render();
+        echo $next->render(NodePath::root(), $state)->render();
     }
 }
 

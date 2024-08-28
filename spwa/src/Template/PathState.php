@@ -26,7 +26,7 @@ class PathState
 
     function getEvent(NodePath $path, string $event): ?callable
     {
-        $data = $this->get(new NodePath([0, 2, 0]));
+        $data = $this->get($path);
         if ($data)
             return $data->getEvent($event);
         return null;
