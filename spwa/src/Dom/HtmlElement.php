@@ -2,6 +2,7 @@
 
 namespace Spwa\Dom;
 
+use Spwa\Patch;
 use Spwa\Template\Node;
 use Spwa\Template\NodeAttribute;
 use Spwa\Template\NodeAttributeText;
@@ -33,6 +34,20 @@ class HtmlElement extends HtmlNode
         $this->tag = $tag;
         $this->children = [];
         $this->attributes = [];
+    }
+
+    public static function compare(HtmlElement $prev, HtmlElement $next, array &$patches)
+    {
+        if ($prev->tag !== $next->tag || count($prev->children) !== count($next->children)) {
+            $patches[] = Patch::replace($prev->path, $next);
+            return;
+        }
+
+        foreach ($prev->children as $i => $child) {
+            HtmlNode::compareNodes($child, $next->children[$i], $patches);
+        }
+
+        // compare attributes
     }
 
     public function addChild(HtmlNode $child): void

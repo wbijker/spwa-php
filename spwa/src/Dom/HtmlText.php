@@ -3,6 +3,7 @@
 namespace Spwa\Dom;
 
 
+use Spwa\Patch;
 use Spwa\Template\Node;
 use Spwa\Template\NodePath;
 
@@ -19,5 +20,12 @@ class HtmlText extends HtmlNode
     function render(): string
     {
         return $this->path->render() . htmlspecialchars($this->text, ENT_QUOTES, 'UTF-8');
+    }
+
+    static function compare(HtmlText $prev, HtmlText $next, array &$patches): void
+    {
+        if ($prev->text !== $next->text) {
+            $patches[] = Patch::text($prev->path, $next->text);
+        }
     }
 }

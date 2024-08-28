@@ -46,11 +46,5 @@ abstract class Component implements DefaultCtor
         return $template->render($path, $listeners);
     }
 
-    function compare(Component $other)
-    {
-        $prev = $this->view();
-        $next = $other->view();
-        $prev->compare($next);
-    }
 }
 

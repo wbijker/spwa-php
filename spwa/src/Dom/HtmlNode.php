@@ -2,7 +2,7 @@
 
 namespace Spwa\Dom;
 
-use Spwa\Patches;
+use Spwa\Patch;
 use Spwa\Template\Node;
 use Spwa\Template\NodePath;
 
@@ -18,5 +18,25 @@ abstract class HtmlNode
     }
 
     abstract function render(): string;
+
+    static function compareNodes(HtmlNode $prev, HtmlNode $next, array &$patches): void
+    {
+        if ($prev instanceof HtmlText && $next instanceof HtmlText) {
+            HtmlText::compare($prev, $next, $patches);
+            return;
+        }
+
+        if ($prev instanceof HtmlElement && $next instanceof HtmlElement) {
+            HtmlElement::compare($prev, $next, $patches);
+            return;
+        }
+
+        if ($prev instanceof HtmlEach && $next instanceof HtmlEach) {
+            HtmlEach::compare($prev, $next, $patches);
+            return;
+        }
+
+        $patches[] = Patch::replace($prev->path, $next);
+    }
 }
 

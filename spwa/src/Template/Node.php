@@ -14,25 +14,5 @@ abstract class Node
 {
     abstract function render(NodePath $path, PathState $state): HtmlNode;
 
-    static function compareNode(Node $old, Node $new): void
-    {
-        // get_class($old) == get_class($new)
-        // $old->compare($new);
-        if ($old instanceof ElementNode && $new instanceof ElementNode) {
-
-            $old->compare($new);
-            return;
-        }
-
-        if ($old instanceof TextNode && $new instanceof TextNode) {
-            $old->compare($new);
-            return;
-        }
-
-        if ($old instanceof Component && $new instanceof Component) {
-            $old->compare($new);
-            return;
-        }
-    }
 }
 

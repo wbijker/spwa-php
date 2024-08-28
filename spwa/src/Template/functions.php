@@ -17,10 +17,11 @@ function div(...$items): ElementNode
  * @template T
  * @param T[] $items
  * @param callable(T $item, int $index): Node $render
+ * @param callable(T $item, int $index): string|int $key
  */
-function _for(array $items, callable $render): EachNode
+function _for(array $items, callable $key, callable $render): EachNode
 {
-    return new EachNode($items, $render);
+    return new EachNode($items, $key, $render);
 }
 
 /**

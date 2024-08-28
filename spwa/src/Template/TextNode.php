@@ -20,9 +20,4 @@ class TextNode extends Node
         return new HtmlText($this, $path, $this->text);
     }
 
-    function compare(TextNode $other) {
-        if ($this->text != $other->text) {
-            echo "Text nodes are different: '$this->text' != '$other->text'\n";
-        }
-    }
 }

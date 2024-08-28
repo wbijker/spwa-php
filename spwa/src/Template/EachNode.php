@@ -2,7 +2,7 @@
 
 namespace Spwa\Template;
 
-use Spwa\Dom\HtmlFragment;
+use Spwa\Dom\HtmlEach;
 use Spwa\Dom\HtmlNode;
 
 /**
@@ -10,22 +10,32 @@ use Spwa\Dom\HtmlNode;
  */
 class EachNode extends Node
 {
+    private array $items;
     /**
-     * @var Node[] $nodes
+     * @var callable|int
      */
-    private $nodes;
+    private $key;
+    /**
+     * @var callable
+     */
+    private $render;
 
     /**
      * @param T[] $items
-     * @param callable(T $item, int $index): Node $itemRender
+     * @param callable(T $item, int $index): string|int $key
+     * @param callable(T $item, int $index): Node $render
      */
-    public function __construct(array $items, callable $itemRender)
+    public function __construct(array $items, callable $key, callable $render)
     {
-        $this->nodes = array_map($itemRender, $items, array_keys($items));
+
+        $this->items = $items;
+        $this->key = $key;
+        $this->render = $render;
     }
 
     function render(NodePath $path, PathState $state): HtmlNode
     {
-        return new HtmlFragment($this, $path, array_map(fn($item, $index) => $item->render($path->next($index), $state), $this->nodes, array_keys($this->nodes)));
+        $nodes = array_map($this->render, $this->items, array_keys($this->items));
+        return new HtmlEach($this, $path, array_map(fn($item, $index) => $item->render($path->next($index), $state), $nodes, array_keys($nodes)));
     }
 }

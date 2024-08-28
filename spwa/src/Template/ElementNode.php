@@ -63,26 +63,5 @@ class ElementNode extends Node
         return $element;
     }
 
-    function compare(ElementNode $other): void
-    {
-        if ($this->tag != $other->tag) {
-            // replace the whole node
-            return;
-        }
-        if (count($this->children) != count($other->children)) {
-            // replace the whole node
-            return;
-        }
-
-        // compare attributes
-
-        // compare children
-        $count = count($this->children);
-        for ($i = 0; $i < $count; $i++) {
-            $oldChild = $this->children[$i];
-            $newChild = $other->children[$i];
-            Node::compareNode($oldChild, $newChild);
-        }
-    }
 }
 

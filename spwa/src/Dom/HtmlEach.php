@@ -5,7 +5,7 @@ namespace Spwa\Dom;
 use Spwa\Template\Node;
 use Spwa\Template\NodePath;
 
-class HtmlFragment extends HtmlNode
+class HtmlEach extends HtmlNode
 {
     /**
      * @var HtmlNode[] $children
@@ -21,6 +21,11 @@ class HtmlFragment extends HtmlNode
     {
         parent::__construct($owner, $path);
         $this->children = $children;
+    }
+
+    public static function compare(HtmlEach $prev, HtmlEach $next, array &$patches)
+    {
+
     }
 
     function render(): string

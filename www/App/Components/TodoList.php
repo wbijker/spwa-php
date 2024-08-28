@@ -65,7 +65,7 @@ class TodoList extends Component
                 text("Counter: " . ($this->counter + 1))
             ),
             _class("bg-blue-500 ml-6"),
-            _for($this->props->items, fn($item) => div(
+            _for($this->props->items, fn($item) => $item, fn($item) => div(
                 text($item),
                 _class("text-red-500")
             ))
