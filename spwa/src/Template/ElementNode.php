@@ -48,17 +48,17 @@ class ElementNode extends Node
         }
     }
 
-    function render(NodePath $path, EventListeners $listeners): HtmlNode
+    function render(NodePath $path, PathState $state): HtmlNode
     {
         $element = new HtmlElement($this, $path, $this->tag);
         foreach ($this->attributes as $attribute) {
             $element->addAttribute($attribute);
         }
         foreach ($this->children as $index => $child) {
-            $element->addChild($child->render($path->addClone($index), $listeners));
+            $element->addChild($child->render($path->addClone($index), $state));
         }
         foreach ($this->events as $event) {
-            $listeners->addEvent(new Event($event->name, $path, $event->handler));
+            $state->addEvent(new Event($event->name, $path, $event->handler));
         }
         return $element;
     }

@@ -40,7 +40,7 @@ abstract class Component implements DefaultCtor
         $this->props = $props;
     }
 
-    function render(NodePath $path, EventListeners $listeners): \Spwa\Dom\HtmlNode
+    function render(NodePath $path, PathState $listeners): \Spwa\Dom\HtmlNode
     {
         $template = $this->view();
         return $template->render($path, $listeners);

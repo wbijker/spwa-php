@@ -15,7 +15,7 @@ class TextNode extends Node
         $this->text = $text;
     }
 
-    function render(NodePath $path, EventListeners $listeners): HtmlNode
+    function render(NodePath $path, PathState $state): HtmlNode
     {
         return new HtmlText($this, $path, $this->text);
     }

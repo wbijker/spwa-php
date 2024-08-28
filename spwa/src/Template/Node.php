@@ -12,7 +12,7 @@ use Spwa\Dom\HtmlNode;
 
 abstract class Node
 {
-    abstract function render(NodePath $path, EventListeners $listeners): HtmlNode;
+    abstract function render(NodePath $path, PathState $state): HtmlNode;
 
     static function compareNode(Node $old, Node $new): void
     {

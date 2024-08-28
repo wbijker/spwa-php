@@ -3,7 +3,7 @@
 namespace Spwa;
 
 use Spwa\Template\Component;
-use Spwa\Template\EventListeners;
+use Spwa\Template\PathState;
 use Spwa\Template\Node;
 use Spwa\Template\NodePath;
 use Spwa\Template\TextNode;
@@ -13,7 +13,7 @@ class App
     static function render(Component $component): void
     {
         // render previous
-        $prevListeners = new EventListeners();
+        $prevListeners = new PathState();
         $view = $component->view();
         $prev = $view->render(NodePath::root(), $prevListeners);
 
@@ -28,26 +28,8 @@ class App
         $next = $component->view();
         Node::compareNode($view, $next);
 
-        // abstract function compare(HtmlNode $next, Patches $patches): void;
-//        $prev->compare($prev);
-
-        // render the changes
-//        $next = $component->render(NodePath::root(), $prevListeners);
-
-        // 1. dont't construct a new component every time. / replace the new component with the old one
-        // 2. HtmlNode::rebuild() -> rebuild the dom with the new dom. function rebuild render(): () -> HtmlNode;
-        // 3. Walk HtmlNodes, and rebuild.
-
-        // Chang is made on the old node instance.
-        // Event is attached there.
-        // then old event trigger a change on the app state - which then change the render output.
-
-
-        echo $prev->render();
-//
-//        echo "<hr>";
-//
-//        echo $next->render();
+//        echo $prev->render();
+        echo $next->render(NodePath::root(), new PathState())->render();
     }
 }
 

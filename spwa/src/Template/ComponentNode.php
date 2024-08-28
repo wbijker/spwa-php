@@ -22,10 +22,10 @@ class ComponentNode extends Node
         $this->props = $props;
     }
 
-    function render(NodePath $path, EventListeners $listeners): HtmlNode
+    function render(NodePath $path, PathState $state): HtmlNode
     {
         $component = new $this->class();
         $component->setProps($this->props);
-        return $component->render($path, $listeners);
+        return $component->render($path, $state);
     }
 }
