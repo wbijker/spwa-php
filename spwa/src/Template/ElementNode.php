@@ -58,7 +58,7 @@ class ElementNode extends Node
             $element->addChild($child->render($path->addClone($index), $state));
         }
         foreach ($this->events as $event) {
-            $state->addEvent(new Event($event->name, $path, $event->handler));
+            $state->set($path)->addEvent($event->name, $event->handler);
         }
         return $element;
     }

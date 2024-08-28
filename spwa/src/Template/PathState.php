@@ -24,33 +24,11 @@ class PathState
         return $this->dic[$path->render()];
     }
 
-
-    function addEvent(Event $event): void
+    function getEvent(NodePath $path, string $event): ?callable
     {
-        $item = $this->set($event->path);
-        $item->events[] = $event;
-    }
-
-    function getEvent(string $event, NodePath $path): ?Event
-    {
-        $item = $this->get($path);
-        if (!$item) {
-            return null;
-        }
-        foreach ($item->events as $e) {
-            if ($e->event === $event) {
-                return $e;
-            }
-        }
+        $data = $this->get(new NodePath([0, 2, 0]));
+        if ($data)
+            return $data->getEvent('click');
         return null;
-    }
-
-    function getComponent(NodePath $path): ?Component
-    {
-        $item = $this->get($path);
-        if (!$item) {
-            return null;
-        }
-        return $item->component;
     }
 }

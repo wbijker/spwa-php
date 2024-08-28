@@ -13,22 +13,21 @@ class App
     static function render(Component $component): void
     {
         // render previous
-        $prevListeners = new PathState();
+        $state = new PathState();
         $view = $component->view();
-        $prev = $view->render(NodePath::root(), $prevListeners);
+        $prev = $view->render(NodePath::root(), $state);
 
         // find event from frontend.
         // execute event that will likely change the dom
-        $event = $prevListeners->getEvent("click", new NodePath([0, 2, 0]));
-        if ($event) {
-            ($event->handler)();
+        $handler = $state->getEvent(new NodePath([0, 2, 0]), "click");
+        if ($handler) {
+            $handler();
         }
 
         // render again
         $next = $component->view();
         Node::compareNode($view, $next);
 
-//        echo $prev->render();
         echo $next->render(NodePath::root(), new PathState())->render();
     }
 }
