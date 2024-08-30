@@ -2,6 +2,7 @@
 
 namespace Spwa;
 
+use Spwa\Dom\HtmlNode;
 use Spwa\Template\Component;
 use Spwa\Template\NodePath;
 use Spwa\Template\PathState;
@@ -23,8 +24,20 @@ class App
         }
 
         // render again
-        $next = $component->view();
-        echo $next->render(NodePath::root(), $state)->render();
+        $next = $component->view()->render(NodePath::root(), $state);
+
+        /** @var Patch[] $patches */
+        $patches = [];
+        HtmlNode::compareNodes($prev, $next, $patches);
+
+//        echo $next->render();
+        echo $prev->render();
+
+        echo PHP_EOL . "<script>" . PHP_EOL;
+        echo PHP_EOL . "const patches = " . json_encode($patches) . ";" . PHP_EOL;
+        include __DIR__ . "/js/spwa-runtime.js";
+        echo PHP_EOL . "</script>" . PHP_EOL;
+
     }
 }
 

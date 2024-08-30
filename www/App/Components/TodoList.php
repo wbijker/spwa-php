@@ -39,15 +39,27 @@ class TodoList extends Component
     }
 
     var $counter = 0;
+    var $items = [];
+
+    function setProps($props): void
+    {
+        parent::setProps($props);
+
+        if (count($this->items) == 0)
+            $this->items = $props->items;
+    }
+
 
     function dec(): void
     {
         $this->counter--;
+        $this->items[] = "Dec added";
     }
 
     function inc(): void
     {
         $this->counter++;
+        $this->items[] = "Inc added";
     }
 
     function view(): ElementNode
@@ -65,7 +77,7 @@ class TodoList extends Component
                 text("Counter: " . ($this->counter + 1))
             ),
             _class("bg-blue-500 ml-6"),
-            _for($this->props->items, fn($item) => $item, fn($item) => div(
+            _for($this->items, fn($item) => $item, fn($item) => div(
                 text($item),
                 _class("text-red-500")
             ))
