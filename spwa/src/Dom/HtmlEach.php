@@ -8,14 +8,14 @@ use Spwa\Template\NodePath;
 class HtmlEach extends HtmlNode
 {
     /**
-     * @var HtmlNode[] $children
+     * @var KeyedNode[] $children
      */
     private array $children;
 
     /**
      * @param Node $owner
      * @param NodePath $path
-     * @param HtmlNode[] $children
+     * @param KeyedNode[] $children
      */
     public function __construct(Node $owner, NodePath $path, array $children = [])
     {
@@ -30,6 +30,6 @@ class HtmlEach extends HtmlNode
 
     function render(): string
     {
-        return implode("", array_map(fn(HtmlNode $child) => $child->render(), $this->children));
+        return implode("", array_map(fn(KeyedNode $child) => $child->node->render(), $this->children));
     }
 }
