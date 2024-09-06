@@ -22,7 +22,7 @@ class EachNode extends Node
     /**
      * @var callable(T $item, int $index): Node
      */
-    private $render;
+    private $renderFn;
 
     /**
      * @param T[] $items
@@ -34,16 +34,17 @@ class EachNode extends Node
 
         $this->items = $items;
         $this->key = $key;
-        $this->render = $render;
+        $this->renderFn = $render;
     }
 
     function render(NodePath $path, PathState $state): HtmlNode
     {
-        $nodes = array_map($this->render, $this->items, array_keys($this->items));
-        return new HtmlEach($this, $path, array_map(function($item, $index) use ($state, $path) {
-            // if no key function is provided, use null key
+        $children = [];
+        foreach ($this->items as $index => $item) {
             $key = $this->key ? ($this->key)($item, $index) : null;
-            return new KeyedNode($key, $item->render($path->next($index), $state));
-        }, $nodes, array_keys($nodes)));
+            $output = ($this->renderFn)($item, $index);
+            $children[] = new KeyedNode($key, $output->render($path->next($index), $state));
+        }
+        return new HtmlEach($this, $path, $children);
     }
 }

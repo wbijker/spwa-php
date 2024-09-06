@@ -10,8 +10,13 @@ class Levenshtein
     const SKIP = 2;
     const SUBSTITUTE = 3;
 
-    // modified version of the levenshtein algorithm
-    static function populate(array $arr1, array $arr2, callable $key): array
+    /**
+     * modified version of the levenshtein algorithm
+     * @param string[] $arr1
+     * @param string[] $arr2
+     * @return array
+     */
+    static function populate(array $arr1, array $arr2): array
     {
         $n = count($arr1);
         $m = count($arr2);
@@ -27,7 +32,7 @@ class Levenshtein
                     $dp[$i][$j] = [$i, self::DELETE];
                     continue;
                 }
-                $same = $key($arr1[$i - 1]) == $key($arr2[$j - 1]);
+                $same = $arr1[$i - 1] == $arr2[$j - 1];
 
                 $neighbours = [
                     [$dp[$i - 1][$j - 1][0] + ($same ? 0 : 1), ($same ? self::SKIP : self::SUBSTITUTE)],
@@ -43,14 +48,25 @@ class Levenshtein
         return $dp;
     }
 
+
+    /**
+     * @template T
+     * @param T[] $from
+     * @param T[] $to
+     * @param (callable(T $item): string|int)|null $key
+     * @return void
+     */
     static function debug(array $from, array $to, callable $key)
     {
-        $dp = self::populate($from, $to, $key);
+        $from = array_map($key, $from);
+        $to = array_map($key, $to);
+
+        $dp = self::populate($from, $to);
         // render a table with the dp array
         echo "<table border='1'>";
         echo "<tr><td></td><td>-</td>";
         foreach ($to as $item) {
-            echo "<td>$item[0]</td>";
+            echo "<td>" . $item . "</td>";
         }
         echo "</tr>";
         for ($i = 0; $i <= count($from); $i++) {
@@ -58,7 +74,7 @@ class Levenshtein
             if ($i == 0) {
                 echo "<td>-</td>";
             } else {
-                echo "<td>{$from[$i - 1][0]}</td>";
+                echo "<td>" . $from[$i - 1] . "</td>";
             }
             for ($j = 0; $j <= count($to); $j++) {
                 echo "<td>{$dp[$i][$j][0]} , {$dp[$i][$j][1]}</td>";
@@ -96,6 +112,5 @@ class Levenshtein
             }
         }
     }
-
 
 }
