@@ -11,7 +11,7 @@ class NodePath
     /**
      * @var int[]
      */
-    private array $path;
+    public array $path;
 
     public function __construct(array $path)
     {

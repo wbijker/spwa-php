@@ -4,6 +4,7 @@ namespace Spwa\Template;
 
 use Spwa\Dom\HtmlNode;
 use Spwa\Dom\HtmlElement;
+use Spwa\Js\JsFunction;
 
 function padSpace(string $implode): string
 {
@@ -48,6 +49,11 @@ class ElementNode extends Node
         }
     }
 
+    function addChild(Node $child): void
+    {
+        $this->children[] = $child;
+    }
+
     function render(NodePath $path, PathState $state): HtmlNode
     {
         $element = new HtmlElement($this, $path, $this->tag);
@@ -59,6 +65,9 @@ class ElementNode extends Node
         }
         foreach ($this->events as $event) {
             $state->set($path)->addEvent($event->name, $event->handler);
+
+            $function = new JsFunction("handleEvent", $event->name, $path->path);
+            $element->addAttribute(new NodeAttributeText("on" . $event->name, $function->dump()));
         }
         return $element;
     }

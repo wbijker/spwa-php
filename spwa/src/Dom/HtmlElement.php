@@ -18,10 +18,7 @@ class HtmlElement extends HtmlNode
      */
     private array $children = [];
 
-    /**
-     * @var NodeAttributeText[] $textAttrs
-     */
-    private array $textAttrs = [];
+    private array $attributes;
 
     /**
      * @param Node $owner
