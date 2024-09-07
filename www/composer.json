@@ -14,6 +14,7 @@
         }
     ],
     "require": {
-        "spwa/spwa": "*"
+        "spwa/spwa": "*",
+        "ext-json": "*"
     }
 }

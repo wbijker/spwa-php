@@ -4,10 +4,11 @@ namespace App\Components;
 
 use Spwa\Template\Component;
 use Spwa\Template\ElementNode;
-use function Spwa\Template\{_class, component, div, text};
+use function Spwa\Template\{_class, button, component, div, onClick, text};
 
 class WelcomePage extends Component
 {
+    var $counter = 0;
 
     function view(): ElementNode
     {
@@ -20,7 +21,20 @@ class WelcomePage extends Component
                 _class("bg-blue-500"),
                 text("Another text node"),
             ),
-            TodoList::create(["Drink Coffee", "Sleep", "Code"]),
+            div(
+                text("Counter: " . $this->counter),
+                button(
+                    text("Increment"),
+                    _class("bg-green-500"),
+                    onClick(fn() => $this->counter++)
+                ),
+                button(
+                    text("Decrement"),
+                    _class("bg-red-500"),
+                    onClick(fn() => $this->counter--)
+                ),
+            ),
+//            TodoList::create(["Drink Coffee", "Sleep", "Code"]),
         );
     }
 }

@@ -19,7 +19,7 @@ class HtmlText extends HtmlNode
 
     function render(): string
     {
-        return $this->path->render() . htmlspecialchars($this->text, ENT_QUOTES, 'UTF-8');
+        return htmlspecialchars($this->text, ENT_QUOTES, 'UTF-8');
     }
 
     static function compare(HtmlText $prev, HtmlText $next, array &$patches): void

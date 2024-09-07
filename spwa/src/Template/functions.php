@@ -14,6 +14,15 @@ function div(...$items): ElementNode
 }
 
 /**
+ * @param Node|NodeAttribute[] $items
+ * @return ElementNode
+ */
+function button(...$items): ElementNode
+{
+    return new ElementNode("button", $items);
+}
+
+/**
  * @template T
  * @param T[] $items
  * @param callable(T $item, int $index): Node $render
