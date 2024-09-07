@@ -2,25 +2,25 @@ function resolveNode(path) {
     return path.reduce((acc, cur) => acc.childNodes[cur], document.body);
 }
 
-// childIndex and pathToBody are not needed in the final version
-function childIndex(node) {
-    for (var i = 0; i < node.parentNode.childNodes.length; i++) {
-        if (node.parentNode.childNodes[i] === node) {
-            return i;
-        }
-    }
-    return -1;
-}
-
-function pathToBody(node) {
-    var path = [];
-    var it = node;
-    while (it !== document.body) {
-        path.unshift(childIndex(it));
-        it = it.parentNode;
-    }
-    return path;
-}
+// // childIndex and pathToBody are not needed in the final version
+// function childIndex(node) {
+//     for (var i = 0; i < node.parentNode.childNodes.length; i++) {
+//         if (node.parentNode.childNodes[i] === node) {
+//             return i;
+//         }
+//     }
+//     return -1;
+// }
+//
+// function pathToBody(node) {
+//     var path = [];
+//     var it = node;
+//     while (it !== document.body) {
+//         path.unshift(childIndex(it));
+//         it = it.parentNode;
+//     }
+//     return path;
+// }
 
 function handleEvent(name, path, event) {
     // console.log('We need to handle', event, 'on', path);
@@ -30,8 +30,27 @@ function handleEvent(name, path, event) {
     }, function (err, data) {
         if (err) {
             console.error(err);
-        } else {
-            console.log(data);
+            return;
+        }
+
+        for (const patch of data) {
+            const [type, path, value] = patch;
+            const node = resolveNode(path);
+            switch (type) {
+                case 0:
+                    // delete
+                    break;
+                case 1:
+                    // replace
+                    break;
+                case 2:
+                    // insert
+                    break;
+                case 3:
+                    // text replace
+                    node.textContent = value;
+                    break;
+            }
         }
     });
 }
