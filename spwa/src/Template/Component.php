@@ -3,6 +3,7 @@
 namespace Spwa\Template;
 
 use ReflectionClass;
+use ReflectionProperty;
 
 // simulate default constructor behavior
 // by enforcing the presence of a parameterless constructor
@@ -30,6 +31,31 @@ abstract class Component implements DefaultCtor
     protected $props;
 
     abstract function view(): ElementNode;
+
+    function restore($props): void
+    {
+        foreach ($props as $key => $value) {
+            if (property_exists($this, $key)) {
+                $this->$key = $value;
+            }
+        }
+    }
+
+    function save(): array
+    {
+        $reflect = new ReflectionClass($this);
+        $publicProperties = $reflect->getProperties(ReflectionProperty::IS_PUBLIC);
+
+        $result = [];
+        foreach ($publicProperties as $property) {
+            if ($property->class === get_class($this)) { // Only include properties declared in this class
+                $propertyName = $property->getName();
+                $result[$propertyName] = $this->$propertyName;
+            }
+        }
+
+        return $result;
+    }
 
     /**
      * @param TProps $props

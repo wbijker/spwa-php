@@ -23,6 +23,11 @@ class NodePath
         return new NodePath([0]);
     }
 
+    static function empty(): NodePath
+    {
+        return new NodePath([]);
+    }
+
     public function addClone(int $index): NodePath
     {
         // creates a copy with the new element added
