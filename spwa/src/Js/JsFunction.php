@@ -2,7 +2,7 @@
 
 namespace Spwa\Js;
 
-class JsFunction extends JsVar
+class JsFunction
 {
     private string $name;
     private array $args;
@@ -19,7 +19,7 @@ class JsFunction extends JsVar
 
     function dump(): string
     {
-        $args = array_map(fn($arg) => JSvar::infer($arg)->dump(), $this->args);
+        $args = array_map(fn($arg) => json_encode($arg), $this->args);
         return "$this->name(" . implode(", ", $args) . ")";
     }
 }

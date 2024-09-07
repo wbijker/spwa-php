@@ -5,6 +5,7 @@ namespace Spwa\Template;
 use Spwa\Dom\HtmlNode;
 use Spwa\Dom\HtmlElement;
 use Spwa\Js\JsFunction;
+use Spwa\Js\JsRaw;
 
 function padSpace(string $implode): string
 {
@@ -56,6 +57,10 @@ class ElementNode extends Node
 
     function render(NodePath $path, PathState $state): HtmlNode
     {
+        // reset when body hit
+        if ($this->tag == "body") {
+            $path = new NodePath([]);
+        }
         $element = new HtmlElement($this, $path, $this->tag);
         foreach ($this->attributes as $attribute) {
             $element->addAttribute($attribute);
@@ -66,7 +71,7 @@ class ElementNode extends Node
         foreach ($this->events as $event) {
             $state->set($path)->addEvent($event->name, $event->handler);
 
-            $function = new JsFunction("handleEvent", $event->name, $path->path);
+            $function = new JsFunction("handleEvent", $event->name, $path->path, "event");
             $element->addAttribute(new NodeAttributeText("on" . $event->name, $function->dump()));
         }
         return $element;

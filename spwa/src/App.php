@@ -3,6 +3,7 @@
 namespace Spwa;
 
 use Spwa\Dom\HtmlNode;
+use Spwa\Js\JsVar;
 use Spwa\Template\NodePath;
 use Spwa\Template\Page;
 use Spwa\Template\PathState;
@@ -34,7 +35,7 @@ class App
 
         // find event from frontend.
         // execute event that will likely change the dom
-        $handler = $state->getEvent(new NodePath([0, 2, 0]), "click");
+        $handler = $state->getEvent(new NodePath($path), $event);
         if ($handler) {
             $handler();
         }

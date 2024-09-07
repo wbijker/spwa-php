@@ -33,9 +33,9 @@ class Patch
     private const INSERT = 2;
     private const TEXT = 3;
 
-    private static function pack(int $type, NodePath $path, $data)
+    private static function pack(int $type, NodePath $path, $data): array
     {
-        return [$type, $path->render(), $data];
+        return [$type, $path->path, $data];
     }
 
 }
