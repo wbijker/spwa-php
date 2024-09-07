@@ -48,20 +48,42 @@ class Levenshtein
         return $dp;
     }
 
-
     /**
      * @template T
      * @param T[] $from
      * @param T[] $to
      * @param (callable(T $item): string|int)|null $key
-     * @return void
+     * @return array [int, T, T][]
      */
-    static function debug(array $from, array $to, callable $key)
+    static function diff(array $from, array $to, $key)
     {
-        $from = array_map($key, $from);
-        $to = array_map($key, $to);
+        // convert array to keys
+        $fromKeys = array_map($key, $from);
+        $toKeys = array_map($key, $to);
+        // then fo the levenshtein algorithm
+        $dp = self::populate($fromKeys, $toKeys);
+        // self::render($dp, $toKeys, $fromKeys);
+        // transverse the dp arrays
+        $i = count($fromKeys);
+        $j = count($toKeys);
 
-        $dp = self::populate($from, $to);
+        $jm = [0, -1, -1, -1];
+        $im = [-1, 0, -1, -1];
+
+        $ret = [];
+        $count = 20;
+        while ($count > 0 && ($i > 0 || $j > 0)) {
+            $action = $dp[$i][$j][1];
+            $ret[] = [$action, $from[$i - 1], $to[$j - 1]];
+            $i += $im[$action];
+            $j += $jm[$action];
+            $count--;
+        }
+        return $ret;
+    }
+
+    static function render($dp, $to, $from)
+    {
         // render a table with the dp array
         echo "<table border='1'>";
         echo "<tr><td></td><td>-</td>";
@@ -82,35 +104,5 @@ class Levenshtein
             echo "</tr>";
         }
         echo "</table>";
-
-        $i = count($from);
-        $j = count($to);
-
-        while ($i > 0 || $j > 0) {
-            $node = $dp[$i][$j];
-            print_r($node);
-
-            switch ($node[1]) {
-                case self::INSERT:
-                    echo "Insert {$to[$j - 1]}<br>";
-                    $j--;
-                    break;
-                case self::DELETE:
-                    echo "delete {$from[$i-1]}<br>";
-                    $i--;
-                    break;
-                case self::SUBSTITUTE:
-                    echo "Sub {$from[$i-1]} with {$to[$j-1]}<br>";
-                    $i--;
-                    $j--;
-                    break;
-                case self::SKIP:
-                    echo "SKIP {$to[$j - 1]}<br>";
-                    $i--;
-                    $j--;
-                    break;
-            }
-        }
     }
-
 }

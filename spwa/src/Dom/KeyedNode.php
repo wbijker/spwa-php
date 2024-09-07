@@ -15,4 +15,9 @@ class KeyedNode
         $this->key = $key;
         $this->node = $node;
     }
+
+    public function __toString()
+    {
+        return $this->node->render();
+    }
 }

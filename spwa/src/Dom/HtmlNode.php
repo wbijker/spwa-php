@@ -19,6 +19,12 @@ abstract class HtmlNode
 
     abstract function render(): string;
 
+    public function __toString()
+    {
+        return $this->render();
+    }
+
+
     static function compareNodes(HtmlNode $prev, HtmlNode $next, array &$patches): void
     {
         if ($prev instanceof HtmlText && $next instanceof HtmlText) {
