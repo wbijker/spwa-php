@@ -3,14 +3,13 @@
 namespace Spwa;
 
 use Spwa\Dom\HtmlNode;
-use Spwa\Dom\Levenshtein;
-use Spwa\Template\Component;
 use Spwa\Template\NodePath;
+use Spwa\Template\Page;
 use Spwa\Template\PathState;
 
 class App
 {
-    static function render(Component $component): void
+    static function render(Page $component): void
     {
         // render previous
         $state = new PathState();
