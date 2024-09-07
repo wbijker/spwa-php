@@ -8,6 +8,76 @@ use InvalidArgumentException;
  * @param Node|NodeAttribute[] $items
  * @return ElementNode
  */
+function html(...$items): ElementNode
+{
+    return new ElementNode("html", $items);
+}
+
+/**
+ * @param Node|NodeAttribute[] $items
+ * @return ElementNode
+ */
+function body(...$items): ElementNode
+{
+    return new ElementNode("body", $items);
+}
+
+/**
+ * @param Node|NodeAttribute[] $items
+ * @return ElementNode
+ */
+function head(...$items): ElementNode
+{
+    return new ElementNode("head", $items);
+}
+
+function title(string $title): ElementNode
+{
+    return new ElementNode("title", [
+        new TextNode($title)
+    ]);
+}
+
+/**
+ * @param Node|NodeAttribute[] $items ;
+ * @return ElementNode
+ */
+function script(...$items): ElementNode
+{
+    return new ElementNode("script", $items);
+}
+
+/**
+ * @param Node|NodeAttribute[] $items ;
+ * @return ElementNode
+ */
+function style(...$items): ElementNode
+{
+    return new ElementNode("style", $items);
+}
+
+/**
+ * @param Node|NodeAttribute[] $items ;
+ * @return ElementNode
+ */
+function link(...$items): ElementNode
+{
+    return new ElementNode("link", $items);
+}
+
+/**
+ * @param [string, string]][] $items
+ * @return ElementNode
+ */
+function meta(...$pairs): ElementNode
+{
+    return new ElementNode("meta", array_map(fn($pair) => new NodeAttributeText($pair[0], $pair[1]), $pairs));
+}
+
+/**
+ * @param Node|NodeAttribute[] $items
+ * @return ElementNode
+ */
 function div(...$items): ElementNode
 {
     return new ElementNode("div", $items);
@@ -57,6 +127,16 @@ function text(string $text): TextNode
     return new TextNode($text);
 }
 
+function content(string $content): TextNode
+{
+    return new TextNode($content, false);
+}
+
+
+/**
+ * @param string ...$class
+ * @return NodeAttribute
+ */
 function _class(string ...$class): NodeAttribute
 {
     // filter out empty strings
@@ -68,3 +148,19 @@ function onClick(callable $handler): NodeAttribute
 {
     return new NodeAttributeEvent("click", $handler);
 }
+
+function src(string $src): NodeAttribute
+{
+    return new NodeAttributeText("src", $src);
+}
+
+function href(string $href): NodeAttribute
+{
+    return new NodeAttributeText("href", $href);
+}
+
+function type(string $type): NodeAttribute
+{
+    return new NodeAttributeText("type", $type);
+}
+

@@ -4,7 +4,7 @@ namespace App\Components;
 
 use Spwa\Template\Component;
 use Spwa\Template\ElementNode;
-use function Spwa\Template\{_class, button, component, div, onClick, text};
+use function Spwa\Template\{_class, body, button, div, head, html, meta, onClick, script, src, text, title};
 
 class WelcomePage extends Component
 {
@@ -12,29 +12,41 @@ class WelcomePage extends Component
 
     function view(): ElementNode
     {
-        return div(
-            div(
-                text("Welcome to the home page"),
-                _class("text-red-500")
+        return html(
+            head(
+                title("Hello SPWA"),
+                meta(["viewport", "width=device-width, initial-scale=1"]),
+                script(src("https://cdn.tailwindcss.com")),
             ),
-            div(
-                _class("bg-blue-500"),
-                text("Another text node"),
-            ),
-            div(
-                text("Counter: " . $this->counter),
-                button(
-                    text("Increment"),
-                    _class("bg-green-500"),
-                    onClick(fn() => $this->counter++)
-                ),
-                button(
-                    text("Decrement"),
-                    _class("bg-red-500"),
-                    onClick(fn() => $this->counter--)
-                ),
-            ),
-//            TodoList::create(["Drink Coffee", "Sleep", "Code"]),
+            body(
+                div(_class("w-full h-screen flex bg-gray-200"),
+                    div(
+                        _class("m-auto bg-white p-4 rounded-lg"),
+                        div(
+                            text("Welcome to the page")
+                        ),
+                        div(
+                            _class("text-center"),
+                            text("Counter: " . $this->counter),
+                        ),
+                        div(
+                            button(
+                                text("inc"),
+                                _class("m-1 px-2 border shadow cursor-pointer"),
+                                onClick(fn() => $this->counter++)
+                            )
+                        ),
+                        div(
+                            button(
+                                text("dec"),
+                                _class("m-1 px-2 border shadow cursor-pointer"),
+                                onClick(fn() => $this->counter--)
+                            )
+                        )
+                    ),
+                // TodoList::create(["Drink Coffee", "Sleep", "Code"]),
+                )
+            )
         );
     }
 }

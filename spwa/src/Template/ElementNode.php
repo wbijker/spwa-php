@@ -30,7 +30,7 @@ class ElementNode extends Node
 
     /**
      * @param string $tag
-     * @param Node|NodeAttribute[] $items
+     * @param (Node|NodeAttribute)[] $items
      */
     public function __construct(string $tag, array $items)
     {
