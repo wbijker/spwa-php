@@ -21,6 +21,18 @@ class Counter extends Component
         $this->text = $text;
     }
 
+    function save(): array
+    {
+        return [
+            "counter" => $this->counter
+        ];
+    }
+
+    function restore($props): void
+    {
+        $this->counter = $props["counter"] ?? 0;
+    }
+    
     function view(): ElementNode
     {
         return div(

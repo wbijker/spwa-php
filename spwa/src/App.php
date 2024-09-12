@@ -14,12 +14,17 @@ class App
     {
         $component->init();
 
+        if ($_COOKIE['state']) {
+            $data = unserialize($_COOKIE['state']);
+            $component->restore($data);
+        }
         // render previous
         $state = new PathState();
         $view = $component->view();
         $prev = $view->render(NodePath::root(), $state);
 
         if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+            setcookie('state', serialize($component->save()));
             echo $prev->render();
             return;
         }
@@ -41,6 +46,8 @@ class App
         if ($handler) {
             $handler();
         }
+
+        setcookie('state', serialize($component->save()));
 
         // render again with potential new changes
         $next = $component->view()->render(NodePath::root(), $state);

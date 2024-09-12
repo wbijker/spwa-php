@@ -26,6 +26,20 @@ class WelcomePage extends Page
         $this->counter2 = new Counter(0, "Counter 2");
     }
 
+    function save(): array
+    {
+        return [
+            "counter1" => $this->counter1->save(),
+            "counter2" => $this->counter2->save()
+        ];
+    }
+
+    function restore($props): void
+    {
+        $this->counter1->restore($props["counter1"]);
+        $this->counter2->restore($props["counter2"]);
+    }
+
     function body(): ElementNode
     {
         return div(
