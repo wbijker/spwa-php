@@ -12,6 +12,8 @@ class App
 {
     static function render(Page $component): void
     {
+        $component->init();
+
         // render previous
         $state = new PathState();
         $view = $component->view();

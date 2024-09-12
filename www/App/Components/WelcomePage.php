@@ -8,8 +8,6 @@ use function Spwa\Template\{_class, button, div, meta, onClick, script, src, tex
 
 class WelcomePage extends Page
 {
-    var $counter = 0;
-
     function head(): array
     {
         return [
@@ -17,6 +15,15 @@ class WelcomePage extends Page
             meta(["viewport", "width=device-width, initial-scale=1"]),
             script(src("https://cdn.tailwindcss.com"))
         ];
+    }
+
+    var Counter $counter1;
+    var Counter $counter2;
+
+    function init()
+    {
+        $this->counter1 = new Counter(0, "Counter 1");
+        $this->counter2 = new Counter(0, "Counter 2");
     }
 
     function body(): ElementNode
@@ -28,24 +35,8 @@ class WelcomePage extends Page
                 div(
                     text("Welcome to the page")
                 ),
-                div(
-                    _class("text-center"),
-                    text("Counter: " . $this->counter),
-                ),
-                div(
-                    button(
-                        text("inc"),
-                        _class("m-1 px-2 border shadow cursor-pointer"),
-                        onClick(fn() => $this->counter++)
-                    )
-                ),
-                div(
-                    button(
-                        text("dec"),
-                        _class("m-1 px-2 border shadow cursor-pointer"),
-                        onClick(fn() => $this->counter--)
-                    )
-                )
+                $this->counter1,
+                $this->counter2,
             )
         );
     }

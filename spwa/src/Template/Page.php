@@ -4,11 +4,6 @@ namespace Spwa\Template;
 
 abstract class Page extends Component
 {
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
 
     abstract function body(): ElementNode;
 
