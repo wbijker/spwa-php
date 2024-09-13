@@ -13,26 +13,7 @@ use function Spwa\Template\text;
 class Counter extends Component
 {
     var int $counter = 0;
-    var string $text;
 
-    public function __construct(int $counter, string $text)
-    {
-        $this->counter = $counter;
-        $this->text = $text;
-    }
-
-    function save(): array
-    {
-        return [
-            "counter" => $this->counter
-        ];
-    }
-
-    function restore($props): void
-    {
-        $this->counter = $props["counter"] ?? 0;
-    }
-    
     function view(): ElementNode
     {
         return div(

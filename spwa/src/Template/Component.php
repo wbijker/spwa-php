@@ -31,7 +31,9 @@ abstract class Component extends Node
     {
         foreach ($props as $key => $value) {
             if (property_exists($this, $key)) {
-                $this->$key = $value;
+                if ($this->$key instanceof Component) {
+                    $this->$key->restore($value);
+                } else $this->$key = $value;
             }
         }
     }
@@ -45,7 +47,11 @@ abstract class Component extends Node
         foreach ($publicProperties as $property) {
             if ($property->class === get_class($this)) { // Only include properties declared in this class
                 $propertyName = $property->getName();
-                $result[$propertyName] = $this->$propertyName;
+                $value = $this->$propertyName;
+
+                $result[$propertyName] = $value instanceof Component
+                    ? $value->save()
+                    : $this->$propertyName;
             }
         }
 
