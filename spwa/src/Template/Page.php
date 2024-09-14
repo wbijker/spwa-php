@@ -25,7 +25,9 @@ abstract class Page extends Component
         foreach ($this->head() as $node) {
             $head->addChild($node);
         }
-        $head->addChild(body($this->body()));
-        return html($head);
+        return html(
+            $head,
+            body($this->body())
+        );
     }
 }

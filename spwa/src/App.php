@@ -10,21 +10,22 @@ use Spwa\Template\PathState;
 
 class App
 {
-    static function render(Page $component): void
+    static function render(Page $page): void
     {
-        $component->init();
+        $page->init();
+        $page->stateHandler();
 
         if ($_COOKIE['state']) {
             $data = unserialize($_COOKIE['state']);
-            $component->restore($data);
+            $page->restore($data);
         }
         // render previous
         $state = new PathState();
-        $view = $component->view();
+        $view = $page->view();
         $prev = $view->render(NodePath::root(), $state);
 
         if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-            setcookie('state', serialize($component->save()));
+            setcookie('state', serialize($page->save()));
             echo $prev->render();
             return;
         }
@@ -47,10 +48,10 @@ class App
             $handler();
         }
 
-        setcookie('state', serialize($component->save()));
+        setcookie('state', serialize($page->save()));
 
         // render again with potential new changes
-        $next = $component->view()->render(NodePath::root(), $state);
+        $next = $page->view()->render(NodePath::root(), $state);
 
         // compare the $prev and $next render instances
         /** @var Patch[] $patches */
