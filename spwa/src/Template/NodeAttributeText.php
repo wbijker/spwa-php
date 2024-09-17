@@ -3,6 +3,8 @@
 namespace Spwa\Template;
 
 
+use Spwa\Dom\HtmlElement;
+
 class NodeAttributeText extends NodeAttribute
 {
     public string $name;
@@ -14,10 +16,21 @@ class NodeAttributeText extends NodeAttribute
         $this->value = $value;
     }
 
+    function bind(HtmlElement $element, NodePath $path, PathState $state): void
+    {
+        $element->addAttribute($this);
+    }
+
     public function render(): string
     {
-        $escapedName = htmlspecialchars($this->name, ENT_COMPAT, 'UTF-8');
-        $escapedValue = htmlspecialchars($this->value, ENT_COMPAT, 'UTF-8');
+        return self::build($this->name, $this->value);
+    }
+
+    static function build(string $name, string $value): string
+    {
+        $escapedName = htmlspecialchars($name, ENT_COMPAT, 'UTF-8');
+        $escapedValue = htmlspecialchars($value, ENT_COMPAT, 'UTF-8');
         return "$escapedName=\"$escapedValue\"";
     }
 }
+

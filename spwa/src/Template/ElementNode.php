@@ -26,24 +26,17 @@ class ElementNode extends Node
     public array $attributes = [];
 
     /**
-     * @var NodeAttributeEvent[] $events
-     */
-    private array $events = [];
-
-    /**
      * @param string $tag
      * @param (Node|NodeAttribute)[] $items
      */
     public function __construct(string $tag, array $items)
     {
         $this->tag = $tag;
-        $this->items = $items;
+        $this->attributes = [];
 
         foreach ($items as $item) {
-            if ($item instanceof NodeAttributeText) {
+            if ($item instanceof NodeAttribute) {
                 $this->attributes[] = $item;
-            } else if ($item instanceof NodeAttributeEvent) {
-                $this->events[] = $item;
             } else {
                 $this->children[] = $item;
             }
@@ -63,16 +56,10 @@ class ElementNode extends Node
         }
         $element = new HtmlElement($this, $path, $this->tag);
         foreach ($this->attributes as $attribute) {
-            $element->addAttribute($attribute);
+            $attribute->bind($element, $path, $state);
         }
         foreach ($this->children as $index => $child) {
             $element->addChild($child->render($path->addClone($index), $state));
-        }
-        foreach ($this->events as $event) {
-            $state->set($path)->addEvent($event->name, $event->handler);
-
-            $function = new JsFunction("handleEvent", $event->name, $path->path, "event");
-            $element->addAttribute(new NodeAttributeText("on" . $event->name, $function->dump()));
         }
         return $element;
     }
