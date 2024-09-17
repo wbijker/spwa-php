@@ -84,6 +84,15 @@ function div(...$items): ElementNode
 }
 
 /**
+ * @param NodeAttribute[] $items
+ * @return ElementNode
+ */
+function input(string $type, ...$items): ElementNode
+{
+    return new ElementNode("input", [type($type), ...$items]);
+}
+
+/**
  * @param Node|NodeAttribute[] $items
  * @return ElementNode
  */
@@ -162,5 +171,10 @@ function href(string $href): NodeAttribute
 function type(string $type): NodeAttribute
 {
     return new NodeAttributeText("type", $type);
+}
+
+function bind(&$value): NodeAttribute
+{
+    return new NodeAttributeBind($value);
 }
 

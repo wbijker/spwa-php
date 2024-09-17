@@ -13,7 +13,7 @@ class App
     static function render(Page $page): void
     {
         $page->init();
-        $page->stateHandler();
+//        $page->stateHandler();
 
         if ($_COOKIE['state']) {
             $data = unserialize($_COOKIE['state']);

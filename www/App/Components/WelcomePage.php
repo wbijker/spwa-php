@@ -4,7 +4,7 @@ namespace App\Components;
 
 use Spwa\Template\ElementNode;
 use Spwa\Template\Page;
-use function Spwa\Template\{_class, button, div, meta, onClick, script, src, text, title};
+use function Spwa\Template\{_class, bind, button, div, input, meta, onClick, script, src, text, title};
 
 class WelcomePage extends Page
 {
@@ -20,12 +20,14 @@ class WelcomePage extends Page
     var Counter $counter1;
     var Counter $counter2;
 
-    function init()
+    var string $input1 = "";
+
+    function init(): void
     {
-        $this->counter1 = new Counter(0, "Counter 1");
-        $this->counter2 = new Counter(0, "Counter 2");
+        $this->counter1 = new Counter();
+        $this->counter2 = new Counter();
     }
-    
+
     function body(): ElementNode
     {
         return div(
@@ -37,7 +39,13 @@ class WelcomePage extends Page
                 ),
                 $this->counter1,
                 $this->counter2,
-            )
+                div(
+                    input("text",
+                        _class("border-2 border-gray-300 p-2 rounded-lg"),
+                        bind($this->input1),
+                    ),
+                )
+            ),
         );
     }
 }
