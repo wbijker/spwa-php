@@ -24,6 +24,11 @@ class PathState
         return $this->dic[$path->render()];
     }
 
+    function getByString(string $path): ?PathData
+    {
+        return $this->dic[$path];
+    }
+
     function getEvent(NodePath $path, string $event): ?callable
     {
         $data = $this->get($path);

@@ -2,6 +2,10 @@ function resolveNode(path) {
     return path.reduce((acc, cur) => acc.childNodes[cur], document.body);
 }
 
+// two-way bindings path, value pair
+const inputs = {};
+
+
 // // childIndex and pathToBody are not needed in the final version
 // function childIndex(node) {
 //     for (var i = 0; i < node.parentNode.childNodes.length; i++) {
@@ -22,11 +26,16 @@ function resolveNode(path) {
 //     return path;
 // }
 
+function handleInput(path, event) {
+    inputs[JSON.stringify(path)] = event.target.value;
+}
+
 function handleEvent(name, path, event) {
     // console.log('We need to handle', event, 'on', path);
     // console.log(pathToBody(event.target));
     post({
-        event: [path, name]
+        event: [path, name],
+        inputs
     }, function (err, data) {
         if (err) {
             console.error(err);

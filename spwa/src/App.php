@@ -13,7 +13,6 @@ class App
     static function render(Page $page): void
     {
         $page->init();
-//        $page->stateHandler();
 
         if ($_COOKIE['state']) {
             $data = unserialize($_COOKIE['state']);
@@ -34,13 +33,16 @@ class App
         $json = json_decode(file_get_contents('php://input'), true);
 
         $event = $json['event'];
-        if (!isset($event)) {
-            echo "event not found";
-            return;
+        $inputs = $json["inputs"];
+
+        // handle bindings
+        foreach ($inputs as $path => $value) {
+            $pathData = $state->getByString($path);
+            if ($pathData->binding)
+                $pathData->binding->set($value);
         }
 
         [$path, $event] = $event;
-
         // find event from frontend.
         // execute event that will likely change the dom
         $handler = $state->getEvent(new NodePath($path), $event);

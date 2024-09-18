@@ -84,6 +84,15 @@ function div(...$items): ElementNode
 }
 
 /**
+ * @param Node|NodeAttribute[] $items
+ * @return ElementNode
+ */
+function span(...$items): ElementNode
+{
+    return new ElementNode("span", $items);
+}
+
+/**
  * @param NodeAttribute[] $items
  * @return ElementNode
  */

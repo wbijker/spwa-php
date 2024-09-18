@@ -4,7 +4,7 @@ namespace App\Components;
 
 use Spwa\Template\ElementNode;
 use Spwa\Template\Page;
-use function Spwa\Template\{_class, bind, button, div, input, meta, onClick, script, src, text, title};
+use function Spwa\Template\{_class, bind, button, div, input, meta, onClick, script, span, src, text, title};
 
 class WelcomePage extends Page
 {
@@ -44,6 +44,10 @@ class WelcomePage extends Page
                         _class("border-2 border-gray-300 p-2 rounded-lg"),
                         bind($this->input1),
                     ),
+                ),
+                div(
+                    span(text("You typed: ")),
+                    span(text($this->input1))
                 )
             ),
         );
