@@ -4,7 +4,7 @@ function resolveNode(path) {
 
 // two-way bindings path, value pair
 
-const inputs = {};
+let inputs = {};
 
 function childIndex(node) {
     for (var i = 0; i < node.parentNode.childNodes.length; i++) {
@@ -42,6 +42,8 @@ function handleEvent(name, event) {
             console.error(err);
             return;
         }
+
+        inputs = {};
 
         for (const patch of data) {
             const [type, path, value] = patch;
