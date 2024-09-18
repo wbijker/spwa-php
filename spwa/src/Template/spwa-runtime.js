@@ -3,36 +3,37 @@ function resolveNode(path) {
 }
 
 // two-way bindings path, value pair
+
 const inputs = {};
 
+function childIndex(node) {
+    for (var i = 0; i < node.parentNode.childNodes.length; i++) {
+        if (node.parentNode.childNodes[i] === node) {
+            return i;
+        }
+    }
+    return -1;
+}
 
-// // childIndex and pathToBody are not needed in the final version
-// function childIndex(node) {
-//     for (var i = 0; i < node.parentNode.childNodes.length; i++) {
-//         if (node.parentNode.childNodes[i] === node) {
-//             return i;
-//         }
-//     }
-//     return -1;
-// }
-//
-// function pathToBody(node) {
-//     var path = [];
-//     var it = node;
-//     while (it !== document.body) {
-//         path.unshift(childIndex(it));
-//         it = it.parentNode;
-//     }
-//     return path;
-// }
+function pathToBody(node) {
+    var path = [];
+    var it = node;
+    while (it !== document.body) {
+        path.unshift(childIndex(it));
+        it = it.parentNode;
+    }
+    return path;
+}
 
-function handleInput(path, event) {
+function handleInput(event) {
+    const path = pathToBody(event.target);
     inputs[JSON.stringify(path)] = event.target.value;
 }
 
-function handleEvent(name, path, event) {
+function handleEvent(name, event) {
     // console.log('We need to handle', event, 'on', path);
-    // console.log(pathToBody(event.target));
+    const path = pathToBody(event.target);
+
     post({
         event: [path, name],
         inputs
