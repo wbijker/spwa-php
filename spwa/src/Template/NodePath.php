@@ -46,4 +46,13 @@ class NodePath
     {
         return "[".implode(",", $this->path)."]";
     }
+
+    /*
+     * nibbles
+     * 1 xxx (0 - 7) (0.5 bytes)
+     * 01 xx xxxx (7 - 31) (1 bytes)
+     * 001 x xxxx xxxx (31 - 127) (1.5 bytes)
+     * 0001 xxxx xxxx xxxx (127 - 511) (2 bytes)
+     * 0000 1xxx (variable length, up to 7 bytes)
+     */
 }
