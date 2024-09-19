@@ -34,6 +34,15 @@ abstract class Component extends Node
         return array_keys($properties);
     }
 
+    public function __wakeup()
+    {
+        $this->restored();
+    }
+
+    function restored()
+    {
+    }
+
     /**
      * @param TProps $props
      * @return ComponentNode
@@ -49,7 +58,6 @@ abstract class Component extends Node
      */
     function setProps($props): void
     {
-        JS::log("settings props: '". json_encode($props)."'");
         $this->props = $props;
     }
 

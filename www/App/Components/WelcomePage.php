@@ -42,7 +42,7 @@ class WelcomePage extends Page
                     text("Welcome to the page")
                 ),
                 $this->counter1->build(0),
-                $this->counter2->build(0),
+                $this->counter2->build(1),
                 div(
                     input("text",
                         _class("border-2 border-gray-300 p-2 rounded-lg"),

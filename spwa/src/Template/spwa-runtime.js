@@ -65,12 +65,16 @@ function handleEvent(name, event) {
             }
         }
         // execute JS code
-        for (const item of data.j) {
-            console.log(item);
+        for (const [path, args] of data.j) {
+            const obj = resolveObject(path);
+            obj(...args);
         }
     });
 }
 
+function resolveObject(path) {
+    return path.reduce((acc, cur) => acc[cur], window);
+}
 
 function post(data, callback) {
     var xhr = new XMLHttpRequest();

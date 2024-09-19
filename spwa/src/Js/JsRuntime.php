@@ -11,9 +11,9 @@ class JsRuntime
         self::$calls[] = [$path, $args];
     }
 
-    static function dump(): string
+    static function dump(): array
     {
-        $run = json_encode(self::$calls);
+        $run = self::$calls;
         self::$calls = [];
         return $run;
     }
