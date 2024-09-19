@@ -2,7 +2,9 @@
 
 namespace App\Components;
 
+use Spwa\Js\JS;
 use Spwa\Template\Component;
+use Spwa\Template\ComponentNode;
 use Spwa\Template\ElementNode;
 use function Spwa\Template\_class;
 use function Spwa\Template\button;
@@ -10,6 +12,11 @@ use function Spwa\Template\div;
 use function Spwa\Template\onClick;
 use function Spwa\Template\text;
 
+
+/**
+ * Class Counter
+ * @extends  Component<(int) => void>
+ */
 class Counter extends Component
 {
     var int $counter = 0;
@@ -17,6 +24,7 @@ class Counter extends Component
 
     public function __construct()
     {
+
     }
 
     function view(): ElementNode
@@ -30,26 +38,22 @@ class Counter extends Component
                 button(
                     text("inc"),
                     _class("m-1 px-2 border shadow cursor-pointer"),
-                    onClick(fn() => $this->counter++)
+                    onClick(function () {
+                        ($this->props)($this->counter);
+                        $this->counter++;
+                    })
                 )
             ),
             div(
                 button(
                     text("dec"),
                     _class("m-1 px-2 border shadow cursor-pointer"),
-                    onClick(fn() => $this->counter--)
+                    onClick(function () {
+                        ($this->props)($this->counter);
+                        $this->counter--;
+                    })
                 )
             )
         );
     }
-
-//    public function serialize(): string
-//    {
-//        return serialize($this->counter);
-//    }
-//
-//    public function unserialize($data)
-//    {
-//        $this->counter = unserialize($data);
-//    }
 }

@@ -22,9 +22,11 @@ class WelcomePage extends Page
             script(src("https://cdn.tailwindcss.com"))
         ];
     }
+
     var Counter $counter1;
     var Counter $counter2;
     var string $input1 = "";
+    var int $last = 0;
 
     public function __construct()
     {
@@ -39,10 +41,12 @@ class WelcomePage extends Page
             div(
                 _class("m-auto bg-white p-4 rounded-lg"),
                 div(
-                    text("Welcome to the page")
+                    text("Welcome to the page"),
                 ),
-                $this->counter1->build(0),
-                $this->counter2->build(1),
+                div(text("Last counter value: " . $this->last)),
+
+                $this->counter1->build(fn($v) => $this->last = $v),
+                $this->counter2->build(fn($v) => $this->last = $v),
                 div(
                     input("text",
                         _class("border-2 border-gray-300 p-2 rounded-lg"),
