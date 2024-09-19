@@ -4,10 +4,16 @@ namespace App\Components;
 
 use Spwa\Template\ElementNode;
 use Spwa\Template\Page;
+use Spwa\Template\SessionStateHandler;
 use function Spwa\Template\{_class, bind, button, div, input, meta, onClick, script, span, src, text, title};
 
 class WelcomePage extends Page
 {
+    public function stateHandler(): \Spwa\Template\StateHandler
+    {
+        return new SessionStateHandler();
+    }
+
     function head(): array
     {
         return [
@@ -17,16 +23,17 @@ class WelcomePage extends Page
         ];
     }
 
+    public function __construct()
+    {
+        // only run when creating a new instance
+        $this->counter1 = new Counter();
+        $this->counter2 = new Counter();
+    }
+
     var Counter $counter1;
     var Counter $counter2;
 
     var string $input1 = "";
-
-    function init(): void
-    {
-        $this->counter1 = new Counter();
-        $this->counter2 = new Counter();
-    }
 
     function body(): ElementNode
     {

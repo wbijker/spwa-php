@@ -6,6 +6,8 @@ abstract class Page extends Component
 {
 
     abstract function body(): ElementNode;
+    abstract function stateHandler(): StateHandler;
+
 
     /**
      * @return ElementNode[]

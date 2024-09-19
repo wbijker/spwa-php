@@ -3,29 +3,33 @@
 namespace Spwa;
 
 use Spwa\Dom\HtmlNode;
-use Spwa\Js\JsVar;
 use Spwa\Template\NodePath;
 use Spwa\Template\Page;
 use Spwa\Template\PathState;
+
 
 class App
 {
     static function render(Page $page): void
     {
-        $page->init();
+        ob_start();
+        $stateHandler = $page->stateHandler();
+        $stateHandler->initialize();
 
-        if ($_COOKIE['state']) {
-            $data = unserialize($_COOKIE['state']);
-            $page->restore($data);
+        $data = $stateHandler->restore();
+        if ($data != null) {
+            $page = unserialize($data);
         }
+
         // render previous
         $state = new PathState();
         $view = $page->view();
         $prev = $view->render(NodePath::root(), $state);
 
         if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-            setcookie('state', serialize($page->save()));
+            $stateHandler->save(serialize($page));
             echo $prev->render();
+            echo ob_get_clean();
             return;
         }
 
@@ -50,7 +54,7 @@ class App
             $handler();
         }
 
-        setcookie('state', serialize($page->save()));
+        $stateHandler->save(serialize($page));
 
         // render again with potential new changes
         $next = $page->view()->render(NodePath::root(), $state);

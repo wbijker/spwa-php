@@ -13,6 +13,11 @@ use function Spwa\Template\text;
 class Counter extends Component
 {
     var int $counter = 0;
+    var string $name = "Counter 2";
+
+    public function __construct()
+    {
+    }
 
     function view(): ElementNode
     {
@@ -37,4 +42,14 @@ class Counter extends Component
             )
         );
     }
+
+//    public function serialize(): string
+//    {
+//        return serialize($this->counter);
+//    }
+//
+//    public function unserialize($data)
+//    {
+//        $this->counter = unserialize($data);
+//    }
 }

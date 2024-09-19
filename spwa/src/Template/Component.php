@@ -27,36 +27,23 @@ abstract class Component extends Node
 
     }
 
-    function restore($props): void
-    {
-        foreach ($props as $key => $value) {
-            if (property_exists($this, $key)) {
-                if ($this->$key instanceof Component) {
-                    $this->$key->restore($value);
-                } else $this->$key = $value;
-            }
-        }
-    }
-
-    function save(): array
-    {
-        $reflect = new ReflectionClass($this);
-        $publicProperties = $reflect->getProperties(ReflectionProperty::IS_PUBLIC);
-
-        $result = [];
-        foreach ($publicProperties as $property) {
-            if ($property->class === get_class($this)) { // Only include properties declared in this class
-                $propertyName = $property->getName();
-                $value = $this->$propertyName;
-
-                $result[$propertyName] = $value instanceof Component
-                    ? $value->save()
-                    : $this->$propertyName;
-            }
-        }
-
-        return $result;
-    }
+//    public function serialize(): string
+//    {
+//        return serialize($this);
+//    }
+//
+//    function unserialize($data)
+//    {
+////        if (empty($data) || !is_string($data)) {
+////            return;
+////        }
+////        $restored = unserialize($data);
+////        print_r($restored);
+////        // Manually copy properties from the unserialized object
+////        foreach (get_object_vars($restored) as $property => $value) {
+////            $this->$property = $value;
+////        }
+//    }
 
     /**
      * @param TProps $props
