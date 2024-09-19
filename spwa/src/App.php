@@ -3,10 +3,11 @@
 namespace Spwa;
 
 use Spwa\Dom\HtmlNode;
+use Spwa\Js\JS;
+use Spwa\Js\JsRuntime;
 use Spwa\Template\NodePath;
 use Spwa\Template\Page;
 use Spwa\Template\PathState;
-
 
 class App
 {
@@ -29,7 +30,6 @@ class App
         if ($_SERVER['REQUEST_METHOD'] == 'GET') {
             $stateHandler->save(serialize($page));
             echo $prev->render();
-            echo ob_get_clean();
             return;
         }
 
@@ -65,7 +65,10 @@ class App
         HtmlNode::compareNodes($prev, $next, $patches);
 
         // and finally return the patches to the JS runtime
-        echo json_encode($patches);
+        echo json_encode([
+            'p' => $patches,
+            'j' => JsRuntime::dump()
+        ]);
     }
 }
 

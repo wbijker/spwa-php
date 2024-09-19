@@ -45,7 +45,7 @@ function handleEvent(name, event) {
 
         inputs = {};
 
-        for (const patch of data) {
+        for (const patch of data.p) {
             const [type, path, value] = patch;
             const node = resolveNode(path);
             switch (type) {
@@ -63,6 +63,10 @@ function handleEvent(name, event) {
                     node.textContent = value;
                     break;
             }
+        }
+        // execute JS code
+        for (const item of data.j) {
+            console.log(item);
         }
     });
 }

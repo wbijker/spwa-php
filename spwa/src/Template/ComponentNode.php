@@ -9,26 +9,25 @@ use Spwa\Dom\HtmlNode;
  */
 class ComponentNode extends Node
 {
-    private string $class;
     private $props;
+    /**
+     * @var Component|string
+     */
+    private $instance;
 
     /**
-     * @param class-string<Component<TProps>> $class The name of the component
+     * @param Component<TProps> $instance
      * @param TProps $props
      */
-    public function __construct(string $class, $props)
+    public function __construct($instance, $props)
     {
-        $this->class = $class;
+        $this->instance = $instance;
         $this->props = $props;
     }
 
     function render(NodePath $path, PathState $state): HtmlNode
     {
-        $data = $state->set($path);
-        $instance = $data->component ?: new $this->class();
-        $data->component = $instance;
-
-        $instance->setProps($this->props);
-        return $instance->render($path, $state);
+        $this->instance->setProps($this->props);
+        return $this->instance->render($path, $state);
     }
 }

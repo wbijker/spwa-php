@@ -22,18 +22,15 @@ class WelcomePage extends Page
             script(src("https://cdn.tailwindcss.com"))
         ];
     }
+    var Counter $counter1;
+    var Counter $counter2;
+    var string $input1 = "";
 
     public function __construct()
     {
-        // only run when creating a new instance
         $this->counter1 = new Counter();
         $this->counter2 = new Counter();
     }
-
-    var Counter $counter1;
-    var Counter $counter2;
-
-    var string $input1 = "";
 
     function body(): ElementNode
     {
@@ -44,8 +41,8 @@ class WelcomePage extends Page
                 div(
                     text("Welcome to the page")
                 ),
-                $this->counter1,
-                $this->counter2,
+                $this->counter1->build(0),
+                $this->counter2->build(0),
                 div(
                     input("text",
                         _class("border-2 border-gray-300 p-2 rounded-lg"),

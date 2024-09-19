@@ -5,6 +5,7 @@ namespace Spwa\Template;
 use ReflectionClass;
 use ReflectionProperty;
 use Spwa\Dom\HtmlNode;
+use Spwa\Js\JS;
 
 /**
  * Represents a base component class.
@@ -22,28 +23,25 @@ abstract class Component extends Node
 
     abstract function view(): ElementNode;
 
-    function init()
+    // mark all properties for serialization except 'props'
+    public function __sleep()
     {
-
+        // Get all object properties
+        $properties = get_object_vars($this);
+        // Remove the 'props' property
+        unset($properties['props']);
+        // Return the keys of the remaining properties
+        return array_keys($properties);
     }
 
-//    public function serialize(): string
-//    {
-//        return serialize($this);
-//    }
-//
-//    function unserialize($data)
-//    {
-////        if (empty($data) || !is_string($data)) {
-////            return;
-////        }
-////        $restored = unserialize($data);
-////        print_r($restored);
-////        // Manually copy properties from the unserialized object
-////        foreach (get_object_vars($restored) as $property => $value) {
-////            $this->$property = $value;
-////        }
-//    }
+    /**
+     * @param TProps $props
+     * @return ComponentNode
+     */
+    function build($props): ComponentNode
+    {
+        return new ComponentNode($this, $props);
+    }
 
     /**
      * @param TProps $props
@@ -51,6 +49,7 @@ abstract class Component extends Node
      */
     function setProps($props): void
     {
+        JS::log("settings props: '". json_encode($props)."'");
         $this->props = $props;
     }
 

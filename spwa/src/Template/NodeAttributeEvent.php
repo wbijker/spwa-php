@@ -4,7 +4,7 @@ namespace Spwa\Template;
 
 use Spwa\Dom\HtmlElement;
 use Spwa\Js\JsFunction;
-use Spwa\Js\JsVar;
+use Spwa\Js\JsLiteral;
 
 class NodeAttributeEvent extends NodeAttribute
 {
@@ -23,7 +23,7 @@ class NodeAttributeEvent extends NodeAttribute
     function bind(HtmlElement $element, NodePath $path, PathState $state): void
     {
         $state->set($path)->addEvent($this->name, $this->handler);
-        $function = new JsFunction("handleEvent", $this->name, new JsVar("event"));
+        $function = new JsFunction("handleEvent", $this->name, new JsLiteral("event"));
         $element->addAttribute(new NodeAttributeText("on" . $this->name, $function->dump()));
     }
 
