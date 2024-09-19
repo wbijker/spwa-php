@@ -7,6 +7,13 @@ use Spwa\Patch;
 use Spwa\Template\Node;
 use Spwa\Template\NodePath;
 
+function padText(string $text): string
+{
+    return empty($text)
+        ? " "
+        : $text;
+}
+
 class HtmlText extends HtmlNode
 {
     private string $text;
@@ -21,10 +28,8 @@ class HtmlText extends HtmlNode
 
     function render(): string
     {
-        if ($this->escape)
-            return htmlspecialchars($this->text, ENT_QUOTES, 'UTF-8');
-        
-        return $this->text;
+        // need to pad text to prevent text node from being removed by the browser
+        return padText($this->escape ? htmlspecialchars($this->text, ENT_QUOTES, 'UTF-8') : $this->text);
     }
 
     static function compare(HtmlText $prev, HtmlText $next, array &$patches): void
