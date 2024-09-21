@@ -45,8 +45,12 @@ class WelcomePage extends Page
                 ),
                 div(text("Last counter value: " . $this->last)),
 
-                $this->counter1->build(fn($v) => $this->last = $v),
-                $this->counter2->build(fn($v) => $this->last = $v),
+                $this->counter1->setProps([
+                    "onChange" => fn($value) => $this->last = $value
+                ]),
+                $this->counter2->setProps([
+                    "onChange" => fn($value) => $this->last = $value
+                ]),
                 div(
                     input("text",
                         _class("border-2 border-gray-300 p-2 rounded-lg"),

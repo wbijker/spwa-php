@@ -27,6 +27,11 @@ class Counter extends Component
 
     }
 
+    /**
+     * @param callable $props
+     * @return ComponentNode
+     */
+
     function view(): ElementNode
     {
         return div(
@@ -39,7 +44,7 @@ class Counter extends Component
                     text("inc"),
                     _class("m-1 px-2 border shadow cursor-pointer"),
                     onClick(function () {
-                        ($this->props)($this->counter);
+                        ($this->props['onChange'])($this->counter);
                         $this->counter++;
                     })
                 )
@@ -49,7 +54,7 @@ class Counter extends Component
                     text("dec"),
                     _class("m-1 px-2 border shadow cursor-pointer"),
                     onClick(function () {
-                        ($this->props)($this->counter);
+                        ($this->props['onChange'])($this->counter);
                         $this->counter--;
                     })
                 )

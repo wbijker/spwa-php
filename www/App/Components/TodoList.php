@@ -41,12 +41,12 @@ class TodoList extends Component
     var $counter = 0;
     var $items = [];
 
-    function setProps($props): void
+    function setProps(array $properties): void
     {
-        parent::setProps($props);
+        parent::setProps($properties);
 
         if (count($this->items) == 0)
-            $this->items = $props->items;
+            $this->items = $properties->items;
     }
 
 

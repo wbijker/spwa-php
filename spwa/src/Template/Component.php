@@ -44,21 +44,14 @@ abstract class Component extends Node
     }
 
     /**
-     * @param TProps $props
-     * @return ComponentNode
+     * @param array<string, mixed> $properties
+     * @phpstan-param TProps $properties
+     * @return self
      */
-    function build($props): ComponentNode
+    function setProps(array $properties): Component
     {
-        return new ComponentNode($this, $props);
-    }
-
-    /**
-     * @param TProps $props
-     * @return void
-     */
-    function setProps($props): void
-    {
-        $this->props = $props;
+        $this->props = $properties;
+        return $this;
     }
 
     function render(NodePath $path, PathState $listeners): HtmlNode
