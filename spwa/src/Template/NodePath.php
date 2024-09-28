@@ -44,7 +44,7 @@ class NodePath
 
     public function render(): string
     {
-        return "[".implode(",", $this->path)."]";
+        return json_encode($this->path);
     }
 
     /*

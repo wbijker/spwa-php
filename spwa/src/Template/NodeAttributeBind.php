@@ -22,7 +22,7 @@ class NodeAttributeBind extends NodeAttribute
 
     function bind(HtmlElement $element, NodePath $path, PathState $state): void
     {
-        $state->set($path)->binding = $this;
+        $state->get($path)->binding = $this;
         $function = new JsFunction("handleInput", new JsLiteral("event"));
         $element->addAttribute(new NodeAttributeText("onInput", $function->dump()));
         $element->addAttribute(new NodeAttributeText("value", $this->value));

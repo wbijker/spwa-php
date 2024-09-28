@@ -22,7 +22,7 @@ class NodeAttributeEvent extends NodeAttribute
 
     function bind(HtmlElement $element, NodePath $path, PathState $state): void
     {
-        $state->set($path)->addEvent($this->name, $this->handler);
+        $state->get($path)->addEvent($this->name, $this->handler);
         $function = new JsFunction("handleEvent", $this->name, new JsLiteral("event"));
         $element->addAttribute(new NodeAttributeText("on" . $this->name, $function->dump()));
     }

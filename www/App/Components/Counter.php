@@ -24,7 +24,16 @@ class Counter extends Component
 
     public function __construct()
     {
+        JS::log("Counter constructor called");
+    }
 
+    static function component(callable $onChange): ComponentNode
+    {
+        return new ComponentNode(
+            self::class,
+            [
+                "onChange" => $onChange
+            ]);
     }
 
     /**
@@ -60,5 +69,11 @@ class Counter extends Component
                 )
             )
         );
+    }
+
+    public function onChange(\Closure $param): Counter
+    {
+        $this->props['onChange'] = $param;
+        return $this;
     }
 }

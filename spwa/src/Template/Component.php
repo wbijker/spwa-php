@@ -23,24 +23,48 @@ abstract class Component extends Node
 
     abstract function view(): ElementNode;
 
-    // mark all properties for serialization except 'props'
-    public function __sleep()
+    public function saveState(): array
     {
-        // Get all object properties
-        $properties = get_object_vars($this);
-        // Remove the 'props' property
-        unset($properties['props']);
-        // Return the keys of the remaining properties
-        return array_keys($properties);
+        $state = [];
+        $reflection = new \ReflectionClass($this);
+
+        // Get properties declared in the current class only
+        foreach ($reflection->getProperties(\ReflectionProperty::IS_PUBLIC | \ReflectionProperty::IS_PROTECTED | \ReflectionProperty::IS_PRIVATE) as $property) {
+            if ($property->getDeclaringClass()->getName() === $reflection->getName()) {
+                $property->setAccessible(true); // Allow access to protected/private properties
+                $value = $property->getValue($this);
+
+                // If the property is a Component, recursively save its state
+                if ($value instanceof Component) {
+                    $state[$property->getName()] = $value->saveState();
+                } else {
+                    $state[$property->getName()] = $value;
+                }
+            }
+        }
+        return $state;
     }
 
-    public function __wakeup()
+    public function restoreState(array $state): void
     {
-        $this->restored();
-    }
+        $reflection = new \ReflectionClass($this);
 
-    function restored()
-    {
+        // Restore properties declared in the current class only
+        foreach ($state as $name => $value) {
+            if ($reflection->hasProperty($name)) {
+                $property = $reflection->getProperty($name);
+                if ($property->getDeclaringClass()->getName() === $reflection->getName()) {
+                    $property->setAccessible(true); // Allow access to protected/private properties
+
+                    // If the property is a Component, recursively restore its state
+                    if ($this->$name instanceof Component) {
+                        $this->$name->restoreState($value);
+                    } else {
+                        $property->setValue($this, $value);
+                    }
+                }
+            }
+        }
     }
 
     /**

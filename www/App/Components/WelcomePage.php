@@ -5,7 +5,7 @@ namespace App\Components;
 use Spwa\Template\ElementNode;
 use Spwa\Template\Page;
 use Spwa\Template\SessionStateHandler;
-use function Spwa\Template\{_class, bind, button, div, input, meta, onClick, script, span, src, text, title};
+use function Spwa\Template\{_class, bind, button, component, div, input, meta, onClick, script, span, src, text, title};
 
 class WelcomePage extends Page
 {
@@ -23,16 +23,8 @@ class WelcomePage extends Page
         ];
     }
 
-    var Counter $counter1;
-    var Counter $counter2;
     var string $input1 = "";
     var int $last = 0;
-
-    public function __construct()
-    {
-        $this->counter1 = new Counter();
-        $this->counter2 = new Counter();
-    }
 
     function body(): ElementNode
     {
@@ -45,12 +37,8 @@ class WelcomePage extends Page
                 ),
                 div(text("Last counter value: " . $this->last)),
 
-                $this->counter1->setProps([
-                    "onChange" => fn($value) => $this->last = $value
-                ]),
-                $this->counter2->setProps([
-                    "onChange" => fn($value) => $this->last = $value
-                ]),
+                Counter::component(fn($value) => $this->last = 0),
+
                 div(
                     input("text",
                         _class("border-2 border-gray-300 p-2 rounded-lg"),
@@ -62,7 +50,32 @@ class WelcomePage extends Page
                     span(text($this->input1))
                 )
             ),
+
+        // <BookingDetailsStep data={data()} wrongDate={() => setIndex(0)} onChange={details => makeBooking(details); }}/>
+
+//            boookingDetailsStep::create(
+//                data(),
+//                fn() => setIndex(0),
+//                fn($details) => makeBooking($details)
+//            ),
+
+//            steps(
+//                step(),
+//                step(),
+//                step(),
+//            )
+
+//            Steps::create(0, [
+//                Step::create("First step", div(text("First step content"))),
+//                Step::create("Second step", div(text("Second step content"))),
+//                Step::create(step("Third step", div(text("Third step content"))))
+//            ]),
+
+//            $this->steps
+//                ->addStep("First step", div(text("First step content")))
+//                ->addStep("Second step", div(text("Second step content")))
+//                ->addStep("Third step", div(text("Third step content")))
+//                ->setIndex(1)
         );
     }
 }
-

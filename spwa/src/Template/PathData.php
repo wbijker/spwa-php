@@ -9,6 +9,8 @@ class PathData
      */
     public array $events = [];
 
+    public ?Component $component = null;
+
     public ?NodeAttributeBind $binding = null;
 
     public function addEvent(string $event, callable $handler): void

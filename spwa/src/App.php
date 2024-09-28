@@ -18,17 +18,19 @@ class App
         $stateHandler->initialize();
 
         $data = $stateHandler->restore();
+        $state = new PathState();
+
+
         if ($data != null) {
-            $page = unserialize($data);
+            $state->restoreComponents(unserialize($data));
         }
 
         // render previous
-        $state = new PathState();
         $view = $page->view();
         $prev = $view->render(NodePath::root(), $state);
 
         if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-            $stateHandler->save(serialize($page));
+            $stateHandler->save(serialize($state->saveComponents()));
             echo $prev->render();
             return;
         }
@@ -41,7 +43,7 @@ class App
 
         // handle bindings
         foreach ($inputs as $path => $value) {
-            $pathData = $state->getByString($path);
+            $pathData = $state->get(new NodePath(json_decode($path)));
             if ($pathData->binding)
                 $pathData->binding->set($value);
         }
@@ -49,12 +51,12 @@ class App
         [$path, $event] = $event;
         // find event from frontend.
         // execute event that will likely change the dom
-        $handler = $state->getEvent(new NodePath($path), $event);
+        $handler = $state->get(new NodePath($path))->getEvent($event);
         if ($handler) {
             $handler();
         }
 
-        $stateHandler->save(serialize($page));
+        $stateHandler->save(serialize($state->saveComponents()));
 
         // render again with potential new changes
         $next = $page->view()->render(NodePath::root(), $state);
