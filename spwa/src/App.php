@@ -3,38 +3,35 @@
 namespace Spwa;
 
 use Spwa\Dom\HtmlNode;
-use Spwa\Js\JS;
 use Spwa\Js\JsRuntime;
 use Spwa\Template\NodePath;
 use Spwa\Template\Page;
 use Spwa\Template\PathState;
+use Spwa\Template\StateHandler;
 
 class App
 {
-    static function render(Page $page): void
+
+    static private function save(StateHandler $handler, Page $page, PathState $state): void
     {
-        ob_start();
-        $stateHandler = $page->stateHandler();
-        $stateHandler->initialize();
+        $handler->save(serialize([
+                $page->saveState(),
+                $state->saveComponents()]
+        ));
+    }
 
-        $data = $stateHandler->restore();
-        $state = new PathState();
-
-
+    static private function restore(StateHandler $handler, Page $page, PathState $state): void
+    {
+        $data = $handler->restore();
         if ($data != null) {
-            $state->restoreComponents(unserialize($data));
+            [$pageState, $components] = unserialize($data);
+            $state->restoreComponents($components);
+            $page->restoreState($pageState);
         }
+    }
 
-        // render previous
-        $view = $page->view();
-        $prev = $view->render(NodePath::root(), $state);
-
-        if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-            $stateHandler->save(serialize($state->saveComponents()));
-            echo $prev->render();
-            return;
-        }
-
+    static private function handlePost(PathState $state)
+    {
         // read JSON body
         $json = json_decode(file_get_contents('php://input'), true);
 
@@ -55,9 +52,31 @@ class App
         if ($handler) {
             $handler();
         }
+    }
 
-        $stateHandler->save(serialize($state->saveComponents()));
+    static function render(Page $page): void
+    {
+        ob_start();
+        $root = NodePath::root();
+        $stateHandler = $page->stateHandler();
+        $stateHandler->initialize();
 
+        $state = new PathState();
+        self::restore($stateHandler, $page, $state);
+
+        // render previous
+        $view = $page->view();
+        $prev = $view->render($root, $state);
+
+        if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+            self::save($stateHandler, $page, $state);
+            echo $prev->render();
+            return;
+        }
+
+        self::handlePost($state);
+
+        self::save($stateHandler, $page, $state);
         // render again with potential new changes
         $next = $page->view()->render(NodePath::root(), $state);
 
