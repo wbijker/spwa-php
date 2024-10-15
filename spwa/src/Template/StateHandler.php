@@ -6,8 +6,8 @@ interface StateHandler
 {
     function initialize();
 
-    function save(string $state);
+    function save(Component $component): void;
 
-    function restore(): ?string;
+    function restore(Component $component): void;
 }
 

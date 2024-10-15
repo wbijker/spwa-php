@@ -1,11 +1,21 @@
 <?php
 
-namespace Spwa\Template;
+namespace Spwa;
+
+use Spwa\Template\Component;
+use Spwa\Template\ElementNode;
+use Spwa\Template\Node;
+use Spwa\Template\StateHandler;
+use function Spwa\Template\body;
+use function Spwa\Template\content;
+use function Spwa\Template\head;
+use function Spwa\Template\html;
+use function Spwa\Template\script;
 
 abstract class Page extends Component
 {
+    abstract function body(): Node;
 
-    abstract function body(): ElementNode;
     abstract function stateHandler(): StateHandler;
 
 
@@ -32,4 +42,5 @@ abstract class Page extends Component
             body($this->body())
         );
     }
+
 }

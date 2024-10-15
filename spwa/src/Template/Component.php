@@ -2,87 +2,90 @@
 
 namespace Spwa\Template;
 
-use ReflectionClass;
-use ReflectionProperty;
+use Serializable;
 use Spwa\Dom\HtmlNode;
 use Spwa\Js\JS;
 
-/**
- * Represents a base component class.
- *
- * @template TProps
- */
-abstract class Component extends Node
+function to($data)
 {
-    /**
-     * The properties associated with the component.
-     *
-     * @var TProps
-     */
-    protected $props;
+    if ($data instanceof Component) {
+        return $data->serialize();
+    }
+
+    if (is_object($data)) {
+        $ret = [];
+        $properties = get_object_vars($data);
+        foreach ($properties as $key => $value) {
+            $ret[$key] = to($value);
+        }
+        return $ret;
+    }
+
+    if (is_array($data)) {
+        $ret = [];
+        foreach ($data as $key => $value) {
+            $ret[$key] = to($value);
+        }
+        return $ret;
+    }
+    // Scalar values (int, string, bool, null, etc.)
+    return $data;
+}
+
+function from($data, $instance = null)
+{
+    if ($instance instanceof Component) {
+        $instance->unserialize($data);
+        return $instance;
+    }
+
+    if (is_array($data)) {
+
+        if ($instance !== null) {
+            // If an object instance is provided, set properties on it
+            foreach ($data as $key => $value) {
+                if (property_exists($instance, $key)) {
+                    $instance->$key = from($value, $instance->$key);
+                }
+            }
+            return $instance;
+        }
+        // If no instance is provided, treat as associative array or array of values
+        $ret = [];
+        foreach ($data as $key => $value) {
+            $ret[$key] = from($value);
+        }
+        return $ret;
+    }
+
+    // Scalar values (int, string, bool, null, etc.)
+    return $data;
+}
+
+abstract class Component extends Node implements Serializable
+{
+    protected $state = null;
+
+    function serialize(): string
+    {
+        return serialize($this->state);
+    }
+
+    public function unserialize($data): void
+    {
+        $this->state = unserialize($data);
+        $this->stateRestored();
+    }
 
     abstract function view(): ElementNode;
 
-    public function saveState(): array
+    function render(NodePath $path, PathState $state): HtmlNode
     {
-        $state = [];
-        $reflection = new \ReflectionClass($this);
-
-        // Get properties declared in the current class only
-        foreach ($reflection->getProperties(\ReflectionProperty::IS_PUBLIC | \ReflectionProperty::IS_PROTECTED | \ReflectionProperty::IS_PRIVATE) as $property) {
-            if ($property->getDeclaringClass()->getName() === $reflection->getName()) {
-                $property->setAccessible(true); // Allow access to protected/private properties
-                $value = $property->getValue($this);
-
-                // If the property is a Component, recursively save its state
-                if ($value instanceof Component) {
-                    $state[$property->getName()] = $value->saveState();
-                } else {
-                    $state[$property->getName()] = $value;
-                }
-            }
-        }
-        return $state;
+        return $this->view()->render($path, $state);
     }
 
-    public function restoreState(array $state): void
+    protected function stateRestored()
     {
-        $reflection = new \ReflectionClass($this);
 
-        // Restore properties declared in the current class only
-        foreach ($state as $name => $value) {
-            if ($reflection->hasProperty($name)) {
-                $property = $reflection->getProperty($name);
-                if ($property->getDeclaringClass()->getName() === $reflection->getName()) {
-                    $property->setAccessible(true); // Allow access to protected/private properties
-
-                    // If the property is a Component, recursively restore its state
-                    if ($this->$name instanceof Component) {
-                        $this->$name->restoreState($value);
-                    } else {
-                        $property->setValue($this, $value);
-                    }
-                }
-            }
-        }
     }
-
-    /**
-     * @param array<string, mixed> $properties
-     * @phpstan-param TProps $properties
-     * @return self
-     */
-    function setProps(array $properties): Component
-    {
-        $this->props = $properties;
-        return $this;
-    }
-
-    function render(NodePath $path, PathState $listeners): HtmlNode
-    {
-        $template = $this->view();
-        return $template->render($path, $listeners);
-    }
-
 }
-

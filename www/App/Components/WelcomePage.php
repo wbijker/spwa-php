@@ -2,13 +2,33 @@
 
 namespace App\Components;
 
+use Spwa\Page;
 use Spwa\Template\ElementNode;
-use Spwa\Template\Page;
 use Spwa\Template\SessionStateHandler;
-use function Spwa\Template\{_class, bind, button, component, div, input, meta, onClick, script, span, src, text, title};
+use function Spwa\Template\{_class, bind, div, input, meta, script, span, src, title};
+
+class WelcomePageState
+{
+    public Counter $counter1;
+    public Counter $counter2;
+    public string $input1 = "";
+    public int $last = 0;
+
+    public function __construct()
+    {
+        $this->counter1 = new Counter(1);
+        $this->counter2 = new Counter(11);
+    }
+
+}
 
 class WelcomePage extends Page
 {
+    public function __construct()
+    {
+        $this->state = new WelcomePageState();
+    }
+
     public function stateHandler(): \Spwa\Template\StateHandler
     {
         return new SessionStateHandler();
@@ -23,9 +43,6 @@ class WelcomePage extends Page
         ];
     }
 
-    var string $input1 = "";
-    var int $last = 0;
-
     function body(): ElementNode
     {
         return div(
@@ -33,49 +50,27 @@ class WelcomePage extends Page
             div(
                 _class("m-auto bg-white p-4 rounded-lg"),
                 div(
-                    text("Welcome to the page"),
+                    "Welcome to the page"
                 ),
-                div(text("Last counter value: " . $this->last)),
+                div("Last counter value: " . $this->state->last),
 
-                Counter::component(fn($value) => $this->last = 0),
+                $this->state->counter1
+                    ->onChange(fn($val) => $this->state->last = $val),
+
+                $this->state->counter2
+                    ->onChange(fn($val) => $this->state->last = $val),
 
                 div(
                     input("text",
                         _class("border-2 border-gray-300 p-2 rounded-lg"),
-                        bind($this->input1),
+                        bind($this->state->input1),
                     ),
                 ),
                 div(
-                    span(text("You typed: ")),
-                    span(text($this->input1))
+                    span("You typed: "),
+                    span($this->state->input1)
                 )
             ),
-
-        // <BookingDetailsStep data={data()} wrongDate={() => setIndex(0)} onChange={details => makeBooking(details); }}/>
-
-//            boookingDetailsStep::create(
-//                data(),
-//                fn() => setIndex(0),
-//                fn($details) => makeBooking($details)
-//            ),
-
-//            steps(
-//                step(),
-//                step(),
-//                step(),
-//            )
-
-//            Steps::create(0, [
-//                Step::create("First step", div(text("First step content"))),
-//                Step::create("Second step", div(text("Second step content"))),
-//                Step::create(step("Third step", div(text("Third step content"))))
-//            ]),
-
-//            $this->steps
-//                ->addStep("First step", div(text("First step content")))
-//                ->addStep("Second step", div(text("Second step content")))
-//                ->addStep("Third step", div(text("Third step content")))
-//                ->setIndex(1)
         );
     }
 }

@@ -2,24 +2,34 @@
 
 namespace Spwa\Template;
 
+use Spwa\Js\JS;
+
 class SessionStateHandler implements StateHandler
 {
-    function initialize()
+    function initialize(): void
     {
         session_name("state");
         session_start();
     }
 
-    function save(string $state)
+    /**
+     * @throws \Exception
+     */
+    function save(Component $component): void
     {
-        $_SESSION['state'] = $state;
+        $ser = $component->serialize();
+        if ($ser == null)
+            return;
+        $_SESSION['state'] = gzcompress($ser);
+        JS::log("State legth", strlen($_SESSION['state']));
     }
 
-    function restore(): ?string
+    function restore(Component $component): void
     {
-        if ($_SESSION['state']) {
-            return $_SESSION['state'];
+        $ser = $_SESSION['state'] ?? null;
+        if ($ser === null) {
+            return;
         }
-        return null;
+        $component->unserialize(gzuncompress($ser));
     }
 }

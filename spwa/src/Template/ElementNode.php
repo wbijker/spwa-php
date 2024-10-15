@@ -27,7 +27,7 @@ class ElementNode extends Node
 
     /**
      * @param string $tag
-     * @param (Node|NodeAttribute)[] $items
+     * @param (Node|NodeAttribute|string)[] $items
      */
     public function __construct(string $tag, array $items)
     {
@@ -35,7 +35,9 @@ class ElementNode extends Node
         $this->attributes = [];
 
         foreach ($items as $item) {
-            if ($item instanceof NodeAttribute) {
+            if (is_string($item)) {
+                $this->children[] = new TextNode($item);
+            } else if ($item instanceof NodeAttribute) {
                 $this->attributes[] = $item;
             } else {
                 $this->children[] = $item;

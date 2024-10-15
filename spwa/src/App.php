@@ -5,32 +5,12 @@ namespace Spwa;
 use Spwa\Dom\HtmlNode;
 use Spwa\Js\JsRuntime;
 use Spwa\Template\NodePath;
-use Spwa\Template\Page;
 use Spwa\Template\PathState;
-use Spwa\Template\StateHandler;
 
 class App
 {
 
-    static private function save(StateHandler $handler, Page $page, PathState $state): void
-    {
-        $handler->save(serialize([
-                $page->saveState(),
-                $state->saveComponents()]
-        ));
-    }
-
-    static private function restore(StateHandler $handler, Page $page, PathState $state): void
-    {
-        $data = $handler->restore();
-        if ($data != null) {
-            [$pageState, $components] = unserialize($data);
-            $state->restoreComponents($components);
-            $page->restoreState($pageState);
-        }
-    }
-
-    static private function handlePost(PathState $state)
+    static private function handlePost(PathState $state): void
     {
         // read JSON body
         $json = json_decode(file_get_contents('php://input'), true);
@@ -62,21 +42,21 @@ class App
         $stateHandler->initialize();
 
         $state = new PathState();
-        self::restore($stateHandler, $page, $state);
+        $stateHandler->restore($page);
 
         // render previous
         $view = $page->view();
         $prev = $view->render($root, $state);
 
         if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-            self::save($stateHandler, $page, $state);
+            $stateHandler->save($page);
             echo $prev->render();
             return;
         }
 
         self::handlePost($state);
 
-        self::save($stateHandler, $page, $state);
+        $stateHandler->save($page);
         // render again with potential new changes
         $next = $page->view()->render(NodePath::root(), $state);
 

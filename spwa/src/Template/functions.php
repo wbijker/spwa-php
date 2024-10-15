@@ -5,7 +5,7 @@ namespace Spwa\Template;
 use InvalidArgumentException;
 
 /**
- * @param Node|NodeAttribute[] $items
+ * @param (Node|NodeAttribute|string)[] $items
  * @return ElementNode
  */
 function html(...$items): ElementNode
@@ -14,7 +14,7 @@ function html(...$items): ElementNode
 }
 
 /**
- * @param Node|NodeAttribute[] $items
+ * @param (Node|NodeAttribute|string)[] $items
  * @return ElementNode
  */
 function body(...$items): ElementNode
@@ -23,7 +23,7 @@ function body(...$items): ElementNode
 }
 
 /**
- * @param Node|NodeAttribute[] $items
+ * @param (Node|NodeAttribute|string)[] $items
  * @return ElementNode
  */
 function head(...$items): ElementNode
@@ -39,7 +39,7 @@ function title(string $title): ElementNode
 }
 
 /**
- * @param Node|NodeAttribute[] $items ;
+ * @param (Node|NodeAttribute|string)[] $items ;
  * @return ElementNode
  */
 function script(...$items): ElementNode
@@ -48,7 +48,7 @@ function script(...$items): ElementNode
 }
 
 /**
- * @param Node|NodeAttribute[] $items ;
+ * @param (Node|NodeAttribute|string)[] $items ;
  * @return ElementNode
  */
 function style(...$items): ElementNode
@@ -57,7 +57,7 @@ function style(...$items): ElementNode
 }
 
 /**
- * @param Node|NodeAttribute[] $items ;
+ * @param (Node|NodeAttribute|string)[] $items ;
  * @return ElementNode
  */
 function link(...$items): ElementNode
@@ -75,7 +75,7 @@ function meta(...$pairs): ElementNode
 }
 
 /**
- * @param Node|NodeAttribute[] $items
+ * @param (Node|NodeAttribute|string)[] $items
  * @return ElementNode
  */
 function div(...$items): ElementNode
@@ -84,7 +84,7 @@ function div(...$items): ElementNode
 }
 
 /**
- * @param Node|NodeAttribute[] $items
+ * @param (Node|NodeAttribute|string)[] $items
  * @return ElementNode
  */
 function span(...$items): ElementNode
@@ -102,7 +102,7 @@ function input(string $type, ...$items): ElementNode
 }
 
 /**
- * @param Node|NodeAttribute[] $items
+ * @param (Node|NodeAttribute|string)[] $items
  * @return ElementNode
  */
 function button(...$items): ElementNode
