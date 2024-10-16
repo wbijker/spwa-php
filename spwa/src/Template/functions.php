@@ -3,6 +3,7 @@
 namespace Spwa\Template;
 
 use InvalidArgumentException;
+use Spwa\Js\JS;
 
 /**
  * @param (Node|NodeAttribute|string)[] $items
@@ -157,14 +158,10 @@ function content(string $content): TextNode
  */
 function _class(string ...$class): NodeAttribute
 {
+    // JS::log("class run", $class);
     // filter out empty strings
     $classes = implode(" ", array_filter($class));
     return new NodeAttributeText("class", $classes);
-}
-
-function onClick(callable $handler): NodeAttribute
-{
-    return new NodeAttributeEvent("click", $handler);
 }
 
 function src(string $src): NodeAttribute

@@ -7,7 +7,6 @@ use Spwa\Template\ElementNode;
 use function Spwa\Template\_class;
 use function Spwa\Template\button;
 use function Spwa\Template\div;
-use function Spwa\Template\onClick;
 use function Spwa\Template\text;
 
 class CounterState
@@ -26,15 +25,9 @@ class CounterState
 class Counter extends Component
 {
     /**
-     * @var
+     * @var callable $changeEvent
      */
     private $changeEvent;
-    private int $eet;
-
-    public function __construct(int $initial)
-    {
-        $this->state = new CounterState($initial);
-    }
 
     function onChange(callable $callback): Counter
     {
@@ -42,33 +35,41 @@ class Counter extends Component
         return $this;
     }
 
+    public function __construct(int $initial)
+    {
+        $this->state = new CounterState($initial);
+    }
+
+
+
+    function clicked($inc): \Closure
+    {
+        return function () use ($inc) {
+            ($this->changeEvent)($this->state->counter);
+            $this->state->counter += $inc;
+        };
+    }
+
     function view(): ElementNode
     {
         return div(
             div(
                 _class("text-center"),
-                text("Counter: " . $this->state->counter),
+                "Counter: " . $this->state->counter,
             ),
             div(
                 button(
                     text("inc"),
                     _class("m-1 px-2 border shadow cursor-pointer"),
-
-                    onClick(function () {
-                        ($this->changeEvent)($this->state->counter);
-                        $this->state->counter++;
-                    })
                 )
+                    ->onClick($this->clicked(1))
             ),
             div(
                 button(
                     text("dec"),
                     _class("m-1 px-2 border shadow cursor-pointer"),
-                    onClick(function () {
-                        ($this->changeEvent)($this->state->counter);
-                        $this->state->counter--;
-                    })
                 )
+                    ->onClick($this->clicked(-1))
             )
         );
     }

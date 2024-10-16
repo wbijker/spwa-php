@@ -66,5 +66,12 @@ class ElementNode extends Node
         return $element;
     }
 
+    function onClick(callable $handler): ElementNode
+    {
+        $attr = new NodeAttributeEvent("click", $handler);
+        $this->attributes[] = $attr;
+        return $this;
+    }
+
 }
 
