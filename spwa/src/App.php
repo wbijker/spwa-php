@@ -15,6 +15,17 @@ class App
         // read JSON body
         $json = json_decode(file_get_contents('php://input'), true);
 
+        $stateValue = $json['state'];
+        if (isset($stateValue)) {
+            [$path, $name, $value] = $stateValue;
+            $componentState = $state->findState(new NodePath(json_decode($path)));
+            if ($componentState != null) {
+                // set the state
+                $componentState->$name = $value;
+            }
+            return;
+        }
+
         $event = $json['event'];
         $inputs = $json["inputs"];
 

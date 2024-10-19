@@ -47,6 +47,20 @@ class NodePath
         return json_encode($this->path);
     }
 
+    public function startsWith(NodePath $path): bool
+    {
+        $len = count($path->path);
+        if ($len > count($this->path)) {
+            return false;
+        }
+        for ($i = 0; $i < $len; $i++) {
+            if ($this->path[$i] !== $path->path[$i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /*
      * nibbles
      * 1 xxx (0 - 7) (0.5 bytes)

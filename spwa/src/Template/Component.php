@@ -81,6 +81,7 @@ abstract class Component extends Node implements Serializable
 
     function render(NodePath $path, PathState $state): HtmlNode
     {
+        $state->fillComponent($path, $this->state);
         return $this->view()->render($path, $state);
     }
 
