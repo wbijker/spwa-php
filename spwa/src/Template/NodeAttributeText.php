@@ -8,9 +8,9 @@ use Spwa\Dom\HtmlElement;
 class NodeAttributeText extends NodeAttribute
 {
     public string $name;
-    public string $value;
+    public ?string $value;
 
-    public function __construct(string $name, string $value)
+    public function __construct(string $name, ?string $value)
     {
         $this->name = $name;
         $this->value = $value;
@@ -26,9 +26,12 @@ class NodeAttributeText extends NodeAttribute
         return self::build($this->name, $this->value);
     }
 
-    static function build(string $name, string $value): string
+    static function build(string $name, ?string $value): string
     {
         $escapedName = htmlspecialchars($name, ENT_COMPAT, 'UTF-8');
+        if ($value == null)
+            return $escapedName;
+
         $escapedValue = htmlspecialchars($value, ENT_COMPAT, 'UTF-8');
         return "$escapedName=\"$escapedValue\"";
     }

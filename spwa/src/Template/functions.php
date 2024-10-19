@@ -164,6 +164,11 @@ function _class(string ...$class): NodeAttribute
     return new NodeAttributeText("class", $classes);
 }
 
+function attr(string $name, ?string $value = null): NodeAttribute
+{
+    return new NodeAttributeText($name, $value);
+}
+
 function src(string $src): NodeAttribute
 {
     return new NodeAttributeText("src", $src);
