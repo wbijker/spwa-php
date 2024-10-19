@@ -5,7 +5,7 @@ namespace App\Components;
 use Spwa\Page;
 use Spwa\Template\ElementNode;
 use Spwa\Template\SessionStateHandler;
-use function Spwa\Template\{_class, bind, div, input, meta, script, span, src, title};
+use function Spwa\Template\{_class, attr, bind, div, input, meta, script, span, src, title};
 
 class WelcomePageState
 {
@@ -39,7 +39,8 @@ class WelcomePage extends Page
         return [
             title("Hello SPWA"),
             meta(["viewport", "width=device-width, initial-scale=1"]),
-            script(src("https://cdn.tailwindcss.com"))
+            script(src("https://cdn.tailwindcss.com")),
+            script(attr("defer"), src("https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js")),
         ];
     }
 

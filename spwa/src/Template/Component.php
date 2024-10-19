@@ -89,4 +89,11 @@ abstract class Component extends Node implements Serializable
     {
 
     }
+    protected function emit($func, ...$args): void
+    {
+        if (is_callable($func)) {
+            ($func)(...$args);
+        }
+    }
+
 }
