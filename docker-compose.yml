@@ -16,7 +16,7 @@ services:
 #      - "3306:3306"
 
   php-apache:
-    container_name: php7.4.33
+    container_name: php-apache
     build:
       context: .
       dockerfile: Dockerfile

@@ -1,4 +1,4 @@
-FROM php:7.4.33-apache
+FROM php:8.2-apache
 
 # install mysql pdo extensions
 RUN docker-php-ext-install mysqli pdo pdo_mysql
