@@ -62,7 +62,7 @@ function from($data, $instance = null)
     return $data;
 }
 
-abstract class Component extends Node implements Serializable
+abstract class Component extends Node
 {
     protected $state = null;
 

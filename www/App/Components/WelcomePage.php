@@ -3,24 +3,26 @@
 namespace App\Components;
 
 use Spwa\Page;
+use Spwa\Template\Div;
 use Spwa\Template\ElementNode;
 use Spwa\Template\SessionStateHandler;
 use function Spwa\Template\{_class, attr, bind, div, input, meta, script, span, src, title};
 
 class WelcomePageState
 {
-    public Counter $counter1;
-    public Counter $counter2;
+//    public Counter $counter1;
+//    public Counter $counter2;
     public string $input1 = "";
     public int $last = 0;
 
     public function __construct()
     {
-        $this->counter1 = new Counter(1);
-        $this->counter2 = new Counter(11);
+//        $this->counter1 = new Counter(1);
+//        $this->counter2 = new Counter(11);
     }
 
 }
+
 
 class WelcomePage extends Page
 {
@@ -55,11 +57,11 @@ class WelcomePage extends Page
                 ),
                 div("Last counter value: " . $this->state->last),
 
-                $this->state->counter1
-                    ->onChange(fn($val) => $this->state->last = $val),
-
-                $this->state->counter2
-                    ->onChange(fn($val) => $this->state->last = $val),
+//                $this->state->counter1
+//                    ->onChange(fn($val) => $this->state->last = $val),
+//
+//                $this->state->counter2
+//                    ->onChange(fn($val) => $this->state->last = $val),
 
                 div(
                     input("text",
