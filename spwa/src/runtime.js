@@ -39,7 +39,7 @@ function handleInput(event) {
 
 function handleEvent(name, event) {
     // console.log('We need to handle', event, 'on', path);
-    const path = pathToBody(event.target);
+    const path = pathToBody(event.currentTarget);
 
     post({
         event: [path, name],
@@ -78,19 +78,10 @@ function callback(err, data) {
     inputs = {};
 
     for (const patch of data.p) {
-        const [type, path, value] = patch;
+        const [path, type, value] = patch;
         const node = resolveNode(path);
         switch (type) {
             case 0:
-                // delete
-                break;
-            case 1:
-                // replace
-                break;
-            case 2:
-                // insert
-                break;
-            case 3:
                 // text replace
                 node.textContent = value;
                 break;

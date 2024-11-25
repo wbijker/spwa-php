@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b3fb2107d43d75a32569eb8b9faec956",
+    "content-hash": "5a6043e11b5b6888494626b79cde905b",
     "packages": [
         {
             "name": "spwa/spwa",
@@ -12,7 +12,7 @@
             "dist": {
                 "type": "path",
                 "url": "../spwa",
-                "reference": "ec5bfceb1af62a81e0673b6e143a5b0342bacf98"
+                "reference": "182c7e47716ac0a88a4e852ed045e42e847166d0"
             },
             "require": {
                 "php": ">=5.6"
@@ -22,9 +22,7 @@
                 "psr-4": {
                     "Spwa\\": "src/"
                 },
-                "files": [
-                    "src/Template/functions.php"
-                ]
+                "files": []
             },
             "transport-options": {
                 "relative": true
@@ -34,10 +32,13 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
-    "platform-dev": [],
+    "platform": {
+        "ext-json": "*",
+        "ext-zlib": "*"
+    },
+    "platform-dev": {},
     "plugin-api-version": "2.6.0"
 }
