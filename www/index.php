@@ -2,10 +2,10 @@
 
 namespace App;
 
-use App\Components\HomeComponent;
+use App\Components\WelcomePage;
 use Spwa\App;
 
 require 'vendor/autoload.php';
 
 
-App::render(new HomeComponent());
+App::render(new WelcomePage());

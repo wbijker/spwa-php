@@ -2,6 +2,8 @@
 
 namespace Spwa\Nodes;
 
+use Spwa\Js\JS;
+
 class HtmlText extends Node
 {
     public function __construct(private string $text)

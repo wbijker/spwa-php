@@ -2,15 +2,16 @@
 
 namespace App\Components;
 
+use Spwa\Html\Div;
+use Spwa\Html\HtmlDocument;
+use Spwa\Html\Meta;
 use Spwa\Html\MouseEvents;
-use Spwa\Nodes\Component;
-use Spwa\Nodes\ForNode;
+use Spwa\Html\Title;
 use Spwa\Nodes\HtmlText;
 use Spwa\Nodes\Node;
-use Spwa\Html\Div;
-use function Spwa\Html\div;
+use Spwa\Nodes\Page;
 
-class HomeComponent extends Component
+class WelcomePage extends Page
 {
     public function __construct()
     {
@@ -25,8 +26,21 @@ class HomeComponent extends Component
             }
         };
     }
-    
-    function render(): Node
+
+    function render(): HtmlDocument
+    {
+        return new HtmlDocument(
+            lang: "en",
+            head: [
+                new Title("Some document"),
+                new Meta(charset: "UTF-8"),
+                new Meta(name: "viewport", content: "width=device-width, initial-scale=1.0")
+            ],
+            body: $this->body()
+        );
+    }
+
+    function body(): Node
     {
         return new Div(class: "h-screen w-screen flex", children: [
             new Div(class: "m-auto", children: [

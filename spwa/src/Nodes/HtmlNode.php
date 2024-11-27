@@ -2,6 +2,8 @@
 
 namespace Spwa\Nodes;
 
+use Spwa\Js\JS;
+
 abstract class HtmlNode extends Node
 {
     function compare(Node $node, PatchBuilder $patch): void
@@ -22,10 +24,10 @@ abstract class HtmlNode extends Node
             if ($old != $value) {
                 $patch->updateAttr($this, $key, $value);
             }
-            // compare children
-            foreach ($this->children as $i => $child) {
-                $child->compare($node->children[$i], $patch);
-            }
+        }
+        // compare children
+        foreach ($this->children as $i => $child) {
+            $child->compare($node->children[$i], $patch);
         }
     }
 
@@ -35,6 +37,11 @@ abstract class HtmlNode extends Node
      * @var Node[] $children
      */
     public array $children = [];
+
+    function addChild(HtmlNode $node)
+    {
+        $this->children[] = $node;
+    }
 
     protected function setEvents(array $events)
     {
@@ -52,6 +59,11 @@ abstract class HtmlNode extends Node
 
     abstract function tag(): string;
 
+    function closed(): bool
+    {
+        return false;
+    }
+
     function renderHtml(): string
     {
         $tag = $this->tag();
@@ -64,6 +76,12 @@ abstract class HtmlNode extends Node
         foreach ($copy as $key => $value) {
             $ret .= " $key=\"$value\"";
         }
+
+        if ($this->closed()) {
+            $ret .= "/>";
+            return $ret;
+        }
+
         $ret .= ">";
         foreach ($this->children as $child) {
             $ret .= $child->renderHtml();

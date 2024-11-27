@@ -4,13 +4,14 @@ namespace Spwa;
 
 use Spwa\Js\JsRuntime;
 use Spwa\Nodes\Component;
+use Spwa\Nodes\Page;
 use Spwa\Nodes\PatchBuilder;
 use Spwa\Nodes\PathInfo;
 use Spwa\Nodes\StateManager;
 
 class App
 {
-    static function render(Component $component): void
+    static function render(Page $component): void
     {
         ob_start();
         session_start();
