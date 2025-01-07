@@ -6,6 +6,7 @@ use Spwa\Html\Div;
 use Spwa\Html\HtmlDocument;
 use Spwa\Html\Meta;
 use Spwa\Html\MouseEvents;
+use Spwa\Html\Script;
 use Spwa\Html\Title;
 use Spwa\Nodes\HtmlText;
 use Spwa\Nodes\Node;
@@ -34,7 +35,9 @@ class WelcomePage extends Page
             head: [
                 new Title("Some document"),
                 new Meta(charset: "UTF-8"),
-                new Meta(name: "viewport", content: "width=device-width, initial-scale=1.0")
+                new Meta(name: "viewport", content: "width=device-width, initial-scale=1.0"),
+                new Script(src: "https://cdn.tailwindcss.com"),
+                new Script(src: "/assets/spwa.js"),
             ],
             body: $this->body()
         );

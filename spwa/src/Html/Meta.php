@@ -4,6 +4,7 @@ namespace Spwa\Html;
 
 use Spwa\Nodes\HtmlNode;
 
+
 class Meta extends HtmlNode
 {
     function __construct(

@@ -4,8 +4,13 @@ namespace App;
 
 use App\Components\WelcomePage;
 use Spwa\App;
+use Spwa\SpwMiddleware;
 
 require 'vendor/autoload.php';
 
 
-App::render(new WelcomePage());
+App::run([
+    new SpwMiddleware(new WelcomePage()),
+]);
+
+
