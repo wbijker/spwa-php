@@ -15,8 +15,6 @@ abstract class Component extends Node
         $this->getNode()->compare($node->getNode(), $patch);
     }
 
-    protected object $state;
-
     function renderHtml(): string
     {
         return $this->getNode()->renderHtml();
@@ -49,13 +47,17 @@ abstract class Component extends Node
 
     public function saveState(): array
     {
-        return get_object_vars($this->state);
+        $vars = get_object_vars($this);
+        // remove members living in parent Node
+        return array_diff_key($vars, array_flip(['path', 'key', 'node']));
     }
 
     public function restoreState(array $saved): void
     {
         foreach ($saved as $key => $value) {
-            $this->state->$key = $value;
+            if (property_exists($this, $key) && gettype($this->$key) == gettype($value)) {
+                $this->$key = $value;
+            }
         }
     }
 

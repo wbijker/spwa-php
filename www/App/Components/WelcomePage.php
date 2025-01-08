@@ -8,26 +8,13 @@ use Spwa\Html\Meta;
 use Spwa\Html\MouseEvents;
 use Spwa\Html\Script;
 use Spwa\Html\Title;
+use Spwa\Nodes\Component;
 use Spwa\Nodes\HtmlText;
 use Spwa\Nodes\Node;
 use Spwa\Nodes\Page;
 
 class WelcomePage extends Page
 {
-    public function __construct()
-    {
-        $this->state = new class {
-            public string $text = "Vetty nice";
-            public bool $active = false;
-            public int $counter = 0;
-
-            function inc(): void
-            {
-                $this->counter += 1;
-            }
-        };
-    }
-
     function render(): HtmlDocument
     {
         return new HtmlDocument(
@@ -45,15 +32,17 @@ class WelcomePage extends Page
 
     function body(): Node
     {
+        return new Div(children: [
+            new HtmlText("Counters"),
+            new Counter(),
+        ]);
+
         return new Div(class: "h-screen w-screen flex", children: [
             new Div(class: "m-auto", children: [
                 new Div(
-                    mouse: new MouseEvents(onClick: fn() => $this->state->inc()),
                     children: [
-                        new HtmlText("Counter: " . $this->state->counter),
-                        new Div(children: [
-                            new HtmlText("Inc"),
-                        ]),
+                        new HtmlText("Counters"),
+                        new Counter(),
                     ])
             ])
         ]);
