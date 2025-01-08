@@ -69,6 +69,13 @@ function post(data) {
     xhr.send(JSON.stringify(data));
 }
 
+function executeJsDump(dump) {
+    for (const [path, args] of dump) {
+        const obj = resolveObject(path);
+        obj(...args);
+    }
+}
+
 function callback(err, data) {
     if (err) {
         console.error(err);
@@ -88,8 +95,5 @@ function callback(err, data) {
         }
     }
     // execute JS code
-    for (const [path, args] of data.j) {
-        const obj = resolveObject(path);
-        obj(...args);
-    }
+    executeJsDump(data.j);
 }
