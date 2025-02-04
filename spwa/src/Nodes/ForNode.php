@@ -46,6 +46,12 @@ class ForNode extends Node
 
     function initialize(?Node $parent, PathInfo $path, StateManager $manager): void
     {
+        // $path  = child already create for this node
+        // but it may not even have children.
+        // which means the creation of a node should be the responsibility of the current node
+        // which means that $key and $instance should be passed;
+
+        $this->path = $path;
         $children = $this->getNode();
 
         foreach ($children as $index => [$key, $node]) {
