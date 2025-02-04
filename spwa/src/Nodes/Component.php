@@ -2,6 +2,8 @@
 
 namespace Spwa\Nodes;
 
+use Spwa\Js\JS;
+
 abstract class Component extends Node
 {
 
@@ -22,18 +24,25 @@ abstract class Component extends Node
 
     function initialize(?Node $parent, PathInfo $path, StateManager $manager): void
     {
-        $path->set($this, $parent, true);
+        $this->path = $path->addChild(get_class($this));
+        // a component always has a root node
+        $this->getNode()->initialize($this, $this->path , $manager);
 
-        $saved = $manager->restoreState($this->keyStr());
-        if ($saved != null) {
-            $this->restoreState($saved);
-        }
-        $this->getNode()->initialize($this, new PathInfo(0, get_class($this)), $manager);
+//        $this->path = $path->down(get_class($this));
+
+        //  $path->set($this, $parent, true);
+//        $saved = $manager->restoreState($this->keyStr());
+//        if ($saved != null) {
+//            $this->restoreState($saved);
+//        }
+
+        // new PathInfo($path->domIndex, get_class($this))
+//        $this->getNode()->initialize($this, $path, $manager);
     }
 
     function finalize(StateManager $manager): void
     {
-        $manager->saveState($this->keyStr(), $this->saveState());
+//        $manager->saveState($this->path->keyStr(), $this->saveState());
         $this->getNode()->finalize($manager);
     }
 
@@ -49,6 +58,7 @@ abstract class Component extends Node
     {
         $vars = get_object_vars($this);
         // remove members living in parent Node
+        JS::log('Saving state ', $vars);
         return array_diff_key($vars, array_flip(['path', 'key', 'node']));
     }
 

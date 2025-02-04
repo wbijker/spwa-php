@@ -35,12 +35,12 @@ class HtmlDocument extends HtmlNode
         return 'html';
     }
 
-    function initialize(?Node $parent, PathInfo $path, StateManager $manager): void
-    {
-        foreach ($this->children as $child) {
-            $child->initialize($this, $path, $manager);
-        }
-    }
+//    function initialize(?Node $parent, PathInfo $path, StateManager $manager): void
+//    {
+//        foreach ($this->children as $child) {
+//            $child->initialize($this, $path, $manager);
+//        }
+//    }
 
 
 }

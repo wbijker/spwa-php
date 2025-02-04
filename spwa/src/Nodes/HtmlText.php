@@ -24,12 +24,19 @@ class HtmlText extends Node
 
     function renderHtml(): string
     {
-        return '(' . $this->pathStr() . ') ' . $this->text;
+        if ($this->path == null) {
+            return $this->text;
+        }
+        return '(' . $this->path->pathStr() . ') ' . $this->text;
+
+//        return htmlspecialchars($this->text)
+//        return htmlentities($this->text);
     }
 
     function initialize(?Node $parent, PathInfo $path, StateManager $manager): void
     {
-        $path->set($this, $parent, true);
+        // text is always a leaf node
+        $this->path = $path;
     }
 
     function finalize(StateManager $manager): void

@@ -34,7 +34,7 @@ class StateManager
 
     function bindEvent(Node $owner, string $event, callable $callback): void
     {
-        $this->events[$owner->pathStr()][$event] = $callback;
+        $this->events[$owner->path->pathStr()][$event] = $callback;
     }
 
     function triggerEvent(string $path, string $event): void

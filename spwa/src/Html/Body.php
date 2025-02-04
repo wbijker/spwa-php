@@ -24,9 +24,6 @@ class Body extends HtmlNode
 
     function initialize(?Node $parent, PathInfo $path, StateManager $manager): void
     {
-        $p = new PathInfo(0, null);
-        foreach ($this->children as $child) {
-            $child->initialize($this, $p, $manager);
-        }
+        parent::initialize($parent, PathInfo::root(), $manager);
     }
 }

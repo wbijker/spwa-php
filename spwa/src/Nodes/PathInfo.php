@@ -2,28 +2,51 @@
 
 namespace Spwa\Nodes;
 
+use Spwa\Js\JS;
+
 class PathInfo
 {
-    public function __construct(public int $domIndex, public string|int|bool|null $key)
+    private function __construct(
+
+        public ?PathInfo            $parent,
+        public int                  $index,
+        public string|int|bool|null $key = null,
+        public ?string              $instance = null)
     {
+        $this->indexPath = $parent == null ? [] : array_merge($parent->indexPath, [$index]);
+        $this->keyPath = $parent == null ? [] : array_merge($parent->keyPath, [$key ?? $index]);
     }
 
-    function set(Node $node, ?Node $parent, bool $add): void
+    public array $children = [];
+    // materialize version of the path and key
+    // path is an array of integers that represent the index paths of the node in the DOM tree.
+    public array $indexPath = [];
+    // The key is an array that uniquely represents the key of the node used in the diffing algorithm, and state management.
+    public array $keyPath = [];
+
+    public function addChild(string|int|bool|null $key = null, ?string $instance = null): PathInfo
     {
-        // root node
-        if ($parent == null) {
-            $node->path = [];
-            $node->key = [$this->key];
-            return;
-        }
-        // real dom
-        if ($add) {
-            $node->path = array_merge($parent->path, [$this->domIndex]);
-            $node->key = array_merge($parent->key, [$this->key]);
-            return;
-        }
-        // node is a virtual node only, such as ForNode, IfNode
-        $node->path = $parent->path;
-        $node->key = array_merge($parent->key, [$this->key]);
+        $index = count($this->children);
+        $child = new PathInfo($this, $index, $key, $instance);
+        $this->children[] = $child;
+        return $child;
     }
+
+    // the starting point of the hierarchy
+    // It starts at the body of the document
+    static function root(?string $key = null): PathInfo
+    {
+        return new PathInfo(null, 0, $key);
+    }
+
+    function pathStr(): string
+    {
+        return implode("|", $this->indexPath);
+    }
+
+    function keyStr(): string
+    {
+        return implode("|", $this->keyPath);
+    }
+
 }

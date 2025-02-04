@@ -4,18 +4,7 @@ namespace Spwa\Nodes;
 
 abstract class Node
 {
-    public array $path = [];
-    public array $key = [];
-
-    function pathStr(): string
-    {
-        return implode("|", $this->path);
-    }
-
-    function keyStr(): string
-    {
-        return implode("|", $this->key);
-    }
+    public ?PathInfo $path = null;
 
     abstract function compare(Node $node, PatchBuilder $patch): void;
 

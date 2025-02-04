@@ -2,9 +2,7 @@
 
 namespace Spwa\Html;
 
-use Spwa\App;
 use Spwa\Nodes\HtmlNode;
-use Spwa\Nodes\HtmlText;
 
 
 class Div extends HtmlNode

@@ -70,8 +70,11 @@ abstract class HtmlNode extends Node
         $ret = "<$tag";
 
         $copy = $this->attrs;
-        $copy['path'] = $this->pathStr();
-        $copy['key'] = $this->keyStr();
+
+        if ($this->path != null) {
+            $copy['path'] = $this->path->pathStr();
+            $copy['key'] = $this->path->keyStr();
+        }
 
         foreach ($copy as $key => $value) {
             $ret .= " $key=\"$value\"";
@@ -92,17 +95,15 @@ abstract class HtmlNode extends Node
 
     function initialize(?Node $parent, PathInfo $path, StateManager $manager): void
     {
-        $path->set($this, $parent, true);
+        $this->path = $path;
 
-        // bind events
         foreach ($this->events as $key => $value) {
             $manager->bindEvent($this, $key, $value);
         }
 
         foreach ($this->children as $i => $child) {
-            $child->initialize($this, new PathInfo($i, $i), $manager);
+            $child->initialize($this, $this->path->addChild(), $manager);
         }
-
     }
 
     function finalize(StateManager $manager): void

@@ -22,9 +22,5 @@ class Head extends HtmlNode
         return 'head';
     }
 
-    function initialize(?Node $parent, PathInfo $path, StateManager $manager): void
-    {
-        // skip
-    }
 }
 

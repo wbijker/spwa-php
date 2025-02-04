@@ -42,11 +42,12 @@ class SpwMiddleware implements MiddlewareHandler
         $manager = new StateManager();
         $manager->unserialize($data);
 
-        $this->component->initialize(null, new PathInfo(0, get_class($this->component)), $manager);
+        $this->component->initialize(null, PathInfo::root(get_class($this->component)), $manager);
         $node = $this->component->getNode();
 
 
         if ($request->isGet()) {
+
             $ret = HttpResponse::html(fn() => $node->renderHtml()."<script>executeJsDump(". json_encode(JsRuntime::dump()). ")</script>");
             $this->component->finalize($manager);
             $_SESSION['state'] = $manager->serialize();

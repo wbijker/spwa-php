@@ -2,6 +2,8 @@
 
 namespace Spwa\Nodes;
 
+use Spwa\Js\JS;
+
 class ForNode extends Node
 {
     /**
@@ -44,10 +46,10 @@ class ForNode extends Node
 
     function initialize(?Node $parent, PathInfo $path, StateManager $manager): void
     {
-        $path->set($this, $parent, false);
+        $children = $this->getNode();
 
-        foreach ($this->getNode() as $index => [$key, $node]) {
-            $node->initialize($this, new PathInfo($path->domIndex + $index, $key), $manager);
+        foreach ($children as $index => [$key, $node]) {
+            $node->initialize($this, $this->path->addChild($key), $manager);
         }
     }
 
