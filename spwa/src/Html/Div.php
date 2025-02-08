@@ -17,8 +17,9 @@ class Div extends HtmlNode
         ?MouseEvents $mouse = null,
         ?array       $children = null)
     {
+        $this->key = $key;
+        
         $list = [
-            "key" => $key,
             "class" => $class,
             "id" => $id,
             "style" => $style,

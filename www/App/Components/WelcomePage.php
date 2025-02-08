@@ -47,11 +47,10 @@ class WelcomePage extends Page
 //                : null,
 
             // new for
-            new Div(children: array_map(fn($i) => new Div(key: $i * 2, children: [
+            new Div(children: array_map(fn($i) => new Div(key: "hap-de-pap#" . $i, children: [
                 new HtmlText("Item $i render"),
                 new Counter()
-            ]), [1, 2, 3, 4, 5])
-            ),
+            ]), [1, 2, 3, 4, 5])),
 
             new Div(class: "last", children: [
                 new HtmlText("Last "),

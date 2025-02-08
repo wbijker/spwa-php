@@ -24,21 +24,15 @@ abstract class Component extends Node
 
     function initialize(?Node $parent, PathInfo $current, StateManager $manager): void
     {
-        $this->path = $current;
-//        $this->path = $path->addChild(get_class($this));
-        // a component always has a root node
-//        $this->getNode()->initialize($this, $this->path , $manager);
+        $node = $this->getNode();
+        $this->path = $current->set(get_class($this), get_class($this));
+        JS::log("SET JS path", $this->path->keyStr());
 
-//        $this->path = $path->down(get_class($this));
-
-        //  $path->set($this, $parent, true);
 //        $saved = $manager->restoreState($this->keyStr());
 //        if ($saved != null) {
 //            $this->restoreState($saved);
 //        }
-
-        // new PathInfo($path->domIndex, get_class($this))
-        $this->getNode()->initialize($this, $this->path, $manager);
+        $node->initialize($this, $this->path, $manager);
     }
 
     function finalize(StateManager $manager): void
