@@ -33,10 +33,10 @@ class HtmlText extends Node
 //        return htmlentities($this->text);
     }
 
-    function initialize(?Node $parent, PathInfo $path, StateManager $manager): void
+    function initialize(?Node $parent, PathInfo $current, StateManager $manager): void
     {
         // text is always a leaf node
-        $this->path = $path;
+        $this->path = $current;
     }
 
     function finalize(StateManager $manager): void

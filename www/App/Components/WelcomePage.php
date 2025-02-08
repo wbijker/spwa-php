@@ -31,31 +31,31 @@ class WelcomePage extends Page
         );
     }
 
+    private $count = 1;
+
     function body(): Node
     {
         return new Div(children: [
-            new HtmlText("Counters"),
+            new Div(children: [
+                new HtmlText("0,0,0"),
+            ]),
+            new HtmlText("0,1"),
 
-            new ForNode([1,2,3,4,5], fn($i) => $i * 2, fn($i) =>
-                new Div(class: "child-1", children: [
-                    new Div(children: [
-                        new HtmlText("Item $i render"),
-                    ]),
-                    new Counter(),
-                ])),
+            // if condition
+//            $this->count < 12
+//                ? new HtmlText("12")
+//                : null,
+
+            // new for
+            new Div(children: array_map(fn($i) => new Div(key: $i * 2, children: [
+                new HtmlText("Item $i render"),
+                new Counter()
+            ]), [1, 2, 3, 4, 5])
+            ),
+
             new Div(class: "last", children: [
                 new HtmlText("Last "),
             ]),
         ]);
-
-//        return new Div(class: "h-screen w-screen flex", children: [
-//            new Div(class: "m-auto", children: [
-//                new Div(
-//                    children: [
-//                        new HtmlText("Counters"),
-//                        new Counter(),
-//                    ])
-//            ])
-//        ]);
     }
 }

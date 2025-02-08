@@ -93,10 +93,9 @@ abstract class HtmlNode extends Node
         return $ret;
     }
 
-    function initialize(?Node $parent, PathInfo $path, StateManager $manager): void
+    function initialize(?Node $parent, PathInfo $current, StateManager $manager): void
     {
-        $this->path = $path;
-
+        $this->path = $current;
         foreach ($this->events as $key => $value) {
             $manager->bindEvent($this, $key, $value);
         }

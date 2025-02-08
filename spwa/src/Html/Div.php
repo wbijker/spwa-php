@@ -9,6 +9,7 @@ class Div extends HtmlNode
 {
 
     public function __construct(
+        mixed        $key = null,
         ?string      $class = null,
         ?string      $id = null,
         ?array       $style = null,
@@ -17,6 +18,7 @@ class Div extends HtmlNode
         ?array       $children = null)
     {
         $list = [
+            "key" => $key,
             "class" => $class,
             "id" => $id,
             "style" => $style,

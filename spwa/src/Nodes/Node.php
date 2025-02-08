@@ -10,7 +10,8 @@ abstract class Node
 
     abstract function renderHtml(): string;
 
-    abstract function initialize(?Node $parent, PathInfo $path, StateManager $manager): void;
+
+    abstract function initialize(?Node $parent, PathInfo $current, StateManager $manager): void;
 
     abstract function finalize(StateManager $manager): void;
 }

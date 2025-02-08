@@ -22,11 +22,12 @@ abstract class Component extends Node
         return $this->getNode()->renderHtml();
     }
 
-    function initialize(?Node $parent, PathInfo $path, StateManager $manager): void
+    function initialize(?Node $parent, PathInfo $current, StateManager $manager): void
     {
-        $this->path = $path->addChild(get_class($this));
+        $this->path = $current;
+//        $this->path = $path->addChild(get_class($this));
         // a component always has a root node
-        $this->getNode()->initialize($this, $this->path , $manager);
+//        $this->getNode()->initialize($this, $this->path , $manager);
 
 //        $this->path = $path->down(get_class($this));
 
@@ -37,7 +38,7 @@ abstract class Component extends Node
 //        }
 
         // new PathInfo($path->domIndex, get_class($this))
-//        $this->getNode()->initialize($this, $path, $manager);
+        $this->getNode()->initialize($this, $this->path, $manager);
     }
 
     function finalize(StateManager $manager): void
