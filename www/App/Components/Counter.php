@@ -8,10 +8,12 @@ use Spwa\Js\JS;
 use Spwa\Nodes\Component;
 use Spwa\Nodes\HtmlText;
 use Spwa\Nodes\Node;
+use Spwa\Nodes\State;
 
 
 class Counter extends Component
 {
+    #[State]
     public int $counter = 0;
 
     function inc(): void

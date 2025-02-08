@@ -6,6 +6,7 @@ use Spwa\Html\Script;
 use Spwa\Http\HttpRequest;
 use Spwa\Http\HttpResponse;
 use Spwa\Http\MiddlewareHandler;
+use Spwa\Js\JS;
 use Spwa\Js\JsRuntime;
 use Spwa\Nodes\HtmlText;
 use Spwa\Nodes\Page;
@@ -51,6 +52,9 @@ class SpwMiddleware implements MiddlewareHandler
             $ret = HttpResponse::html(fn() => $node->renderHtml()."<script>executeJsDump(". json_encode(JsRuntime::dump()). ")</script>");
             $this->component->finalize($manager);
             $_SESSION['state'] = $manager->serialize();
+
+            JS::log("State", $_SESSION['state']);
+
             return $ret;
         }
         // http post, read JSON body

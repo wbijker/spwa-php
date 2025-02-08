@@ -2,6 +2,8 @@
 
 namespace Spwa\Nodes;
 
+use ReflectionClass;
+use ReflectionProperty;
 use Spwa\Js\JS;
 
 abstract class Component extends Node
@@ -25,19 +27,21 @@ abstract class Component extends Node
     function initialize(?Node $parent, PathInfo $current, StateManager $manager): void
     {
         $node = $this->getNode();
-        $this->path = $current->set(get_class($this), get_class($this));
-        JS::log("SET JS path", $this->path->keyStr());
 
-//        $saved = $manager->restoreState($this->keyStr());
-//        if ($saved != null) {
-//            $this->restoreState($saved);
-//        }
+        $className = basename(str_replace('\\', '/', get_class($this)));
+
+        $this->path = $current->set($className, $className);
+
+        $saved = $manager->restoreState($this->path->keyStr());
+        if ($saved != null) {
+            $this->restoreState($saved);
+        }
         $node->initialize($this, $this->path, $manager);
     }
 
     function finalize(StateManager $manager): void
     {
-//        $manager->saveState($this->path->keyStr(), $this->saveState());
+        $manager->saveState($this->path->keyStr(), $this->saveState());
         $this->getNode()->finalize($manager);
     }
 
@@ -49,17 +53,30 @@ abstract class Component extends Node
         return $this->node;
     }
 
+    private function hasStateAttribute(ReflectionProperty $property): bool
+    {
+        return count($property->getAttributes(State::class)) > 0;
+    }
+
     public function saveState(): array
     {
-        $vars = get_object_vars($this);
-        // remove members living in parent Node
-        JS::log('Saving state ', $vars);
-        return array_diff_key($vars, array_flip(['path', 'key', 'node']));
+        // get all members of the class annotated with #[State]
+        $state = [];
+        $reflection = new ReflectionClass($this);
+
+        foreach ($reflection->getProperties() as $property) {
+            if ($this->hasStateAttribute($property)) {
+                $state[$property->getName()] = $property->getValue($this);
+            }
+        }
+
+        return $state;
     }
 
     public function restoreState(array $saved): void
     {
         foreach ($saved as $key => $value) {
+            // check if the property also has state attribute
             if (property_exists($this, $key) && gettype($this->$key) == gettype($value)) {
                 $this->$key = $value;
             }
