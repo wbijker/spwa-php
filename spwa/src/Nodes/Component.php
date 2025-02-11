@@ -4,10 +4,13 @@ namespace Spwa\Nodes;
 
 use ReflectionClass;
 use ReflectionProperty;
-use Spwa\Js\JS;
+
 
 abstract class Component extends Node
 {
+
+    // rendered node
+    public Node $node;
 
     function compare(Node $node, PatchBuilder $patch): void
     {
@@ -16,42 +19,29 @@ abstract class Component extends Node
             return;
         }
 
-        $this->getNode()->compare($node->getNode(), $patch);
+        $this->node->compare($node, $patch);
     }
 
     function renderHtml(): string
     {
-        return $this->getNode()->renderHtml();
+        return $this->node->renderHtml();
     }
 
     function initialize(?Node $parent, PathInfo $current, StateManager $manager): void
     {
-        $node = $this->getNode();
-
         $className = basename(str_replace('\\', '/', get_class($this)));
-
         $this->path = $current->set($className, $className);
 
-        $saved = $manager->restoreState($this->path->keyStr());
-        if ($saved != null) {
-            $this->restoreState($saved);
-        }
-        $node->initialize($this, $this->path, $manager);
+        $this->node = $this->render(new RenderContext($this, $manager));
+        $this->node->initialize($this, $this->path, $manager);
     }
 
     function finalize(StateManager $manager): void
     {
         $manager->saveState($this->path->keyStr(), $this->saveState());
-        $this->getNode()->finalize($manager);
+        $this->node->finalize($manager);
     }
 
-    private Node $node;
-
-    public function getNode(): Node
-    {
-        $this->node ??= $this->render();
-        return $this->node;
-    }
 
     private function hasStateAttribute(ReflectionProperty $property): bool
     {
@@ -83,5 +73,5 @@ abstract class Component extends Node
         }
     }
 
-    abstract function render(): Node;
+    abstract function render(RenderContext $context): Node;
 }

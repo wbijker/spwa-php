@@ -2,6 +2,8 @@
 
 namespace Spwa\Nodes;
 
+use Spwa\Js\JS;
+
 class StateManager
 {
     // key dictionary contain state

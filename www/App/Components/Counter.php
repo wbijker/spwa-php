@@ -4,35 +4,31 @@ namespace App\Components;
 
 use Spwa\Html\Div;
 use Spwa\Html\MouseEvents;
-use Spwa\Js\JS;
 use Spwa\Nodes\Component;
 use Spwa\Nodes\HtmlText;
 use Spwa\Nodes\Node;
-use Spwa\Nodes\State;
+use Spwa\Nodes\RenderContext;
 
-
-class Counter extends Component
+class CounterState
 {
-    #[State]
-    public int $counter = 0;
+    public int $counter = 1;
 
-    function inc(): void
+    public function inc()
     {
         $this->counter += 1;
     }
+}
 
-    public function restoreState(array $saved): void
+class Counter extends Component
+{
+    function render(RenderContext $context): Node
     {
-        $this->counter = 10;
-    }
+        $state = $context->createState(new CounterState());
 
-
-    function render(): Node
-    {
         return new Div(
-            mouse: new MouseEvents(onClick: fn() => $this->inc()),
+            mouse: new MouseEvents(onClick: fn() => $state->inc()),
             children: [
-                new HtmlText("Counter: " . $this->counter),
+                new HtmlText("Counter: " . $state->counter),
                 new Div(children: [
                     new HtmlText("Inc"),
                 ]),

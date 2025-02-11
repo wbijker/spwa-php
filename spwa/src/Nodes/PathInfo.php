@@ -50,12 +50,17 @@ class PathInfo
 
     function pathStr(): string
     {
-        return implode("|", $this->indexPath);
+        return self::pathString($this->indexPath);
     }
 
     function keyStr(): string
     {
         return implode("|", $this->keyPath);
+    }
+
+    static function pathString(array $paths): string
+    {
+        return implode("|", $paths);
     }
 
 }

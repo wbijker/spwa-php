@@ -2,14 +2,12 @@
 
 namespace Spwa;
 
-use Spwa\Html\Script;
 use Spwa\Http\HttpRequest;
 use Spwa\Http\HttpResponse;
 use Spwa\Http\MiddlewareHandler;
 use Spwa\Js\JS;
 use Spwa\Js\JsRuntime;
-use Spwa\Nodes\HtmlText;
-use Spwa\Nodes\Page;
+use Spwa\Nodes\Component;
 use Spwa\Nodes\PatchBuilder;
 use Spwa\Nodes\PathInfo;
 use Spwa\Nodes\StateManager;
@@ -22,7 +20,7 @@ function joinPath(string ...$segments): string
 class SpwMiddleware implements MiddlewareHandler
 {
 
-    public function __construct(private Page $component)
+    public function __construct(private Component $component)
     {
     }
 
@@ -44,7 +42,7 @@ class SpwMiddleware implements MiddlewareHandler
         $manager->unserialize($data);
 
         $this->component->initialize(null, PathInfo::root(get_class($this->component)), $manager);
-        $node = $this->component->getNode();
+        $node = $this->component->node;
 
 
         if ($request->isGet()) {
@@ -64,16 +62,16 @@ class SpwMiddleware implements MiddlewareHandler
         $inputs = $json["inputs"];
 
         // handle bindings
-//            foreach ($inputs as $path => $value) {
-//                $pathData = $state->get(new NodePath(json_decode($path)));
-//                if ($pathData->binding)
-//                    $pathData->binding->set($value);
-//            }
+//        foreach ($inputs as $path => $value) {
+//            $pathData = $manager->restoreState(PathInfo::pathString(json_decode($path)));
+//            if ($pathData->binding)
+//                $pathData->binding->set($value);
+//        }
 
         [$path, $event] = $event;
         // find event from frontend.
         // execute event that will likely change the dom
-        $manager->triggerEvent(implode("|", $path), $event);
+        $manager->triggerEvent(PathInfo::pathString($path), $event);
 
         // force a re-render
         $new = $this->component->render();

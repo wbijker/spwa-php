@@ -5,18 +5,18 @@ namespace App\Components;
 use Spwa\Html\Div;
 use Spwa\Html\HtmlDocument;
 use Spwa\Html\Meta;
-use Spwa\Html\MouseEvents;
 use Spwa\Html\Script;
 use Spwa\Html\Title;
 use Spwa\Nodes\Component;
-use Spwa\Nodes\ForNode;
+use Spwa\Nodes\HtmlNode;
 use Spwa\Nodes\HtmlText;
 use Spwa\Nodes\Node;
-use Spwa\Nodes\Page;
+use Spwa\Nodes\RenderContext;
 
-class WelcomePage extends Page
+class WelcomePage extends Component
 {
-    function render(): HtmlDocument
+
+    function render(RenderContext $context): HtmlNode
     {
         return new HtmlDocument(
             lang: "en",
@@ -30,8 +30,6 @@ class WelcomePage extends Page
             body: $this->body()
         );
     }
-
-    private $count = 1;
 
     function body(): Node
     {
