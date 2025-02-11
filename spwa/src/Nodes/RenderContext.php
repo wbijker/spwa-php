@@ -2,6 +2,8 @@
 
 namespace Spwa\Nodes;
 
+use Spwa\Js\JS;
+
 class RenderContext
 {
 
@@ -26,6 +28,9 @@ class RenderContext
         return new RenderContext($parent, $current, $this->manager);
     }
 
+    private static array $state = [];
+
+    private int $index = 0;
 
     /**
      * @template T
@@ -34,6 +39,15 @@ class RenderContext
      */
     public function createState($state)
     {
+        // read $this->current->keyStr()][$this->index] from state
+        // if available call restored
+        // else call state->initialize and fill the cache
+
+        self::$state[$this->current->keyStr()][$this->index] = $state;
+//        JS::log("Creating state", $this->current->keyStr(), get_class($state));
+        JS::log(json_encode(self::$state));
+
+        $this->index++;
         return $state;
     }
 
