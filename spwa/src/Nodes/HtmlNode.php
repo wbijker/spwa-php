@@ -64,8 +64,9 @@ abstract class HtmlNode extends Node
         return false;
     }
 
-    function renderHtml(): string
+    function renderHtml(RenderContext $context): string
     {
+        $this->path = $context->current->set($this->key);
         $tag = $this->tag();
         $ret = "<$tag";
 
@@ -87,24 +88,25 @@ abstract class HtmlNode extends Node
 
         $ret .= ">";
         foreach ($this->children as $child) {
-            $ret .= $child->renderHtml();
+            // $child->initialize($this, $this->path->addChild(), $manager);
+            $ret .= $child->renderHtml($context->next($this, $this->path->addChild()));
         }
         $ret .= "</$tag>";
         return $ret;
     }
 
-    function initialize(?Node $parent, PathInfo $current, StateManager $manager): void
-    {
-        $this->path = $current->set($this->key);
-
-        foreach ($this->events as $key => $value) {
-            $manager->bindEvent($this, $key, $value);
-        }
-
-        foreach ($this->children as $i => $child) {
-            $child->initialize($this, $this->path->addChild(), $manager);
-        }
-    }
+//    function initialize(?Node $parent, PathInfo $current, StateManager $manager): void
+//    {
+//        $this->path = $current->set($this->key);
+//
+//        foreach ($this->events as $key => $value) {
+//            $manager->bindEvent($this, $key, $value);
+//        }
+//
+//        foreach ($this->children as $i => $child) {
+//            $child->initialize($this, $this->path->addChild(), $manager);
+//        }
+//    }
 
     function finalize(StateManager $manager): void
     {

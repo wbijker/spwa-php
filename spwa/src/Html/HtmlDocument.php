@@ -5,6 +5,7 @@ namespace Spwa\Html;
 use Spwa\Nodes\HtmlNode;
 use Spwa\Nodes\Node;
 use Spwa\Nodes\PathInfo;
+use Spwa\Nodes\RenderContext;
 use Spwa\Nodes\StateManager;
 
 class HtmlDocument extends HtmlNode
@@ -25,9 +26,9 @@ class HtmlDocument extends HtmlNode
         ];
     }
 
-    function renderHtml(): string
+    function renderHtml(RenderContext $context): string
     {
-        return "<!DOCTYPE html>" . PHP_EOL . parent::renderHtml();
+        return "<!DOCTYPE html>" . PHP_EOL . parent::renderHtml($context);
     }
 
     function tag(): string

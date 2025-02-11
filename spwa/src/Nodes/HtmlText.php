@@ -22,22 +22,20 @@ class HtmlText extends Node
         }
     }
 
-    function renderHtml(): string
+    function renderHtml(RenderContext $context): string
     {
-        if ($this->path == null) {
-            return $this->text;
-        }
+        $this->path = $context->current;
         return '(' . $this->path->pathStr() . ') ' . $this->text;
 
 //        return htmlspecialchars($this->text)
 //        return htmlentities($this->text);
     }
 
-    function initialize(?Node $parent, PathInfo $current, StateManager $manager): void
-    {
-        // text is always a leaf node
-        $this->path = $current;
-    }
+//    function initialize(?Node $parent, PathInfo $current, StateManager $manager): void
+//    {
+//        // text is always a leaf node
+//        $this->path = $current;
+//    }
 
     function finalize(StateManager $manager): void
     {

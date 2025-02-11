@@ -4,11 +4,11 @@ namespace Spwa\Nodes;
 
 use ReflectionClass;
 use ReflectionProperty;
+use Spwa\Js\JS;
 
 
 abstract class Component extends Node
 {
-
     // rendered node
     public Node $node;
 
@@ -22,18 +22,17 @@ abstract class Component extends Node
         $this->node->compare($node, $patch);
     }
 
-    function renderHtml(): string
+    private function getInstanceName(): string
     {
-        return $this->node->renderHtml();
+        return basename(str_replace('\\', '/', get_class($this)));
     }
 
-    function initialize(?Node $parent, PathInfo $current, StateManager $manager): void
+    function renderHtml(RenderContext $context): string
     {
-        $className = basename(str_replace('\\', '/', get_class($this)));
-        $this->path = $current->set($className, $className);
-
-        $this->node = $this->render(new RenderContext($this, $manager));
-        $this->node->initialize($this, $this->path, $manager);
+        $instance = $this->getInstanceName();
+        $this->path = $context->current->set($instance, $instance);
+        $node = $this->render($context);
+        return $node->renderHtml($context->next($this, $this->path));
     }
 
     function finalize(StateManager $manager): void

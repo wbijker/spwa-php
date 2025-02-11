@@ -10,6 +10,8 @@ use Spwa\Js\JsRuntime;
 use Spwa\Nodes\Component;
 use Spwa\Nodes\PatchBuilder;
 use Spwa\Nodes\PathInfo;
+use Spwa\Nodes\RenderContext;
+use Spwa\Nodes\State;
 use Spwa\Nodes\StateManager;
 
 function joinPath(string ...$segments): string
@@ -33,6 +35,12 @@ class SpwMiddleware implements MiddlewareHandler
             }
             return HttpResponse::notFound();
         }
+
+        $manager = new StateManager();
+        $context = new RenderContext(null, PathInfo::root(), $manager);
+        $html = $this->component->renderHtml($context);
+        return HttpResponse::html(fn() => $html."<script>executeJsDump(". json_encode(JsRuntime::dump()). ")</script>");
+
 
         ob_start();
         session_start();
