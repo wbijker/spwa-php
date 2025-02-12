@@ -2,6 +2,8 @@
 
 namespace Spwa\Html;
 
+use Spwa\Dom\DomNode;
+use Spwa\Dom\HtmlDomNode;
 use Spwa\Nodes\HtmlNode;
 use Spwa\Nodes\Node;
 use Spwa\Nodes\PathInfo;
@@ -23,10 +25,18 @@ class Body extends HtmlNode
         return 'body';
     }
 
-    function renderHtml(RenderContext $context): string
+    function renderHtml(RenderContext $context): DomNode
     {
-        return parent::renderHtml($context->next($this, PathInfo::root()));
+        $context->current = PathInfo::root();
+        return parent::renderHtml($context);
     }
+
+
+
+//    function renderHtml(RenderContext $context): string
+//    {
+//        return parent::renderHtml($context->next($this, PathInfo::root()));
+//    }
 
 
 //    function initialize(?Node $parent, PathInfo $path, StateManager $manager): void

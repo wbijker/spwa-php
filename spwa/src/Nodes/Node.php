@@ -2,6 +2,9 @@
 
 namespace Spwa\Nodes;
 
+
+use Spwa\Dom\DomNode;
+
 abstract class Node
 {
     public ?PathInfo $path = null;
@@ -11,9 +14,7 @@ abstract class Node
 
     abstract function finalize(StateManager $manager): void;
 
-    abstract function renderHtml(RenderContext $context): string;
-
-//    abstract function initialize(?Node $parent, PathInfo $current, StateManager $manager): void;
+    abstract function renderHtml(RenderContext $context): DomNode;
 }
 
 

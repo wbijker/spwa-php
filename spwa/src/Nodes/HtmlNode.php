@@ -2,6 +2,8 @@
 
 namespace Spwa\Nodes;
 
+use Spwa\Dom\DomNode;
+use Spwa\Dom\HtmlDomNode;
 use Spwa\Js\JS;
 
 abstract class HtmlNode extends Node
@@ -64,35 +66,11 @@ abstract class HtmlNode extends Node
         return false;
     }
 
-    function renderHtml(RenderContext $context): string
+    function renderHtml(RenderContext $context): DomNode
     {
-        $this->path = $context->current->set($this->key);
-        $tag = $this->tag();
-        $ret = "<$tag";
-
-        $copy = $this->attrs;
-
-        if ($this->path != null) {
-            $copy['path'] = $this->path->pathStr();
-            $copy['key'] = $this->path->keyStr();
-        }
-
-        foreach ($copy as $key => $value) {
-            $ret .= " $key=\"$value\"";
-        }
-
-        if ($this->closed()) {
-            $ret .= "/>";
-            return $ret;
-        }
-
-        $ret .= ">";
-        foreach ($this->children as $child) {
-            // $child->initialize($this, $this->path->addChild(), $manager);
-            $ret .= $child->renderHtml($context->next($this, $this->path->addChild()));
-        }
-        $ret .= "</$tag>";
-        return $ret;
+        $path = $context->current->set($this->key);
+        $children = array_map(fn($child) => $child->renderHtml($context->next($this, $path->addChild())), $this->children);
+        return new HtmlDomNode($this, $path, $this->tag(), $this->attrs, $children);
     }
 
 //    function initialize(?Node $parent, PathInfo $current, StateManager $manager): void

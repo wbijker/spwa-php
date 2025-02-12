@@ -4,6 +4,7 @@ namespace Spwa\Nodes;
 
 use ReflectionClass;
 use ReflectionProperty;
+use Spwa\Dom\DomNode;
 use Spwa\Js\JS;
 
 
@@ -27,7 +28,7 @@ abstract class Component extends Node
         return basename(str_replace('\\', '/', get_class($this)));
     }
 
-    function renderHtml(RenderContext $context): string
+    function renderHtml(RenderContext $context): DomNode
     {
         $instance = $this->getInstanceName();
         $this->path = $context->current->set($instance, $instance);
