@@ -36,45 +36,39 @@ abstract class Component extends Node
     {
         $instance = $this->getInstanceName();
         $this->path = $current->set($instance, $instance);
+
+        $states = $manager->restoreState($this->path->keyStr());
+
+        if ($states != null && is_array($states)) {
+            foreach ($this->states as $index => $state) {
+                if (gettype($state) == gettype($states[$index])) {
+//                    $this->states[$index] = $state;
+//                    JS::log("State restored", $index, $state);
+                }
+            }
+        }
+
         $this->node = $this->render();
         $this->node->initialize($this, $this->path, $manager);
     }
 
     function finalize(StateManager $manager): void
     {
-        $manager->saveState($this->path->keyStr(), $this->saveState());
+        $manager->saveState($this->path->keyStr(), $this->states);
         $this->node->finalize($manager);
     }
 
+    public array $states = [];
 
-    private function hasStateAttribute(ReflectionProperty $property): bool
+    /**
+     * @template T
+     * @param T $instance
+     * @return T
+     */
+    public function createState($instance)
     {
-        return count($property->getAttributes(State::class)) > 0;
-    }
-
-    public function saveState(): array
-    {
-        // get all members of the class annotated with #[State]
-        $state = [];
-        $reflection = new ReflectionClass($this);
-
-        foreach ($reflection->getProperties() as $property) {
-            if ($this->hasStateAttribute($property)) {
-                $state[$property->getName()] = $property->getValue($this);
-            }
-        }
-
-        return $state;
-    }
-
-    public function restoreState(array $saved): void
-    {
-        foreach ($saved as $key => $value) {
-            // check if the property also has state attribute
-            if (property_exists($this, $key) && gettype($this->$key) == gettype($value)) {
-                $this->$key = $value;
-            }
-        }
+        $this->states[] = $instance;
+        return $instance;
     }
 
     abstract function render(): Node;

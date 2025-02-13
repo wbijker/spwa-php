@@ -4,6 +4,7 @@ namespace App\Components;
 
 use Spwa\Html\Div;
 use Spwa\Html\MouseEvents;
+use Spwa\Js\JS;
 use Spwa\Nodes\Component;
 use Spwa\Nodes\HtmlText;
 use Spwa\Nodes\Node;
@@ -26,14 +27,11 @@ class Counter extends Component
 
     public function __construct()
     {
-        // $state = $context->createState(new CounterState());
-        $this->state = new CounterState();
+        $this->state = $this->createState(new CounterState());
     }
 
     function render(): Node
     {
-
-
         return new Div(
             mouse: new MouseEvents(onClick: fn() => $this->state->inc()),
             children: [
