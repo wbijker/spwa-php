@@ -11,10 +11,12 @@ abstract class DomNode
 
     /**
      * @param Node $owner
+     * @param HtmlNode|null $parent
      * @param PathInfo $path
      */
     public function __construct(
         public Node      $owner,
+        public ?HtmlNode $parent,
         public PathInfo  $path)
     {
     }

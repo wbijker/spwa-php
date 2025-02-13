@@ -2,8 +2,6 @@
 
 namespace Spwa\Nodes;
 
-use Spwa\Dom\DomNode;
-use Spwa\Dom\TextDomNode;
 use Spwa\Js\JS;
 
 class HtmlText extends Node
@@ -24,11 +22,21 @@ class HtmlText extends Node
         }
     }
 
-    function renderHtml(RenderContext $context): DomNode
+    function renderHtml(RenderContext $context): string
     {
-        return new TextDomNode($this, $context->current, $this->text);
+        $this->path = $context->current;
+        return '(' . $this->path->pathStr() . ') ' . $this->text;
+
+//        return htmlspecialchars($this->text)
+//        return htmlentities($this->text);
     }
-    
+
+//    function initialize(?Node $parent, PathInfo $current, StateManager $manager): void
+//    {
+//        // text is always a leaf node
+//        $this->path = $current;
+//    }
+
     function finalize(StateManager $manager): void
     {
     }

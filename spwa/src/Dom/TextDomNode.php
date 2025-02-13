@@ -10,11 +10,12 @@ class TextDomNode extends DomNode
 {
 
     public function __construct(
-        public Node     $owner,
-        public PathInfo $path,
-        public string   $text)
+        public Node      $owner,
+        public ?HtmlNode $parent,
+        public PathInfo  $path,
+        public string    $text)
     {
-        parent::__construct($owner, $path);
+        parent::__construct($owner, $parent, $path);
 
     }
 

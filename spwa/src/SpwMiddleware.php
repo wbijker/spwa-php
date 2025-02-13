@@ -38,8 +38,7 @@ class SpwMiddleware implements MiddlewareHandler
 
         $manager = new StateManager();
         $context = new RenderContext(null, PathInfo::root(), $manager);
-        $domNode = $this->component->renderHtml($context);
-        $html = $domNode->renderHtml();
+        $html = $this->component->renderHtml($context);
         return HttpResponse::html(fn() => $html."<script>executeJsDump(". json_encode(JsRuntime::dump()). ")</script>");
 
 
