@@ -16,7 +16,7 @@ use Spwa\Nodes\RenderContext;
 class WelcomePage extends Component
 {
 
-    function render(RenderContext $context): HtmlNode
+    function render(): HtmlNode
     {
         return new HtmlDocument(
             lang: "en",

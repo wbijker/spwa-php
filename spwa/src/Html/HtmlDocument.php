@@ -26,9 +26,9 @@ class HtmlDocument extends HtmlNode
         ];
     }
 
-    function renderHtml(RenderContext $context): string
+    function renderHtml(): string
     {
-        return "<!DOCTYPE html>" . PHP_EOL . parent::renderHtml($context);
+        return "<!DOCTYPE html>" . PHP_EOL . parent::renderHtml();
     }
 
     function tag(): string

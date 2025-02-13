@@ -21,14 +21,23 @@ class CounterState
 
 class Counter extends Component
 {
-    function render(RenderContext $context): Node
+
+    private CounterState $state;
+
+    public function __construct()
     {
-        $state = $context->createState(new CounterState());
+        // $state = $context->createState(new CounterState());
+        $this->state = new CounterState();
+    }
+
+    function render(): Node
+    {
+
 
         return new Div(
-            mouse: new MouseEvents(onClick: fn() => $state->inc()),
+            mouse: new MouseEvents(onClick: fn() => $this->state->inc()),
             children: [
-                new HtmlText("Counter: " . $state->counter),
+                new HtmlText("Counter: " . $this->state->counter),
                 new Div(children: [
                     new HtmlText("Inc"),
                 ]),

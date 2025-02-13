@@ -27,12 +27,17 @@ abstract class Component extends Node
         return basename(str_replace('\\', '/', get_class($this)));
     }
 
-    function renderHtml(RenderContext $context): string
+    function renderHtml(): string
+    {
+        return $this->node->renderHtml();
+    }
+
+    function initialize(?Node $parent, PathInfo $current, StateManager $manager): void
     {
         $instance = $this->getInstanceName();
-        $this->path = $context->current->set($instance, $instance);
-        $node = $this->render($context);
-        return $node->renderHtml($context->next($this, $this->path));
+        $this->path = $current->set($instance, $instance);
+        $this->node = $this->render();
+        $this->node->initialize($this, $this->path, $manager);
     }
 
     function finalize(StateManager $manager): void
@@ -72,5 +77,5 @@ abstract class Component extends Node
         }
     }
 
-    abstract function render(RenderContext $context): Node;
+    abstract function render(): Node;
 }
