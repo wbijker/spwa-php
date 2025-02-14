@@ -8,7 +8,7 @@ class PatchBuilder
     var $patches = [];
 
     function addPatch(Node $node, int $type, mixed $content) {
-        $this->patches[] = [$node->path, $type, $content];
+        $this->patches[] = [$node->path->indexPath, $type, $content];
     }
 
     function replace(Node $old, Node $new): void

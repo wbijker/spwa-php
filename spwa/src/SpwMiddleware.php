@@ -28,10 +28,8 @@ class SpwMiddleware implements MiddlewareHandler
     {
     }
 
-    private function initialize(StateManager $manager): Nodes\Node
+    private function render(StateManager $manager): Nodes\Node
     {
-        $data = $_SESSION['state'] ?? null;
-        $manager->unserialize($data);
         $this->component->initialize(null, PathInfo::root(), $manager);
         return $this->component->node;
     }
@@ -58,7 +56,9 @@ class SpwMiddleware implements MiddlewareHandler
         }
 
         $manager = new StateManager();
-        $node = $this->initialize($manager);
+        $data = $_SESSION['state'] ?? null;
+        $manager->unserialize($data);
+        $node = $this->render($manager);
 
         if ($request->isGet()) {
             $html = $node->renderHtml();
@@ -84,12 +84,15 @@ class SpwMiddleware implements MiddlewareHandler
         // execute event that will likely change the dom
         $manager->triggerEvent(PathInfo::pathString($path), $event);
 
-        // force a re-render
-        $new = $this->component->render();
+        // save the state after the events fired
+        $this->finalize($manager);
+
+        // force a re-render with the new state
+        $new = $this->render($manager);
+
         $patch = new PatchBuilder();
         $node->compare($new, $patch);
 
-        $this->finalize($manager);
         return HttpResponse::json([
             'p' => $patch->patches,
             'j' => JsRuntime::dump()

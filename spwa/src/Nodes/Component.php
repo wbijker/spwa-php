@@ -3,6 +3,8 @@
 namespace Spwa\Nodes;
 
 
+use Spwa\Js\JS;
+
 abstract class Component extends Node
 {
     // rendered node
@@ -15,7 +17,7 @@ abstract class Component extends Node
             return;
         }
 
-        $this->node->compare($node, $patch);
+        $this->node->compare($node->node, $patch);
     }
 
     private function getInstanceName(): string
