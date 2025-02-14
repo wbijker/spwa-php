@@ -2,10 +2,6 @@
 
 namespace Spwa\Nodes;
 
-use ReflectionClass;
-use ReflectionProperty;
-use Spwa\Js\JS;
-
 
 abstract class Component extends Node
 {
@@ -37,24 +33,47 @@ abstract class Component extends Node
         $instance = $this->getInstanceName();
         $this->path = $current->set($instance, $instance);
 
-        $states = $manager->restoreState($this->path->keyStr());
-
-        if ($states != null && is_array($states)) {
-            foreach ($this->states as $index => $state) {
-                if (gettype($state) == gettype($states[$index])) {
-//                    $this->states[$index] = $state;
-//                    JS::log("State restored", $index, $state);
-                }
-            }
-        }
+        $this->restoreState($manager->restoreState($this->path->keyStr()));
 
         $this->node = $this->render();
         $this->node->initialize($this, $this->path, $manager);
     }
 
+    function restoreState($array): void
+    {
+        if (empty($array))
+            return;
+
+        foreach ($array as $index => $data) {
+            $existing = $this->states[$index];
+
+            if ($existing instanceof State) {
+                $existing->fromJson($data);
+                continue;
+            }
+
+            // manual
+            foreach ($data as $key => $value) {
+                if (property_exists($existing, $key)) {
+                    $existing->$key = $value;
+                }
+            }
+        }
+    }
+
+    function saveState(): array
+    {
+        return array_map(function ($state) {
+            if ($state instanceof State) {
+                return $state->toJson();
+            }
+            return get_object_vars($state);
+        }, $this->states);
+    }
+
     function finalize(StateManager $manager): void
     {
-        $manager->saveState($this->path->keyStr(), $this->states);
+        $manager->saveState($this->path->keyStr(), $this->saveState());
         $this->node->finalize($manager);
     }
 
@@ -73,3 +92,4 @@ abstract class Component extends Node
 
     abstract function render(): Node;
 }
+
