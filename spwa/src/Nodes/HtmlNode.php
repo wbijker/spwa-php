@@ -73,10 +73,10 @@ abstract class HtmlNode extends Node
 
         $copy = $this->attrs;
 
-        if ($this->path != null) {
-            $copy['path'] = $this->path->pathStr();
-            $copy['key'] = $this->path->keyStr();
-        }
+//        if ($this->path != null) {
+//            $copy['path'] = $this->path->pathStr();
+//            $copy['key'] = $this->path->keyStr();
+//        }
 
         foreach ($copy as $key => $value) {
             $ret .= " $key=\"$value\"";

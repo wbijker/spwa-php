@@ -25,10 +25,8 @@ class HtmlText extends Node
 
     function renderHtml(): string
     {
-        return '(' . $this->path->pathStr() . ') ' . $this->text;
-
-//        return htmlspecialchars($this->text)
-//        return htmlentities($this->text);
+//        return '(' . $this->path->pathStr() . ') ' . $this->text;
+        return htmlentities($this->text);
     }
 
     function initialize(?Node $parent, PathInfo $current, StateManager $manager): void

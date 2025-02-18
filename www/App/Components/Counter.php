@@ -2,8 +2,6 @@
 
 namespace App\Components;
 
-use App\TodoItem;
-use Attribute;
 use Spwa\Html\Div;
 use Spwa\Html\MouseEvents;
 use Spwa\Nodes\Component;
@@ -17,13 +15,7 @@ class Counter extends Component
     #[State]
     public int $counter = 1;
 
-    /**
-     * @var TodoItem[]
-     */
-    #[State]
-    private array $todos = [];
-
-    public function inc()
+    public function inc(): void
     {
         $this->counter += 1;
     }
