@@ -4,8 +4,7 @@ namespace Spwa\Nodes;
 
 use Attribute;
 
-interface State
+#[Attribute]
+class State
 {
-    function fromJson(array $json): void;
-    function toJson(): array;
 }

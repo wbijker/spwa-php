@@ -16,12 +16,16 @@ class StateManager
         if ($data == null)
             return;
 
-        $this->state = json_decode($data, true);
+        $unserialize = @unserialize($data);
+        if (is_array($unserialize)) {
+            $this->state = $unserialize;
+        }
     }
 
     function serialize(): string
     {
-        return json_encode($this->state);
+        // json_encode(
+        return serialize($this->state);
     }
 
     function restoreState(string $key)

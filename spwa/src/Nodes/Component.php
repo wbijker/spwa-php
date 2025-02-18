@@ -3,7 +3,9 @@
 namespace Spwa\Nodes;
 
 
-use Spwa\Js\JS;
+use ReflectionClass;
+use ReflectionProperty;
+
 
 abstract class Component extends Node
 {
@@ -41,36 +43,35 @@ abstract class Component extends Node
         $this->node->initialize($this, $this->path, $manager);
     }
 
+    private function getStateProperties(): array
+    {
+        $props = [];
+        $reflection = new ReflectionClass($this);
+        foreach ($reflection->getProperties(ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PROTECTED | ReflectionProperty::IS_PRIVATE) as $property) {
+            if (!empty($property->getAttributes(State::class))) {
+                $props[$property->getName()] = $property;
+            }
+        }
+        return $props;
+    }
+
     function restoreState($array): void
     {
         if (empty($array))
             return;
 
-        foreach ($array as $index => $data) {
-            $existing = $this->states[$index];
-
-            if ($existing instanceof State) {
-                $existing->fromJson($data);
-                continue;
-            }
-
-            // manual
-            foreach ($data as $key => $value) {
-                if (property_exists($existing, $key)) {
-                    $existing->$key = $value;
-                }
+        foreach ($this->getStateProperties() as $name => $prop) {
+            $existing = $prop->getValue($this);
+            // if the property is null we cannot infer the type
+            if ($existing == null || gettype($existing) == gettype($array[$name])) {
+                $prop->setValue($this, $array[$name]);
             }
         }
     }
 
-    function saveState(): array
+    private function saveState(): array
     {
-        return array_map(function ($state) {
-            if ($state instanceof State) {
-                return $state->toJson();
-            }
-            return get_object_vars($state);
-        }, $this->states);
+        return array_map(fn($prop) => $prop->getValue($this), $this->getStateProperties());
     }
 
     function finalize(StateManager $manager): void
