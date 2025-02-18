@@ -31,6 +31,8 @@ class WelcomePage extends Component
         );
     }
 
+    private Counter|null $last = null;
+
     function body(): Node
     {
         return new Div(children: [
@@ -45,14 +47,18 @@ class WelcomePage extends Component
 //                : null,
 
             // new for
-            new Div(children: array_map(fn($i) => new Div(key: "hap-de-pap#" . $i, children: [
+            new Div(children: array_map(fn($i) => new Div(key: "#" . $i, children: [
                 new HtmlText("Item $i render"),
-                new Counter()
+                new Counter(onChange: fn($value) => $this->last?->setCounter($value)),
             ]), [1, 2, 3, 4, 5])),
 
             new Div(class: "last", children: [
                 new HtmlText("Last "),
             ]),
+
+            new Counter(ref: function ($instance) {
+                $this->last = $instance;
+            }),
         ]);
     }
 }

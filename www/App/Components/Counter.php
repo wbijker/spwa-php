@@ -15,9 +15,28 @@ class Counter extends Component
     #[State]
     public int $counter = 1;
 
-    public function inc(): void
+    /**
+     * @param callable(int $value): void $onChange
+     * @param callable(Counter $instance): void $ref
+     */
+    public function __construct(private $onChange = null, $ref = null)
+    {
+        if (is_callable($ref)) {
+            ($ref)($this);
+        }
+    }
+
+    public function setCounter(int $value): void
+    {
+        $this->counter = $value;
+    }
+
+    private function inc(): void
     {
         $this->counter += 1;
+        if (is_callable($this->onChange)) {
+            ($this->onChange)($this->counter);
+        }
     }
 
     function render(): Node
