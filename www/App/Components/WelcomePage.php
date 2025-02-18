@@ -4,6 +4,7 @@ namespace App\Components;
 
 use Spwa\Html\Div;
 use Spwa\Html\HtmlDocument;
+use Spwa\Html\InputText;
 use Spwa\Html\Meta;
 use Spwa\Html\Script;
 use Spwa\Html\Title;
@@ -35,6 +36,8 @@ class WelcomePage extends Component
 
     function body(): Node
     {
+        $other = new Counter();
+
         return new Div(children: [
             new Div(children: [
                 new HtmlText("0,0,0"),
@@ -47,9 +50,15 @@ class WelcomePage extends Component
 //                : null,
 
             // new for
+
+            new InputText(class: "p-2 border", value: "Some input"),
+
             new Div(children: array_map(fn($i) => new Div(key: "#" . $i, children: [
                 new HtmlText("Item $i render"),
-                new Counter(onChange: fn($value) => $this->last?->setCounter($value)),
+                new Counter(onChange: function ($value) use ($other) {
+                    $this->last?->setCounter($value);
+                    $other->setCounter($value);
+                }),
             ]), [1, 2, 3, 4, 5])),
 
             new Div(class: "last", children: [
@@ -59,6 +68,7 @@ class WelcomePage extends Component
             new Counter(ref: function ($instance) {
                 $this->last = $instance;
             }),
+            $other
         ]);
     }
 }

@@ -3,10 +3,11 @@
 namespace Spwa\Html;
 
 use Spwa\Nodes\HtmlContentNode;
+use Spwa\Nodes\HtmlNode;
 
-
-class Div extends HtmlContentNode
+class InputText extends HtmlContentNode
 {
+
 
     public function __construct(
         mixed        $key = null,
@@ -15,14 +16,18 @@ class Div extends HtmlContentNode
         ?array       $style = null,
         ?array       $data = null,
         ?MouseEvents $mouse = null,
-        ?array       $children = null)
+
+        ?string      $value = null,
+        ?onChange    $onChange = null,
+        ?onInput     $onInput = null,
+    )
     {
         parent::__construct($key, $class, $id, $style, $data, $mouse);
-        $this->children = $children ?? [];
+        $this->attrs['value'] = $value;
     }
 
     function tag(): string
     {
-        return "div";
+        return "input";
     }
 }

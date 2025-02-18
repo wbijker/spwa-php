@@ -2,7 +2,9 @@
 
 namespace Spwa\Nodes;
 
+use Spwa\Html\MouseEvents;
 use Spwa\Js\JS;
+
 
 abstract class HtmlNode extends Node
 {
@@ -63,7 +65,6 @@ abstract class HtmlNode extends Node
     {
         return false;
     }
-
 
 
     function renderHtml(): string
