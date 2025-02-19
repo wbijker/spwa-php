@@ -13,6 +13,7 @@ use Spwa\Nodes\HtmlNode;
 use Spwa\Nodes\HtmlText;
 use Spwa\Nodes\Node;
 use Spwa\Nodes\RenderContext;
+use Spwa\Nodes\State;
 
 class WelcomePage extends Component
 {
@@ -34,6 +35,9 @@ class WelcomePage extends Component
 
     private Counter|null $last = null;
 
+    #[State]
+    private string $text = "Hap";
+
     function body(): Node
     {
         $other = new Counter();
@@ -51,7 +55,7 @@ class WelcomePage extends Component
 
             // new for
 
-            new InputText(class: "p-2 border", value: "Some input"),
+            new InputText(class: "p-2 border", bind: $this->text),
 
             new Div(children: array_map(fn($i) => new Div(key: "#" . $i, children: [
                 new HtmlText("Item $i render"),

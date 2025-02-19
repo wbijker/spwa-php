@@ -80,19 +80,6 @@ abstract class Component extends Node
         $this->node->finalize($manager);
     }
 
-    public array $states = [];
-
-    /**
-     * @template T
-     * @param T $instance
-     * @return T
-     */
-    public function createState($instance)
-    {
-        $this->states[] = $instance;
-        return $instance;
-    }
-
     abstract function render(): Node;
 }
 
