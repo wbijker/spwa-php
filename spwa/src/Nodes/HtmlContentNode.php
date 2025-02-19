@@ -3,6 +3,7 @@
 namespace Spwa\Nodes;
 
 use Spwa\Html\MouseEvents;
+use Spwa\Js\JS;
 
 /*
  * DOM elements that falls into the flow content category in HTML specifications.
@@ -29,9 +30,6 @@ abstract class HtmlContentNode extends HtmlNode
             "style" => $style,
             "data" => $data
         ];
-        if ($mouse != null) {
-            $list = array_merge($list, $mouse->flatAttr($this));
-        }
         $this->setAttrs($list);
 
         if ($mouse?->onClick != null) {

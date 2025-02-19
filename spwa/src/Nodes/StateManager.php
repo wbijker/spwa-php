@@ -37,18 +37,4 @@ class StateManager
     {
         $this->state[$key] = $state;
     }
-
-    function bindEvent(Node $owner, string $event, callable $callback): void
-    {
-        $this->events[$owner->path->pathStr()][$event] = $callback;
-    }
-
-    function triggerEvent(string $path, string $event): void
-    {
-        $handler = $this->events[$path][$event] ?? null;
-
-        if (is_callable($handler)) {
-            $handler();
-        }
-    }
 }

@@ -32,7 +32,7 @@ class InputText extends HtmlContentNode
         ?MouseEvents    $mouse = null,
 
         ?string         $value = null,
-        private ?string &$bind = null,
+//        private ?string &$bind = null,
 
                         $onChange = null,
                         $onInput = null,
@@ -42,12 +42,22 @@ class InputText extends HtmlContentNode
     {
         parent::__construct($key, $class, $id, $style, $data, $mouse);
 
-        if ($bind !== null) {
-            $this->bindings = &$bind;
-            $func = new JsFunction("handleInput", new JsLiteral('event'));
-            $this->attrs['onInput'] = $func->dump();
-            $this->attrs['value'] = $bind;
-        }
+        // 1. remove events from state
+        // 2. Store events in node itself.
+
+        $this->setEvents([
+            "onChange" => $onChange,
+            "onInput" => $onInput,
+            "onFocus" => $onFocus,
+            "onBlur" => $onBlur,
+        ]);
+
+//        if ($bind !== null) {
+//            $this->bindings = &$bind;
+//            $func = new JsFunction("handleInput", new JsLiteral('event'));
+//            $this->attrs['onInput'] = $func->dump();
+//            $this->attrs['value'] = $bind;
+//        }
     }
 
     function tag(): string

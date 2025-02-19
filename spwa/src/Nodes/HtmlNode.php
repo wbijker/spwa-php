@@ -3,6 +3,10 @@
 namespace Spwa\Nodes;
 
 
+use Spwa\Js\JS;
+use Spwa\Js\JsFunction;
+use Spwa\Js\JsLiteral;
+
 abstract class HtmlNode extends Node
 {
     function compare(Node $node, PatchBuilder $patch): void
@@ -47,15 +51,28 @@ abstract class HtmlNode extends Node
     {
         // remove one element from path
         $key = array_shift($path);
-        if ($key == null)
+        if ($key === null)
             return $this;
 
         return $this->children[$key]?->find($path);
     }
 
-    protected function setEvents(array $events)
+    public function triggerEvent(string $event): void
     {
-        $this->events = array_filter($events, fn($v) => $v !== null);
+        $handler = $this->events[$event] ?? null;
+        if (is_callable($handler)) {
+            $handler();
+        }
+    }
+
+    protected function setEvents(array $events): void
+    {
+        $filtered = array_filter($events, fn($v) => $v !== null);
+        foreach ($filtered as $key => $value) {
+            $this->attrs[$key] = JsFunction::create("handleEvent", $key, new JsLiteral('event'));
+            $this->events[$key] = $value;
+        }
+        $this->events = $filtered;
     }
 
     protected function setAttrs(array $attrs)
@@ -110,10 +127,6 @@ abstract class HtmlNode extends Node
     function initialize(?Node $parent, PathInfo $current, StateManager $manager): void
     {
         $this->path = $current->set($this->key);
-
-        foreach ($this->events as $key => $value) {
-            $manager->bindEvent($this, $key, $value);
-        }
 
         foreach ($this->children as $child) {
             $child->initialize($this, $this->path->addChild(), $manager);

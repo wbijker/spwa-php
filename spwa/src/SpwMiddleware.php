@@ -80,8 +80,7 @@ class SpwMiddleware implements MiddlewareHandler
         $event = $json['event'];
         $inputs = $json["inputs"];
 
-
-        foreach ($inputs as $path => $value) {
+        /*foreach ($inputs as $path => $value) {
 
             $found = $node->find(json_decode($path));
             if ($found instanceof HtmlNode) {
@@ -90,12 +89,16 @@ class SpwMiddleware implements MiddlewareHandler
                 }
             }
             JS::log("Binding: $path = $value", $found?->renderHtml());
-        }
+        }*/
 
         [$path, $event] = $event;
         // find event from frontend.
         // execute event that will likely change the dom
-        $manager->triggerEvent(PathInfo::pathString($path), $event);
+
+        $found = $node->find($path);
+        if ($found instanceof HtmlNode) {
+            $found->triggerEvent($event);
+        }
 
         // save the state after the events fired
         $this->finalize($manager);

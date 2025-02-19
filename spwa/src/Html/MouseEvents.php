@@ -2,10 +2,6 @@
 
 namespace Spwa\Html;
 
-use Spwa\Js\JsFunction;
-use Spwa\Js\JsLiteral;
-use Spwa\Nodes\Node;
-
 class MouseEvents
 {
     /**
@@ -33,17 +29,5 @@ class MouseEvents
         public $onContextMenu = null
     )
     {
-    }
-
-    function flatAttr(Node $owner): array
-    {
-        $ret = [];
-        foreach ($this as $key => $value) {
-            if ($value != null) {
-                $func = new JsFunction("handleEvent", $key, new JsLiteral('event'));
-                $ret[$key] = $func->dump();
-            }
-        }
-        return $ret;
     }
 }

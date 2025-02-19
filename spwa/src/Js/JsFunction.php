@@ -17,6 +17,11 @@ class JsFunction
         $this->args = $args;
     }
 
+    public static function create(string $name, ...$args): string
+    {
+        return (new JsFunction($name, ...$args))->dump();
+    }
+
     function dump(): string
     {
         $args = array_map(fn($arg) => $arg instanceof JsLiteral ? $arg->name : htmlspecialchars(json_encode($arg), ENT_QUOTES), $this->args);

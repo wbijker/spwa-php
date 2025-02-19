@@ -38,6 +38,11 @@ class WelcomePage extends Component
     #[State]
     private string $text = "Hap";
 
+    private function reverse(): string
+    {
+        return strrev($this->text);
+    }
+
     function body(): Node
     {
         $other = new Counter();
@@ -53,24 +58,26 @@ class WelcomePage extends Component
 //                ? new Div(class: "hap-true", children: [new HtmlText("true")])
 //                : new Div(class: "hap-false", children: [new HtmlText("false")]),
 
-            new InputText(class: "p-2 border", bind: $this->text),
+            new InputText(class: "p-2 border", value: $this->text, onInput: fn() => $this->text = "changed"),
+
+            new Div(class: "m-2 p-2 border bg-orange-200", children: [new HtmlText("Reversed: " . $this->reverse())]),
 
             new Div(children: array_map(fn($i) => new Div(key: "#" . $i, children: [
                 new HtmlText("Item $i render"),
                 new Counter(onChange: function ($value) use ($other) {
-                    $this->last?->setCounter($value);
-                    $other->setCounter($value);
+//                    $this->last?->setCounter($value);
+//                    $other->setCounter($value);
                 }),
-            ]), [1, 2, 3, 4, 5])),
+            ]), [5, 6])),
 
-            new Div(class: "last", children: [
-                new HtmlText("Last "),
-            ]),
+//            new Div(class: "last", children: [
+//                new HtmlText("Last "),
+//            ]),
 
-            new Counter(ref: function ($instance) {
-                $this->last = $instance;
-            }),
-            $other
+//            new Counter(ref: function ($instance) {
+//                $this->last = $instance;
+//            }),
+//            $other
         ]);
     }
 }
