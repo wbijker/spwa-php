@@ -2,6 +2,7 @@
 
 namespace Spwa\Html;
 
+use Spwa\Js\JS;
 use Spwa\Nodes\HtmlNode;
 use Spwa\Nodes\Node;
 use Spwa\Nodes\PathInfo;
@@ -13,7 +14,7 @@ class HtmlDocument extends HtmlNode
     public function __construct(
         string $lang,
         array  $head,
-        Node   $body
+        private Node   $body
     )
     {
         $this->setAttrs([
@@ -24,6 +25,15 @@ class HtmlDocument extends HtmlNode
             new Head($head),
             new Body([$body])
         ];
+    }
+
+    function find(array $path): ?Node
+    {
+        $key = array_shift($path);
+        if ($key == 0) {
+            return $this->body->find($path);
+        }
+        return null;
     }
 
     function renderHtml(): string

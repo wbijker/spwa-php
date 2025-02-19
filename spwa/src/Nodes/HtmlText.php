@@ -22,6 +22,13 @@ class HtmlText extends Node
         }
     }
 
+    function find(array $path): ?Node
+    {
+        if (count($path) == 0) {
+            return $this;
+        }
+        return null;
+    }
 
     function renderHtml(): string
     {

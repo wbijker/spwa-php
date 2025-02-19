@@ -2,12 +2,15 @@
 
 namespace Spwa;
 
+use Spwa\Html\HtmlDocument;
 use Spwa\Http\HttpRequest;
 use Spwa\Http\HttpResponse;
 use Spwa\Http\MiddlewareHandler;
 use Spwa\Js\JS;
 use Spwa\Js\JsRuntime;
 use Spwa\Nodes\Component;
+use Spwa\Nodes\HtmlNode;
+use Spwa\Nodes\Node;
 use Spwa\Nodes\PatchBuilder;
 use Spwa\Nodes\PathInfo;
 use Spwa\Nodes\RenderContext;
@@ -18,6 +21,7 @@ function joinPath(string ...$segments): string
 {
     return implode(DIRECTORY_SEPARATOR, $segments);
 }
+
 
 session_start();
 
@@ -49,6 +53,10 @@ class SpwMiddleware implements MiddlewareHandler
         return HttpResponse::notFound();
     }
 
+
+
+    // handle bindings
+
     function handle(HttpRequest $request, callable $next): HttpResponse
     {
         if ($request->startWithSegment(['assets'])) {
@@ -72,12 +80,17 @@ class SpwMiddleware implements MiddlewareHandler
         $event = $json['event'];
         $inputs = $json["inputs"];
 
-        // handle bindings
-//        foreach ($inputs as $path => $value) {
-//            $pathData = $manager->restoreState(PathInfo::pathString(json_decode($path)));
-//            if ($pathData->binding)
-//                $pathData->binding->set($value);
-//        }
+
+        foreach ($inputs as $path => $value) {
+
+            $found = $node->find(json_decode($path));
+            if ($found instanceof HtmlNode) {
+                if ($found->bindings != null) {
+                    $found->bindings = $value;
+                }
+            }
+            JS::log("Binding: $path = $value", $found?->renderHtml());
+        }
 
         [$path, $event] = $event;
         // find event from frontend.

@@ -22,6 +22,11 @@ abstract class Component extends Node
         $this->node->compare($node->node, $patch);
     }
 
+    function find(array $path): ?Node
+    {
+        return $this->node->find($path);
+    }
+
     private function getInstanceName(): string
     {
         return basename(str_replace('\\', '/', get_class($this)));

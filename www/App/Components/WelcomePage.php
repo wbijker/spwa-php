@@ -49,11 +49,9 @@ class WelcomePage extends Component
             new HtmlText("0,1"),
 
             // if condition
-//            $this->count < 12
-//                ? new HtmlText("12")
-//                : null,
-
-            // new for
+//            $this->text == "hap"
+//                ? new Div(class: "hap-true", children: [new HtmlText("true")])
+//                : new Div(class: "hap-false", children: [new HtmlText("false")]),
 
             new InputText(class: "p-2 border", bind: $this->text),
 

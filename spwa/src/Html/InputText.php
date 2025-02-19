@@ -5,10 +5,6 @@ namespace Spwa\Html;
 use Spwa\Js\JsFunction;
 use Spwa\Js\JsLiteral;
 use Spwa\Nodes\HtmlContentNode;
-use Spwa\Nodes\HtmlNode;
-use Spwa\Nodes\Node;
-use Spwa\Nodes\PathInfo;
-use Spwa\Nodes\StateManager;
 
 
 class InputText extends HtmlContentNode
@@ -28,53 +24,31 @@ class InputText extends HtmlContentNode
      * @param (callable(String $value): void)|null $onBlur
      */
     public function __construct(
-        mixed        $key = null,
-        ?string      $class = null,
-        ?string      $id = null,
-        ?array       $style = null,
-        ?array       $data = null,
-        ?MouseEvents $mouse = null,
+        mixed           $key = null,
+        ?string         $class = null,
+        ?string         $id = null,
+        ?array          $style = null,
+        ?array          $data = null,
+        ?MouseEvents    $mouse = null,
 
-        ?string      $value = null,
-        private ?string      &$bind = null,
+        ?string         $value = null,
+        private ?string &$bind = null,
 
-                     $onChange = null,
-                     $onInput = null,
-                     $onFocus = null,
-                     $onBlur = null
+                        $onChange = null,
+                        $onInput = null,
+                        $onFocus = null,
+                        $onBlur = null
     )
     {
         parent::__construct($key, $class, $id, $style, $data, $mouse);
 
         if ($bind !== null) {
-            $this->attrs['value'] = $bind;
-            /*function flatAttr(Node $owner): array
-            {
-                $ret = [];
-                foreach ($this as $key => $value) {
-                    if ($value != null) {
-                        $func = new JsFunction("handleEvent", $key, new JsLiteral('event'));
-                        $ret[$key] = $func->dump();
-                    }
-                }
-                return $ret;
-            }*/
-
-        }
-//        $this->attrs['value'] = $value;
-
-    }
-
-    function initialize(?Node $parent, PathInfo $current, StateManager $manager): void
-    {
-        parent::initialize($parent, $current, $manager);
-
-        if ($this->bind != null) {
+            $this->bindings = &$bind;
             $func = new JsFunction("handleInput", new JsLiteral('event'));
             $this->attrs['onInput'] = $func->dump();
+            $this->attrs['value'] = $bind;
         }
     }
-
 
     function tag(): string
     {

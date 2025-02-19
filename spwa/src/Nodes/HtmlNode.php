@@ -2,9 +2,6 @@
 
 namespace Spwa\Nodes;
 
-use Spwa\Html\MouseEvents;
-use Spwa\Js\JS;
-
 
 abstract class HtmlNode extends Node
 {
@@ -35,6 +32,7 @@ abstract class HtmlNode extends Node
 
     public array $attrs = [];
     public array $events = [];
+    public $bindings = null;
     /**
      * @var Node[] $children
      */
@@ -43,6 +41,16 @@ abstract class HtmlNode extends Node
     function addChild(HtmlNode $node)
     {
         $this->children[] = $node;
+    }
+
+    function find(array $path): ?Node
+    {
+        // remove one element from path
+        $key = array_shift($path);
+        if ($key == null)
+            return $this;
+
+        return $this->children[$key]?->find($path);
     }
 
     protected function setEvents(array $events)

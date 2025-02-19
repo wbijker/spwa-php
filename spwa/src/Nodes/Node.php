@@ -10,6 +10,7 @@ abstract class Node
     abstract function compare(Node $node, PatchBuilder $patch): void;
 
     abstract function renderHtml(): string;
+    abstract function find(array $path): ?Node;
 
 
     abstract function initialize(?Node $parent, PathInfo $current, StateManager $manager): void;
