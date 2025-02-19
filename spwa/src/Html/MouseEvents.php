@@ -2,6 +2,9 @@
 
 namespace Spwa\Html;
 
+use Spwa\Nodes\HtmlNode;
+use Spwa\Nodes\Node;
+
 class MouseEvents
 {
     /**
@@ -30,4 +33,21 @@ class MouseEvents
     )
     {
     }
+
+    function setEvents(HtmlNode $owner): void
+    {
+        $owner->setEvents([
+            "onClick" => $this->onClick,
+            "onDoubleClick" => $this->onDoubleClick,
+            "onMouseDown" => $this->onMouseDown,
+            "onMouseUp" => $this->onMouseUp,
+            "onMouseMove" => $this->onMouseMove,
+            "onMouseEnter" => $this->onMouseEnter,
+            "onMouseLeave" => $this->onMouseLeave,
+            "onMouseOver" => $this->onMouseOver,
+            "onMouseOut" => $this->onMouseOut,
+            "onContextMenu" => $this->onContextMenu,
+        ]);
+    }
+
 }

@@ -37,12 +37,22 @@ function handleInput(event) {
     inputs[JSON.stringify(path)] = event.target.value;
 }
 
+function buidlArgs(event) {
+    switch (event.type) {
+        case 'input':
+            return [event.target.value];
+        default:
+            return [];
+    }
+}
+
 function handleEvent(name, event) {
     // console.log('We need to handle', event, 'on', path);
     const path = pathToBody(event.currentTarget);
+    const args = buidlArgs(event);
 
     post({
-        event: [path, name],
+        event: [path, name, args],
         inputs
     });
 }

@@ -31,10 +31,7 @@ abstract class HtmlContentNode extends HtmlNode
             "data" => $data
         ];
         $this->setAttrs($list);
-
-        if ($mouse?->onClick != null) {
-            $this->setEvents(["onClick" => $mouse->onClick]);
-        }
+        $mouse?->setEvents($this);
     }
 
 }

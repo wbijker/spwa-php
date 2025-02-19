@@ -58,7 +58,7 @@ class WelcomePage extends Component
 //                ? new Div(class: "hap-true", children: [new HtmlText("true")])
 //                : new Div(class: "hap-false", children: [new HtmlText("false")]),
 
-            new InputText(class: "p-2 border", value: $this->text, onInput: fn() => $this->text = "changed"),
+            new InputText(class: "m-2 p-2 border", value: $this->text, onInput: fn($value) => $this->text = $value),
 
             new Div(class: "m-2 p-2 border bg-orange-200", children: [new HtmlText("Reversed: " . $this->reverse())]),
 

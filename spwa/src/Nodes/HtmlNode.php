@@ -57,22 +57,22 @@ abstract class HtmlNode extends Node
         return $this->children[$key]?->find($path);
     }
 
-    public function triggerEvent(string $event): void
+    public function triggerEvent(string $event, array $args): void
     {
         $handler = $this->events[$event] ?? null;
         if (is_callable($handler)) {
-            $handler();
+            $handler(...$args);
         }
     }
 
-    protected function setEvents(array $events): void
+    public function setEvents(array $events): void
     {
         $filtered = array_filter($events, fn($v) => $v !== null);
         foreach ($filtered as $key => $value) {
             $this->attrs[$key] = JsFunction::create("handleEvent", $key, new JsLiteral('event'));
             $this->events[$key] = $value;
         }
-        $this->events = $filtered;
+        $this->events = array_merge($this->events, $filtered);
     }
 
     protected function setAttrs(array $attrs)
@@ -81,7 +81,8 @@ abstract class HtmlNode extends Node
         if ($attrs == null) {
             return;
         }
-        $this->attrs = array_filter($attrs, fn($v) => $v !== null);
+
+        $this->attrs = array_merge($this->attrs, array_filter($attrs, fn($v) => $v !== null));
     }
 
     abstract function tag(): string;

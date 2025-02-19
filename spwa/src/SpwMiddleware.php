@@ -91,13 +91,13 @@ class SpwMiddleware implements MiddlewareHandler
             JS::log("Binding: $path = $value", $found?->renderHtml());
         }*/
 
-        [$path, $event] = $event;
+        [$path, $event, $args] = $event;
         // find event from frontend.
         // execute event that will likely change the dom
 
         $found = $node->find($path);
         if ($found instanceof HtmlNode) {
-            $found->triggerEvent($event);
+            $found->triggerEvent($event, $args);
         }
 
         // save the state after the events fired
