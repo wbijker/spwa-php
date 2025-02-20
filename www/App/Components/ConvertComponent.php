@@ -14,10 +14,11 @@ use Spwa\Nodes\HtmlText;
 use Spwa\Nodes\Node;
 
 
-function convertToComponent(DOMNode $node): string
+function convertToComponent(DOMNode $node, int $indentLevel = 0): string
 {
     if ($node instanceof DOMText) {
-        return 'new HtmlText(' . var_export(trim($node->textContent), true) . ')';
+        $text = trim($node->textContent);
+        return $text !== '' ? 'new HtmlText(' . var_export($text, true) . ')' : '';
     }
 
     if (!$node instanceof DOMElement) {
@@ -35,17 +36,25 @@ function convertToComponent(DOMNode $node): string
 
     // Collect children
     foreach ($node->childNodes as $child) {
-        $children[] = convertToComponent($child);
+        $childComponent = convertToComponent($child, $indentLevel + 1);
+        if ($childComponent) {
+            $children[] = $childComponent;
+        }
     }
 
-    // Remove empty children
-    $children = array_filter($children);
+    $indent = str_repeat("    ", $indentLevel); // 4 spaces per indent level
+    $childIndent = str_repeat("    ", $indentLevel + 1);
 
-    $childrenCode = empty($children) ? '' : 'children: [' . implode(', ', $children) . ']';
+    // Format children properly with indentation
+    $childrenCode = '';
+    if (!empty($children)) {
+        $childrenCode = "children: [\n" . implode(",\n", array_map(fn($c) => $childIndent . $c, $children)) . "\n" . $indent . "]";
+    }
 
-    // Merge attributes and children
-    $params = array_filter([$childrenCode, ...$attributes]);
-    return "new {$tag}(" . implode(', ', $params) . ")";
+    // Ensure children is the last parameter
+    $params = array_filter([...$attributes, $childrenCode]);
+
+    return "{$indent}new {$tag}(" . implode(", ", $params) . ")";
 }
 
 function convert(string $html): string
@@ -59,7 +68,7 @@ function convert(string $html): string
 
     foreach ($fragment->childNodes as $node) {
         if ($node instanceof DOMElement) {
-            $components[] = convertToComponent($node);
+            $components[] = convertToComponent($node, 1);
         }
     }
 
@@ -86,3 +95,4 @@ class ConvertComponent extends Component
     }
 
 }
+
