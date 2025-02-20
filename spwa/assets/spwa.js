@@ -40,6 +40,7 @@ function handleInput(event) {
 function buidlArgs(event) {
     switch (event.type) {
         case 'input':
+        case 'change':
             return [event.target.value];
         default:
             return [];
@@ -100,7 +101,10 @@ function callback(err, data) {
         switch (type) {
             case 0:
                 // text replace
-                node.textContent = value;
+                if (node.type === 'textarea')
+                    node.value = value;
+                else
+                    node.textContent = value;
                 break;
         }
     }
