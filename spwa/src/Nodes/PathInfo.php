@@ -24,11 +24,17 @@ class PathInfo
     // The key is an array that uniquely represents the key of the node used in the diffing algorithm, and state management.
     public array $keyPath = [];
 
-    public function set(string|int|bool|null $key = null, ?string $instance = null): PathInfo
+    public function setKey(string|int|bool|null $key = null): PathInfo
     {
         if ($key != null)
             $this->keyPath[count($this->keyPath) - 1] = $key;
 
+        return $this;
+
+    }
+
+    public function setInstance(string $instance = null): PathInfo
+    {
         $this->instance = $instance;
         return $this;
     }

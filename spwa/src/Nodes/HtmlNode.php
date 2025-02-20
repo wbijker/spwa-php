@@ -127,7 +127,7 @@ abstract class HtmlNode extends Node
 
     function initialize(?Node $parent, PathInfo $current, StateManager $manager): void
     {
-        $this->path = $current->set($this->key);
+        $this->path = $current->setKey($this->key);
 
         foreach ($this->children as $child) {
             $child->initialize($this, $this->path->addChild(), $manager);

@@ -2,7 +2,6 @@
 
 namespace Spwa;
 
-use Spwa\Html\HtmlDocument;
 use Spwa\Http\HttpRequest;
 use Spwa\Http\HttpResponse;
 use Spwa\Http\MiddlewareHandler;
@@ -14,7 +13,6 @@ use Spwa\Nodes\Node;
 use Spwa\Nodes\PatchBuilder;
 use Spwa\Nodes\PathInfo;
 use Spwa\Nodes\RenderContext;
-use Spwa\Nodes\State;
 use Spwa\Nodes\StateManager;
 
 function joinPath(string ...$segments): string
@@ -53,10 +51,6 @@ class SpwMiddleware implements MiddlewareHandler
         return HttpResponse::notFound();
     }
 
-
-
-    // handle bindings
-
     function handle(HttpRequest $request, callable $next): HttpResponse
     {
         if ($request->startWithSegment(['assets'])) {
@@ -66,7 +60,9 @@ class SpwMiddleware implements MiddlewareHandler
         $manager = new StateManager();
         $data = $_SESSION['state'] ?? null;
         $manager->unserialize($data);
+
         $node = $this->render($manager);
+        $manager->clear();
 
         if ($request->isGet()) {
             $html = $node->renderHtml();
@@ -108,6 +104,7 @@ class SpwMiddleware implements MiddlewareHandler
 
         $patch = new PatchBuilder();
         $node->compare($new, $patch);
+
 
         return HttpResponse::json([
             'p' => $patch->patches,

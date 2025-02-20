@@ -9,7 +9,10 @@ class StateManager
     // key dictionary contain state
     private array $state = [];
 
-    private array $events = [];
+    function clear(): void
+    {
+        $this->state = [];
+    }
 
     function unserialize($data): void
     {

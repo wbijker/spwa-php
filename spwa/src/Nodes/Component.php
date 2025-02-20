@@ -5,6 +5,7 @@ namespace Spwa\Nodes;
 
 use ReflectionClass;
 use ReflectionProperty;
+use Spwa\Js\JS;
 
 
 abstract class Component extends Node
@@ -39,8 +40,7 @@ abstract class Component extends Node
 
     function initialize(?Node $parent, PathInfo $current, StateManager $manager): void
     {
-        $instance = $this->getInstanceName();
-        $this->path = $current->set($instance, $instance);
+        $this->path = $current->setInstance($this->getInstanceName());
 
         $this->restoreState($manager->restoreState($this->path->keyStr()));
 
