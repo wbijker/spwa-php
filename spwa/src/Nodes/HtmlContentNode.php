@@ -11,13 +11,28 @@ use Spwa\Js\JS;
  * Attributes such as class, id, style, data, and mouse events are common to all flow content elements.
  */
 
+function convertStyle($style): string
+{
+    if (is_string($style))
+        return $style;
+
+    if (is_array($style))
+        return implode('; ', array_map(
+                fn($key, $value) => "{$key}: {$value}",
+                array_keys($style),
+                $style
+            )) . ';';
+
+    return "";
+}
+
 abstract class HtmlContentNode extends HtmlNode
 {
     public function __construct(
         mixed        $key = null,
         ?string      $class = null,
         ?string      $id = null,
-        ?array       $style = null,
+        mixed        $style = null,
         ?array       $data = null,
         ?MouseEvents $mouse = null,
     )
@@ -27,7 +42,7 @@ abstract class HtmlContentNode extends HtmlNode
         $list = [
             "class" => $class,
             "id" => $id,
-            "style" => $style,
+            "style" => convertStyle($style),
             "data" => $data
         ];
         $this->setAttrs($list);
