@@ -12,7 +12,6 @@ use Spwa\Nodes\Component;
 use Spwa\Nodes\HtmlNode;
 use Spwa\Nodes\HtmlText;
 use Spwa\Nodes\Node;
-use Spwa\Nodes\RenderContext;
 use Spwa\Nodes\State;
 
 class WelcomePage extends Component
