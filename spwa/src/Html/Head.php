@@ -14,7 +14,7 @@ class Head extends HtmlNode
         array $children
     )
     {
-        $this->children = $children;
+        parent::__construct($children);
     }
 
     function tag(): string

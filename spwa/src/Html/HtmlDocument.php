@@ -2,12 +2,8 @@
 
 namespace Spwa\Html;
 
-use Spwa\Js\JS;
 use Spwa\Nodes\HtmlNode;
 use Spwa\Nodes\Node;
-use Spwa\Nodes\PathInfo;
-use Spwa\Nodes\RenderContext;
-use Spwa\Nodes\StateManager;
 
 class HtmlDocument extends HtmlNode
 {
@@ -21,10 +17,10 @@ class HtmlDocument extends HtmlNode
             "lang" => $lang
         ]);
 
-        $this->children = [
+        parent::__construct([
             new Head($head),
             new Body([$body])
-        ];
+        ]);
     }
 
     function find(array $path): ?Node

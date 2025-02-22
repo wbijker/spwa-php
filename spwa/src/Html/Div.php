@@ -3,7 +3,7 @@
 namespace Spwa\Html;
 
 
-class Div extends HtmlContentNodeParent
+class Div extends HtmlContentNode
 {
     function tag(): string
     {

@@ -2,10 +2,6 @@
 
 namespace Spwa\Html;
 
-use Spwa\Js\JsFunction;
-use Spwa\Js\JsLiteral;
-use Spwa\Nodes\HtmlContentNode;
-
 
 class InputText extends HtmlContentNode
 {

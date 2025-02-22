@@ -2,12 +2,6 @@
 
 namespace Spwa\Html;
 
-use Spwa\Nodes\HtmlContentNode;
-use Spwa\Nodes\HtmlText;
-use Spwa\Nodes\Node;
-use Spwa\Nodes\PathInfo;
-use Spwa\Nodes\StateManager;
-
 class TextArea extends HtmlContentNode
 {
     /**

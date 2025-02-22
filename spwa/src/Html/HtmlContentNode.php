@@ -1,15 +1,15 @@
 <?php
 
-namespace Spwa\Nodes;
-
-use Spwa\Html\MouseEvents;
-use Spwa\Js\JS;
+namespace Spwa\Html;
 
 /*
  * DOM elements that falls into the flow content category in HTML specifications.
  * These elements accept global attributes and can be placed within the body of a document.
  * Attributes such as class, id, style, data, and mouse events are common to all flow content elements.
  */
+
+use Spwa\Nodes\HtmlNode;
+use Spwa\Nodes\Node;
 
 function convertStyle($style): string
 {
@@ -35,8 +35,10 @@ abstract class HtmlContentNode extends HtmlNode
         mixed        $style = null,
         ?array       $data = null,
         ?MouseEvents $mouse = null,
+        ?array       $children = null
     )
     {
+        parent::__construct($children);
         $this->key = $key;
 
         $list = [
