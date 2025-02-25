@@ -17,8 +17,24 @@ class HtmlText extends Node
             $patch->replace($this, $node);
             return;
         }
+
         if ($this->text != $node->text) {
             $patch->text($this, $node->text);
+        }
+    }
+
+    function initializeAndCompare(?Node $parent, PathInfo $current, StateManager $manager, Node $old, PatchBuilder $patch): void
+    {
+        $this->path = $current;
+
+        if (!($old instanceof HtmlText)) {
+            // nodes are not the same replace whole node
+            $patch->replace($this, $old);
+            return;
+        }
+
+        if ($this->text != $old->text) {
+            $patch->text($this, $this->text);
         }
     }
 

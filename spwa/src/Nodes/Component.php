@@ -23,6 +23,22 @@ abstract class Component extends Node
         $this->node->compare($node->node, $patch);
     }
 
+    function initializeAndCompare(?Node $parent, PathInfo $current, StateManager $manager, Node $old, PatchBuilder $patch): void
+    {
+        if ((!($old instanceof Component)) || get_class($old) != get_class($this)) {
+            $patch->replace($this, $old);
+            return;
+        }
+
+//        JS::log("Component Comparing", $this === $node);
+
+        $this->path = $current->setInstance($this->getInstanceName());
+        $this->restoreState($manager->restoreState($this->path->keyStr()));
+
+        $this->node = $this->render();
+        $this->node->initializeAndCompare($this, $this->path, $manager, $old->node, $patch);
+    }
+
     function find(array $path): ?Node
     {
         return $this->node->find($path);

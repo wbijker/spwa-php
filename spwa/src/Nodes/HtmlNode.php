@@ -11,26 +11,59 @@ abstract class HtmlNode extends Node
 {
     function compare(Node $node, PatchBuilder $patch): void
     {
-        if (!$node instanceof HtmlNode) {
-            $patch->replace($this, $node);
+//        if (!$node instanceof HtmlNode) {
+//            $patch->replace($this, $node);
+//            return;
+//        }
+//
+//        if (count($this->children) != count($node->children)) {
+//            $patch->replace($this, $node);
+//            return;
+//        }
+//
+//        // compare attributes
+//        foreach ($this->attrs as $key => $value) {
+//            $old = $node->attrs[$key] ?? null;
+//            if ($old != $value) {
+//                $patch->updateAttr($this, $key, $value);
+//            }
+//        }
+//        // compare children
+//        foreach ($this->children as $i => $child) {
+//            $child->compare($node->children[$i], $patch);
+//        }
+    }
+
+    function initialize(?Node $parent, PathInfo $current, StateManager $manager): void
+    {
+        $this->path = $current->setKey($this->key);
+
+        foreach ($this->children as $child) {
+            $child->initialize($this, $this->path->addChild(), $manager);
+        }
+    }
+
+    function initializeAndCompare(?Node $parent, PathInfo $current, StateManager $manager, Node $old, PatchBuilder $patch): void
+    {
+        if (!$old instanceof HtmlNode || count($this->children) != count($old->children)) {
+            $patch->replace($this, $old);
             return;
         }
 
-        if (count($this->children) != count($node->children)) {
-            $patch->replace($this, $node);
-            return;
-        }
+        $this->path = $current->setKey($this->key);
+
+//        JS::log("initializeAndCompare", $this->path->pathStr());
 
         // compare attributes
         foreach ($this->attrs as $key => $value) {
-            $old = $node->attrs[$key] ?? null;
-            if ($old != $value) {
+            $oldAttr = $old->attrs[$key] ?? null;
+            if ($oldAttr != $value) {
                 $patch->updateAttr($this, $key, $value);
             }
         }
         // compare children
         foreach ($this->children as $i => $child) {
-            $child->compare($node->children[$i], $patch);
+            $child->initializeAndCompare($this, $this->path->addChild(), $manager, $old->children[$i], $patch);
         }
     }
 
@@ -100,10 +133,10 @@ abstract class HtmlNode extends Node
 
         $copy = $this->attrs;
 
-//        if ($this->path != null) {
-//            $copy['path'] = $this->path->pathStr();
-//            $copy['key'] = $this->path->keyStr();
-//        }
+        if ($this->path != null) {
+            $copy['path'] = $this->path->pathStr();
+            $copy['key'] = $this->path->keyStr();
+        }
 
         foreach ($copy as $key => $value) {
             $ret .= " $key=\"$value\"";
@@ -124,15 +157,6 @@ abstract class HtmlNode extends Node
         return $ret;
     }
 
-
-    function initialize(?Node $parent, PathInfo $current, StateManager $manager): void
-    {
-        $this->path = $current->setKey($this->key);
-
-        foreach ($this->children as $child) {
-            $child->initialize($this, $this->path->addChild(), $manager);
-        }
-    }
 
     function finalize(StateManager $manager): void
     {

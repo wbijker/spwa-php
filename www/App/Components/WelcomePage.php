@@ -45,39 +45,47 @@ class WelcomePage extends Component
 
     function body(): Node
     {
-        $other = new Counter();
-
         return new Div(children: [
-            new Div(children: [
-                new HtmlText("0,0,0"),
-            ]),
-            new HtmlText("0,1"),
-
-            // if condition
-//            $this->text == "hap"
-//                ? new Div(class: "hap-true", children: [new HtmlText("true")])
-//                : new Div(class: "hap-false", children: [new HtmlText("false")]),
-
             new InputText(class: "m-2 p-2 border", value: $this->text, onInput: fn($value) => $this->text = $value),
-
-            new Div(class: "m-2 p-2 border bg-orange-200", children: [new HtmlText("Reversed: " . $this->reverse())]),
-
-            new Div(children: array_map(fn($i) => new Div(key: "#" . $i, children: [
-                new HtmlText("Item $i render"),
-                new Counter(onChange: function ($value) use ($other) {
-//                    $this->last?->setCounter($value);
-//                    $other->setCounter($value);
-                }),
-            ]), [5, 6])),
-
-//            new Div(class: "last", children: [
-//                new HtmlText("Last "),
-//            ]),
-
-//            new Counter(ref: function ($instance) {
-//                $this->last = $instance;
-//            }),
-//            $other
+            new Div(class: "m-2 p-2 border bg-orange-200", children: [
+                new HtmlText("Reversed: " . $this->reverse())
+            ]),
         ]);
+
+        /*
+                $other = new Counter();
+
+                return new Div(children: [
+                    new Div(children: [
+                        new HtmlText("0,0,0"),
+                    ]),
+                    new HtmlText("0,1"),
+
+                    // if condition
+        //            $this->text == "hap"
+        //                ? new Div(class: "hap-true", children: [new HtmlText("true")])
+        //                : new Div(class: "hap-false", children: [new HtmlText("false")]),
+
+                    new InputText(class: "m-2 p-2 border", value: $this->text, onInput: fn($value) => $this->text = $value),
+
+                    new Div(class: "m-2 p-2 border bg-orange-200", children: [new HtmlText("Reversed: " . $this->reverse())]),
+
+                    new Div(children: array_map(fn($i) => new Div(key: "#" . $i, children: [
+                        new HtmlText("Item $i render"),
+                        new Counter(onChange: function ($value) use ($other) {
+        //                    $this->last?->setCounter($value);
+        //                    $other->setCounter($value);
+                        }),
+                    ]), [5, 6])),
+
+        //            new Div(class: "last", children: [
+        //                new HtmlText("Last "),
+        //            ]),
+
+        //            new Counter(ref: function ($instance) {
+        //                $this->last = $instance;
+        //            }),
+        //            $other
+                ]);*/
     }
 }

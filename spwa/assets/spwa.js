@@ -93,6 +93,9 @@ function callback(err, data) {
         return;
     }
 
+    // execute JS code
+    executeJsDump(data.j);
+
     inputs = {};
 
     for (const patch of data.p) {
@@ -108,6 +111,5 @@ function callback(err, data) {
                 break;
         }
     }
-    // execute JS code
-    executeJsDump(data.j);
+
 }

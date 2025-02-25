@@ -4,6 +4,7 @@ namespace Spwa\Html;
 
 use Spwa\Nodes\HtmlNode;
 use Spwa\Nodes\Node;
+use Spwa\Nodes\PatchBuilder;
 use Spwa\Nodes\PathInfo;
 use Spwa\Nodes\StateManager;
 
@@ -27,5 +28,11 @@ class Body extends HtmlNode
     {
         parent::initialize($this, PathInfo::root(), $manager);
     }
+
+    function initializeAndCompare(?Node $parent, PathInfo $current, StateManager $manager, Node $old, PatchBuilder $patch): void
+    {
+        parent::initializeAndCompare($this, PathInfo::root(), $manager, $old, $patch);
+    }
+
 
 }

@@ -2,6 +2,7 @@
 
 namespace Spwa;
 
+use App\Components\WelcomePage;
 use Spwa\Http\HttpRequest;
 use Spwa\Http\HttpResponse;
 use Spwa\Http\MiddlewareHandler;
@@ -30,12 +31,6 @@ class SpwMiddleware implements MiddlewareHandler
     {
     }
 
-    private function render(StateManager $manager): Nodes\Node
-    {
-        $this->component->initialize(null, PathInfo::root(), $manager);
-        return $this->component->node;
-    }
-
     private function finalize(StateManager $manager): void
     {
         $this->component->finalize($manager);
@@ -61,8 +56,10 @@ class SpwMiddleware implements MiddlewareHandler
         $data = $_SESSION['state'] ?? null;
         $manager->unserialize($data);
 
-        $node = $this->render($manager);
+        $this->component->initialize(null, PathInfo::root(), $manager);
+        $node = $this->component->node;
         $manager->clear();
+
 
         if ($request->isGet()) {
             $html = $node->renderHtml();
@@ -99,12 +96,10 @@ class SpwMiddleware implements MiddlewareHandler
         // save the state after the events fired
         $this->finalize($manager);
 
-        // force a re-render with the new state
-        $new = $this->render($manager);
-
         $patch = new PatchBuilder();
-        $node->compare($new, $patch);
 
+        $new = new WelcomePage();
+        $new->initializeAndCompare(null, PathInfo::root(), $manager, $this->component, $patch);
 
         return HttpResponse::json([
             'p' => $patch->patches,
