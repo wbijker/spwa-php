@@ -10,7 +10,7 @@ require 'vendor/autoload.php';
 
 
 App::run([
-    new SpwMiddleware(new WelcomePage()),
+    new SpwMiddleware(fn() => new WelcomePage()),
 ]);
 
 

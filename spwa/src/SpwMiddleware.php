@@ -27,13 +27,16 @@ session_start();
 class SpwMiddleware implements MiddlewareHandler
 {
 
-    public function __construct(private Component $component)
+    /**
+     * @param callable(): Component $render
+     */
+    public function __construct(private  $render)
     {
     }
 
-    private function finalize(StateManager $manager): void
+    private function finalize(Component $component, StateManager $manager): void
     {
-        $this->component->finalize($manager);
+        $component->finalize($manager);
         $_SESSION['state'] = $manager->serialize();
     }
 
@@ -56,14 +59,14 @@ class SpwMiddleware implements MiddlewareHandler
         $data = $_SESSION['state'] ?? null;
         $manager->unserialize($data);
 
-        $this->component->initialize(null, PathInfo::root(), $manager);
-        $node = $this->component->node;
+        $component = ($this->render)();
+        $component->initialize(null, PathInfo::root(), $manager);
+        $node = $component->node;
         $manager->clear();
-
 
         if ($request->isGet()) {
             $html = $node->renderHtml();
-            $this->finalize($manager);
+            $this->finalize($component, $manager);
             return HttpResponse::html(fn() => $html . "<script>executeJsDump(" . json_encode(JsRuntime::dump()) . ")</script>");
         }
 
@@ -94,12 +97,12 @@ class SpwMiddleware implements MiddlewareHandler
         }
 
         // save the state after the events fired
-        $this->finalize($manager);
+        $this->finalize($component, $manager);
 
         $patch = new PatchBuilder();
 
-        $new = new WelcomePage();
-        $new->initializeAndCompare(null, PathInfo::root(), $manager, $this->component, $patch);
+        $new = ($this->render)();
+        $new->initializeAndCompare(null, PathInfo::root(), $manager, $component, $patch);
 
         return HttpResponse::json([
             'p' => $patch->patches,
