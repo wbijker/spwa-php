@@ -5,8 +5,8 @@ namespace Spwa\Nodes;
 abstract class Node
 {
     protected $key = null;
-    public ?array $children = [];
-    protected int $index = 0;
+    protected ?array $children = [];
+    protected int $index;
     protected ?Node $parent = null;
 
     /**
@@ -21,27 +21,6 @@ abstract class Node
                 $child->parent = $this;
             }
         }
-    }
-
-    public function transverse(array $path): ?Node
-    {
-        $key = array_shift($path);
-        if ($key === null)
-            return $this;
-
-        return $this->children[$key]?->transverse($path);
-    }
-
-    public function path(): array
-    {
-        $ret = [$this->index];
-        // add to the front of the array
-        $it = $this->parent;
-        while ($it != null) {
-            array_unshift($ret, $it->index);
-            $it = $it->parent;
-        }
-        return $ret;
     }
 
     abstract function compare(Node $node, PatchBuilder $patch): void;
