@@ -2,18 +2,25 @@
 
 namespace App\Components;
 
-use Spwa\Html\Div;
 use Spwa\Html\HtmlDocument;
-use Spwa\Html\InputText;
 use Spwa\Html\Meta;
 use Spwa\Html\Script;
 use Spwa\Html\Title;
 use Spwa\Nodes\Component;
 use Spwa\Nodes\HtmlNode;
-use Spwa\Nodes\HtmlText;
 use Spwa\Nodes\Node;
-use Spwa\Nodes\RenderContext;
 use Spwa\Nodes\State;
+use Spwa\Route\Route;
+use Spwa\Route\Router;
+
+/* return new Div(children: [
+            new InputText(class: "m-2 p-2 border", value: $this->text, onInput: fn($value) => $this->text = $value),
+            new Div(class: "m-2 p-2 border bg-orange-200", children: [
+                new HtmlText("Reversed: " . $this->reverse())
+            ]),
+        ]);
+*/;
+
 
 class WelcomePage extends Component
 {
@@ -45,12 +52,11 @@ class WelcomePage extends Component
 
     function body(): Node
     {
-        return new Div(children: [
-            new InputText(class: "m-2 p-2 border", value: $this->text, onInput: fn($value) => $this->text = $value),
-            new Div(class: "m-2 p-2 border bg-orange-200", children: [
-                new HtmlText("Reversed: " . $this->reverse())
-            ]),
-        ]);
+        return new Router(routes: [
+            new Route(path: "", component: new AboutPage()),
+            new Route(path: ProductRoute::class, component: fn(ProductRoute $product) => new ProductsPage($product)),
+        ], fallback: new AboutPage());
+
 
         /*
                 $other = new Counter();

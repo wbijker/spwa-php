@@ -27,9 +27,13 @@ class HttpRequest
 
     function segments(): array
     {
-        $segments = explode('/', $this->uri());
-        // remove empty segments
-        return array_values(array_filter($segments, fn($segment) => $segment != ''));
+        $path = parse_url($this->uri(), PHP_URL_PATH); // Removes query parameters
+        return array_values(array_filter(explode('/', $path), fn($segment) => $segment !== ''));
+    }
+
+    function queryParams(): array
+    {
+        return $_GET;
     }
 
     function query(string $key): string
