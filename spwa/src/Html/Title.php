@@ -9,9 +9,7 @@ class Title extends HtmlNode
 {
     function __construct(public string $title)
     {
-        parent::__construct([
-            new HtmlText($title)
-        ]);
+        $this->children = [new HtmlText($title)];
     }
 
     function tag(): string

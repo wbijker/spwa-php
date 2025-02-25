@@ -7,8 +7,6 @@ use Spwa\Js\JS;
 use Spwa\Js\JsFunction;
 use Spwa\Js\JsLiteral;
 
-
-
 abstract class HtmlNode extends Node
 {
     function compare(Node $node, PatchBuilder $patch): void
@@ -38,6 +36,16 @@ abstract class HtmlNode extends Node
 
     public array $attrs = [];
     public array $events = [];
+    public $bindings = null;
+    /**
+     * @var Node[] $children
+     */
+    public array $children = [];
+
+    function addChild(HtmlNode $node)
+    {
+        $this->children[] = $node;
+    }
 
     function find(array $path): ?Node
     {

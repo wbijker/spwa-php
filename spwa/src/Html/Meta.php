@@ -15,7 +15,6 @@ class Meta extends HtmlNode
         public ?string $property = null
     )
     {
-        parent::__construct();
         $this->setAttrs([
             "name" => $name,
             "http-equiv" => $httpEquiv,

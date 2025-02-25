@@ -2,7 +2,9 @@
 
 namespace Spwa\Html;
 
-class Td extends HtmlContentNode
+use Spwa\Nodes\HtmlContentNode;
+
+class Td extends HtmlContentNodeParent
 {
     function tag(): string
     {

@@ -10,7 +10,6 @@ class Script extends HtmlNode
         ?string $src = null
     )
     {
-        parent::__construct();
         $this->setAttrs([
             "type" => "text/javascript",
             "src" => $src

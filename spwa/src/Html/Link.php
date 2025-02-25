@@ -10,7 +10,6 @@ class Link extends HtmlNode
         ?string $href = null
     )
     {
-        parent::__construct();
         $this->setAttrs([
             "rel" => "stylesheet",
             "href" => $href
