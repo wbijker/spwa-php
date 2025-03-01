@@ -48,6 +48,7 @@ function buidlArgs(event) {
 }
 
 function handleEvent(name, event) {
+    event.preventDefault();
     // console.log('We need to handle', event, 'on', path);
     const path = pathToBody(event.currentTarget);
     const args = buidlArgs(event);
@@ -58,8 +59,15 @@ function handleEvent(name, event) {
     });
 }
 
+// return the resolved node and the caller node
+// when assigning the whole resolved node we loose the function binding
+// ie. x = resolve(['location', 'replace']), x(..args) cause an invalid invocation, because we've lost the binding context
+// x.call(window.location, args)
+// But also for assignment to keep the reference. resolveNode[['document', 'title']) = 'Changed';
 function resolveObject(path) {
-    return path.reduce((acc, cur) => acc[cur], window);
+    const last = path.pop();
+    const resolved = path.reduce((acc, cur) => acc[cur], window);
+    return [resolved, last];
 }
 
 function post(data) {
@@ -81,9 +89,12 @@ function post(data) {
 }
 
 function executeJsDump(dump) {
-    for (const [path, args] of dump) {
-        const obj = resolveObject(path);
-        obj(...args);
+    for (const [mode, path, args] of dump) {
+        const [obj, bind] = resolveObject(path);
+        if (mode === 'invoke')
+            obj[bind](...args);
+        else if (mode === 'assign')
+            obj[bind] = args;
     }
 }
 

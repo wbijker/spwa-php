@@ -24,7 +24,10 @@ class JsFunction
 
     function dump(): string
     {
-        $args = array_map(fn($arg) => $arg instanceof JsLiteral ? $arg->name : htmlspecialchars(json_encode($arg), ENT_QUOTES), $this->args);
+        $args = array_map(fn($arg) => $arg instanceof JsLiteral
+            ? $arg->name
+            : htmlspecialchars(json_encode($arg), ENT_QUOTES), $this->args);
+        
         return "$this->name(" . implode(", ", $args) . ")";
     }
 }
