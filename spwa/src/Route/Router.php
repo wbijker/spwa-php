@@ -3,12 +3,19 @@
 namespace Spwa\Route;
 
 use Spwa\Http\HttpRequest;
+use Spwa\Http\HttpRequestPath;
+use Spwa\Js\Console;
 use Spwa\Nodes\Component;
 use Spwa\Nodes\HtmlText;
 use Spwa\Nodes\Node;
 
 class Router extends Component
 {
+    private static ?string $uri = null;
+
+    public static function navigate(string $uri): void {
+        self::$uri = $uri;
+    }
 
     /**
      * @param Route[] $routes
@@ -29,11 +36,17 @@ class Router extends Component
         return new HtmlText("404 Not Found");
     }
 
+
     private function findRoute(): Node
     {
-        $request = new HttpRequest();
+        $uri = self::$uri ?? $_SERVER['REQUEST_URI'];
+        $path = new HttpRequestPath($uri);
+
+        Console::log("Finding route for ", $uri);
+
         foreach ($this->routes as $route) {
-            $found = $route->match($request);
+
+            $found = $route->match($path);
             if ($found) {
                 return $this->invokeOrGet($route->component, $found);
             }

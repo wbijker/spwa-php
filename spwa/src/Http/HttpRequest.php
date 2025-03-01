@@ -5,6 +5,13 @@ namespace Spwa\Http;
 class HttpRequest
 {
 
+    var HttpRequestPath $path;
+
+    public function __construct()
+    {
+        $this->path = new HttpRequestPath($_SERVER['REQUEST_URI']);
+    }
+
     function method(): string
     {
         return $_SERVER['REQUEST_METHOD'];
@@ -20,45 +27,13 @@ class HttpRequest
         return $this->method() == 'POST';
     }
 
-    function uri(): string
+    function readJson(bool $associative): ?array
     {
-        return $_SERVER['REQUEST_URI'];
-    }
-
-    function segments(): array
-    {
-        $path = parse_url($this->uri(), PHP_URL_PATH); // Removes query parameters
-        return array_values(array_filter(explode('/', $path), fn($segment) => $segment !== ''));
-    }
-
-    function queryParams(): array
-    {
-        return $_GET;
-    }
-
-    function query(string $key): string
-    {
-        return $_GET[$key] ?? '';
-    }
-
-    function startWithSegment(array $segments): bool
-    {
-        $uriSegments = $this->segments();
-        $count = count($segments);
-        if (count($uriSegments) < $count) {
-            return false;
+        $json = file_get_contents('php://input');
+        if (gettype($json) !== 'string') {
+            return null;
         }
-        for ($i = 0; $i < $count; $i++) {
-            if ($segments[$i] != $uriSegments[$i]) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    function readJson(bool $associative): array
-    {
-        return json_decode(file_get_contents('php://input'), $associative);
+        return json_decode($json, $associative);
     }
 
 }

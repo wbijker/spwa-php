@@ -9,30 +9,6 @@ use Spwa\Js\JsLiteral;
 
 abstract class HtmlNode extends Node
 {
-    function compare(Node $node, PatchBuilder $patch): void
-    {
-//        if (!$node instanceof HtmlNode) {
-//            $patch->replace($this, $node);
-//            return;
-//        }
-//
-//        if (count($this->children) != count($node->children)) {
-//            $patch->replace($this, $node);
-//            return;
-//        }
-//
-//        // compare attributes
-//        foreach ($this->attrs as $key => $value) {
-//            $old = $node->attrs[$key] ?? null;
-//            if ($old != $value) {
-//                $patch->updateAttr($this, $key, $value);
-//            }
-//        }
-//        // compare children
-//        foreach ($this->children as $i => $child) {
-//            $child->compare($node->children[$i], $patch);
-//        }
-    }
 
     function initialize(?Node $parent, PathInfo $current, StateManager $manager): void
     {
@@ -51,8 +27,6 @@ abstract class HtmlNode extends Node
         }
 
         $this->path = $current->setKey($this->key);
-
-//        JS::log("initializeAndCompare", $this->path->pathStr());
 
         // compare attributes
         foreach ($this->attrs as $key => $value) {

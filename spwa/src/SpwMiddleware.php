@@ -42,7 +42,7 @@ class SpwMiddleware implements MiddlewareHandler
 
     function serveAsset(HttpRequest $request): HttpResponse
     {
-        $path = joinPath(dirname(__DIR__), ...$request->segments());
+        $path = joinPath(dirname(__DIR__), ...$request->path->getSegments());
         if (file_exists($path)) {
             return HttpResponse::file($path, "text/javascript");
         }
@@ -51,7 +51,7 @@ class SpwMiddleware implements MiddlewareHandler
 
     function handle(HttpRequest $request, callable $next): HttpResponse
     {
-        if ($request->startWithSegment(['assets'])) {
+        if ($request->path->startWithSegment(['assets'])) {
             return $this->serveAsset($request);
         }
 
@@ -72,28 +72,29 @@ class SpwMiddleware implements MiddlewareHandler
 
         // http post, read JSON body
         $json = $request->readJson(true);
+        if ($json != null) {
+            $event = $json['event'];
+            $inputs = $json["inputs"];
 
-        $event = $json['event'];
-        $inputs = $json["inputs"];
+            /*foreach ($inputs as $path => $value) {
 
-        /*foreach ($inputs as $path => $value) {
-
-            $found = $node->find(json_decode($path));
-            if ($found instanceof HtmlNode) {
-                if ($found->bindings != null) {
-                    $found->bindings = $value;
+                $found = $node->find(json_decode($path));
+                if ($found instanceof HtmlNode) {
+                    if ($found->bindings != null) {
+                        $found->bindings = $value;
+                    }
                 }
+                JS::log("Binding: $path = $value", $found?->renderHtml());
+            }*/
+
+            [$path, $event, $args] = $event;
+            // find event from frontend.
+            // execute event that will likely change the dom
+
+            $found = $node->find($path);
+            if ($found instanceof HtmlNode) {
+                $found->triggerEvent($event, $args);
             }
-            JS::log("Binding: $path = $value", $found?->renderHtml());
-        }*/
-
-        [$path, $event, $args] = $event;
-        // find event from frontend.
-        // execute event that will likely change the dom
-
-        $found = $node->find($path);
-        if ($found instanceof HtmlNode) {
-            $found->triggerEvent($event, $args);
         }
 
         // save the state after the events fired

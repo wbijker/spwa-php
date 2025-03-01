@@ -2,6 +2,8 @@
 
 namespace Spwa\Nodes;
 
+use Spwa\Js\Console;
+
 class PatchBuilder
 {
 
@@ -13,6 +15,7 @@ class PatchBuilder
 
     function replace(Node $old, Node $new): void
     {
+        Console::log("Replace whole node", $new->renderHtml());
     }
 
     function text(Node $node, string $text): void

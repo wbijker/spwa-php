@@ -122,5 +122,16 @@ function callback(err, data) {
                 break;
         }
     }
-
 }
+
+
+(function (global) {
+    if (!global.spwa) {
+        global.spwa = {};
+    }
+
+    global.spwa.refresh = function () {
+        post(null);
+    };
+
+})(window);

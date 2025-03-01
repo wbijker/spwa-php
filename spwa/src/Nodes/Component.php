@@ -13,16 +13,6 @@ abstract class Component extends Node
     // rendered node
     public Node $node;
 
-    function compare(Node $node, PatchBuilder $patch): void
-    {
-        if ((!($node instanceof Component)) || get_class($node) != get_class($this)) {
-            $patch->replace($this, $node);
-            return;
-        }
-
-        $this->node->compare($node->node, $patch);
-    }
-
     function initializeAndCompare(?Node $parent, PathInfo $current, StateManager $manager, Node $old, PatchBuilder $patch): void
     {
         if ((!($old instanceof Component)) || get_class($old) != get_class($this)) {

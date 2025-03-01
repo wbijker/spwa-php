@@ -2,8 +2,7 @@
 
 namespace Spwa\Route;
 
-use Spwa\Http\HttpRequest;
-use Spwa\Js\JS;
+use Spwa\Http\HttpRequestPath;
 
 class Route
 {
@@ -11,14 +10,14 @@ class Route
     {
     }
 
-    public function match(HttpRequest $request): bool|RouteFormat|null
+    public function match(HttpRequestPath $path): bool|RouteFormat|null
     {
         if (class_exists($this->path)) {
             // call static method on this class
-            return $this->path::parse($request->segments(), $request->queryParams());
+            return $this->path::parse($path->getSegments(), $path->queryParams());
         }
         if (is_string($this->path)) {
-            return $this->path === $request->uri();
+            return $this->path === $path->uri();
         }
         return null;
     }
