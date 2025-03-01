@@ -2,21 +2,16 @@
 
 namespace Spwa;
 
-use App\Components\WelcomePage;
 use Spwa\Http\HttpRequest;
 use Spwa\Http\HttpResponse;
 use Spwa\Http\MiddlewareHandler;
-use Spwa\Js\Console;
-use Spwa\Js\JS;
 use Spwa\Js\JsRuntime;
 use Spwa\Nodes\Component;
 use Spwa\Nodes\HtmlNode;
 use Spwa\Nodes\Node;
 use Spwa\Nodes\PatchBuilder;
 use Spwa\Nodes\PathInfo;
-use Spwa\Nodes\RenderContext;
 use Spwa\Nodes\StateManager;
-use Spwa\Route\Router;
 
 function joinPath(string ...$segments): string
 {
@@ -28,7 +23,6 @@ session_start();
 
 class SpwMiddleware implements MiddlewareHandler
 {
-
     /**
      * @param callable(): Component $render
      */
@@ -57,6 +51,12 @@ class SpwMiddleware implements MiddlewareHandler
             return $this->serveAsset($request);
         }
 
+        $prev = getallheaders()['Url'] ?? null;
+        $saved = $_SERVER['REQUEST_URI'];
+        if ($prev != null) {
+            $_SERVER['REQUEST_URI'] = $prev;
+        }
+
         $manager = new StateManager();
         $data = $_SESSION['state'] ?? null;
         $manager->unserialize($data);
@@ -65,6 +65,8 @@ class SpwMiddleware implements MiddlewareHandler
         $component->initialize(null, PathInfo::root(), $manager);
         $node = $component->node;
         $manager->clear();
+
+        $_SERVER['REQUEST_URI'] = $saved;
 
         if ($request->isGet()) {
             $html = $node->renderHtml();

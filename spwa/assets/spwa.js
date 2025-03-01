@@ -1,3 +1,11 @@
+var prevLocation = window.location.pathname + window.location.search;
+
+window.addEventListener('popstate', function(event) {
+    // we have to skip the previous URL
+    post(null,{Url: prevLocation});
+    prevLocation = window.location.href;
+});
+
 function resolveNode(path) {
     return path.reduce((acc, cur) => acc.childNodes[cur], document.body);
 }
@@ -49,7 +57,6 @@ function buidlArgs(event) {
 
 function handleEvent(name, event) {
     event.preventDefault();
-    // console.log('We need to handle', event, 'on', path);
     const path = pathToBody(event.currentTarget);
     const args = buidlArgs(event);
 
@@ -70,10 +77,17 @@ function resolveObject(path) {
     return [resolved, last];
 }
 
-function post(data) {
+function post(data, headers) {
     var xhr = new XMLHttpRequest();
-    xhr.open("POST", '/', true);
+    xhr.open("POST", window.location.href, true);
     xhr.setRequestHeader("Content-Type", "application/json");
+
+    // Set custom headers
+    for (var key in headers ?? {}) {
+        if (headers.hasOwnProperty(key)) {
+            xhr.setRequestHeader(key, headers[key]);
+        }
+    }
 
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) { // 4 means request is done
@@ -125,6 +139,7 @@ function callback(err, data) {
                 break;
         }
     }
+    prevLocation = window.location.pathname + window.location.search;
 }
 
 
@@ -138,3 +153,5 @@ function callback(err, data) {
     };
 
 })(window);
+
+
