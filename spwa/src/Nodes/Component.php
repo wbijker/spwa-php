@@ -5,6 +5,7 @@ namespace Spwa\Nodes;
 
 use ReflectionClass;
 use ReflectionProperty;
+use Spwa\Js\Console;
 use Spwa\Js\JS;
 
 
@@ -16,15 +17,14 @@ abstract class Component extends Node
     function initializeAndCompare(?Node $parent, PathInfo $current, StateManager $manager, Node $old, PatchBuilder $patch): void
     {
         if ((!($old instanceof Component)) || get_class($old) != get_class($this)) {
+            // initialize everything before rendering
+            $this->initialize($this, $current, $manager);
             $patch->replace($this, $old);
             return;
         }
 
-//        JS::log("Component Comparing", $this === $node);
-
         $this->path = $current->setInstance($this->getInstanceName());
         $this->restoreState($manager->restoreState($this->path->keyStr()));
-
         $this->node = $this->render();
         $this->node->initializeAndCompare($this, $this->path, $manager, $old->node, $patch);
     }

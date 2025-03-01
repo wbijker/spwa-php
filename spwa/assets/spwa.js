@@ -113,12 +113,15 @@ function callback(err, data) {
         const [path, type, value] = patch;
         const node = resolveNode(path);
         switch (type) {
-            case 0:
+            case 'text':
                 // text replace
                 if (node.type === 'textarea')
                     node.value = value;
                 else
                     node.textContent = value;
+                break;
+            case 'replace':
+                node.outerHTML = value;
                 break;
         }
     }

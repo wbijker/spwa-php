@@ -3,7 +3,6 @@
 namespace Spwa\Nodes;
 
 
-use Spwa\Js\JS;
 use Spwa\Js\JsFunction;
 use Spwa\Js\JsLiteral;
 
@@ -22,6 +21,8 @@ abstract class HtmlNode extends Node
     function initializeAndCompare(?Node $parent, PathInfo $current, StateManager $manager, Node $old, PatchBuilder $patch): void
     {
         if (!$old instanceof HtmlNode || count($this->children) != count($old->children)) {
+            // initialize everything before rendering
+            $this->initialize($this, $current, $manager);
             $patch->replace($this, $old);
             return;
         }

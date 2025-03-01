@@ -42,8 +42,6 @@ class Router extends Component
         $uri = self::$uri ?? $_SERVER['REQUEST_URI'];
         $path = new HttpRequestPath($uri);
 
-        Console::log("Finding route for ", $uri);
-
         foreach ($this->routes as $route) {
 
             $found = $route->match($path);

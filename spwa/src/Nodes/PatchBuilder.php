@@ -2,25 +2,24 @@
 
 namespace Spwa\Nodes;
 
-use Spwa\Js\Console;
-
 class PatchBuilder
 {
 
     var $patches = [];
 
-    function addPatch(Node $node, int $type, mixed $content) {
-        $this->patches[] = [$node->path->indexPath, $type, $content];
+    function addPatch(Node $node, string $type, mixed $content): void
+    {
+        $this->patches[] = [$node->path?->indexPath ?? [], $type, $content];
     }
 
-    function replace(Node $old, Node $new): void
+    function replace(Node $new, Node $old): void
     {
-        Console::log("Replace whole node", $new->renderHtml());
+        $this->addPatch($old, 'replace', $new->renderHtml());
     }
 
     function text(Node $node, string $text): void
     {
-        $this->addPatch($node, 0, $text);
+        $this->addPatch($node, 'text', $text);
     }
 
     function updateAttr(Node $node, string $attr, ?string $value): void
