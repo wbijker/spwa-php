@@ -51,6 +51,8 @@ class SpwMiddleware implements MiddlewareHandler
             return $this->serveAsset($request);
         }
 
+        // previous location injected by JS
+        // for clientside routing we need to know what the previous URL looked like
         $prev = getallheaders()['Url'] ?? null;
         $saved = $_SERVER['REQUEST_URI'];
         if ($prev != null) {

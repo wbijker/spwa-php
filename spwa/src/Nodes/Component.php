@@ -8,11 +8,8 @@ use ReflectionProperty;
 use Spwa\Js\Console;
 use Spwa\Js\JS;
 
-
 abstract class Component extends Node
 {
-    // if two phase, call initialized and finalized on the second pahse
-    // otherwise on the first phase
     function initialized() {}
     function finalized() {}
 
@@ -23,7 +20,6 @@ abstract class Component extends Node
     {
         if ((!($old instanceof Component)) || get_class($old) != get_class($this)) {
             // initialize everything before rendering
-            $this->initialized();
             $this->initialize($this, $current, $manager);
             $patch->replace($this, $old);
             return;
