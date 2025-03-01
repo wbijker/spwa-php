@@ -6,6 +6,7 @@ use App\Components\WelcomePage;
 use Spwa\Http\HttpRequest;
 use Spwa\Http\HttpResponse;
 use Spwa\Http\MiddlewareHandler;
+use Spwa\Js\Console;
 use Spwa\Js\JS;
 use Spwa\Js\JsRuntime;
 use Spwa\Nodes\Component;
@@ -15,6 +16,7 @@ use Spwa\Nodes\PatchBuilder;
 use Spwa\Nodes\PathInfo;
 use Spwa\Nodes\RenderContext;
 use Spwa\Nodes\StateManager;
+use Spwa\Route\Router;
 
 function joinPath(string ...$segments): string
 {
@@ -67,26 +69,37 @@ class SpwMiddleware implements MiddlewareHandler
         if ($request->isGet()) {
             $html = $node->renderHtml();
             $this->finalize($component, $manager);
+
             return HttpResponse::html(fn() => $html . "<script>executeJsDump(" . json_encode(JsRuntime::dump()) . ")</script>");
         }
 
         // http post, read JSON body
         $json = $request->readJson(true);
-        if ($json != null) {
-            $event = $json['event'];
-            $inputs = $json["inputs"];
+        $this->processPayload($node, $json);
 
-            /*foreach ($inputs as $path => $value) {
+        // save the state after the events fired
+        $this->finalize($component, $manager);
 
-                $found = $node->find(json_decode($path));
-                if ($found instanceof HtmlNode) {
-                    if ($found->bindings != null) {
-                        $found->bindings = $value;
-                    }
-                }
-                JS::log("Binding: $path = $value", $found?->renderHtml());
-            }*/
+        $patch = new PatchBuilder();
 
+        $new = ($this->render)();
+        $new->initializeAndCompare(null, PathInfo::root(), $manager, $component, $patch);
+
+
+
+        return HttpResponse::json([
+            'p' => $patch->patches,
+            'j' => JsRuntime::dump()
+        ]);
+    }
+
+    private function processPayload(Node $node, ?array $json): void
+    {
+        if ($json == null)
+            return;
+
+        $event = $json['event'] ?? null;
+        if ($event != null) {
             [$path, $event, $args] = $event;
             // find event from frontend.
             // execute event that will likely change the dom
@@ -97,18 +110,15 @@ class SpwMiddleware implements MiddlewareHandler
             }
         }
 
-        // save the state after the events fired
-        $this->finalize($component, $manager);
-
-        $patch = new PatchBuilder();
-
-        $new = ($this->render)();
-        $new->initializeAndCompare(null, PathInfo::root(), $manager, $component, $patch);
-
-        return HttpResponse::json([
-            'p' => $patch->patches,
-            'j' => JsRuntime::dump()
-        ]);
+        //  $inputs = $json["inputs"] ?? null;
+        /*foreach ($inputs as $path => $value) {
+            $found = $node->find(json_decode($path));
+            if ($found instanceof HtmlNode) {
+                if ($found->bindings != null) {
+                    $found->bindings = $value;
+                }
+            }
+            JS::log("Binding: $path = $value", $found?->renderHtml());
+        }*/
     }
-
 }

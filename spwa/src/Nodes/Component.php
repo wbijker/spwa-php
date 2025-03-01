@@ -11,6 +11,11 @@ use Spwa\Js\JS;
 
 abstract class Component extends Node
 {
+    // if two phase, call initialized and finalized on the second pahse
+    // otherwise on the first phase
+    function initialized() {}
+    function finalized() {}
+
     // rendered node
     public Node $node;
 
@@ -18,6 +23,7 @@ abstract class Component extends Node
     {
         if ((!($old instanceof Component)) || get_class($old) != get_class($this)) {
             // initialize everything before rendering
+            $this->initialized();
             $this->initialize($this, $current, $manager);
             $patch->replace($this, $old);
             return;
@@ -28,6 +34,7 @@ abstract class Component extends Node
         $this->node = $this->render();
         $this->node->initializeAndCompare($this, $this->path, $manager, $old->node, $patch);
     }
+
 
     function find(array $path): ?Node
     {
@@ -52,6 +59,7 @@ abstract class Component extends Node
 
         $this->node = $this->render();
         $this->node->initialize($this, $this->path, $manager);
+        $this->initialized();
     }
 
     private function getStateProperties(): array
@@ -87,6 +95,7 @@ abstract class Component extends Node
 
     function finalize(StateManager $manager): void
     {
+        $this->finalized();
         $manager->saveState($this->path->keyStr(), $this->saveState());
         $this->node->finalize($manager);
     }
