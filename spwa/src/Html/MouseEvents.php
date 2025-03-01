@@ -34,6 +34,11 @@ class MouseEvents
     {
     }
 
+    public static function click(\Closure $param): MouseEvents
+    {
+        return new MouseEvents(onClick: $param);
+    }
+
     function setEvents(HtmlNode $owner): void
     {
         $owner->setEvents([

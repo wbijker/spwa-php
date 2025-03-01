@@ -7,6 +7,7 @@ use Spwa\Html\Div;
 use Spwa\Nodes\Component;
 use Spwa\Nodes\HtmlText;
 use Spwa\Nodes\Node;
+use Spwa\Route\RouteLink;
 
 class ProductsPage extends Component
 {
@@ -22,7 +23,21 @@ class ProductsPage extends Component
             new Div(children: [new HtmlText("Limit: " . $this->product->limit)]),
 
             new A(class: "underline mx-2 cursor-pointer", href: "/", children: [new HtmlText("Home")]),
-            new A(class: "underline mx-2 cursor-pointer", href: (new ProductRoute(category: "Electronics", product: 33, limit: 10))->toUrl(), children: [new HtmlText("Home")]),
+
+            new RouteLink(
+                url: (new ProductRoute(category: "Clothes", product: 12, limit: 10))->toUrl(),
+                text: "Clothes"
+            ),
+
+            new RouteLink(
+                url: (new ProductRoute(category: "Electronics", product: 44, limit: 10))->toUrl(),
+                text: "Electronics"
+            ),
+
+            new RouteLink(
+                url: (new ProductRoute(category: "Appliances", product: 52, limit: 10))->toUrl(),
+                text: "Appliances"
+            )
         ]);
     }
 }
