@@ -18,7 +18,7 @@ class AboutPage extends Component
         return new Div(children: [
             new HtmlText("About page"),
             new RouteLink(
-                url: (new ProductRoute(category: "Electronics", product: 44, limit: 10))->toUrl(),
+                url: "/products/electronics/44",
                 text: "Kettle"
             )
         ]);

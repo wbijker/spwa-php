@@ -11,6 +11,7 @@ use Spwa\Nodes\HtmlNode;
 use Spwa\Nodes\Node;
 use Spwa\Nodes\State;
 use Spwa\Route\Route;
+use Spwa\Route\RoutePath;
 use Spwa\Route\Router;
 
 /* return new Div(children: [
@@ -53,45 +54,9 @@ class WelcomePage extends Component
     function body(): Node
     {
         return new Router(routes: [
-            new Route(path: "", component: new AboutPage()),
-            new Route(path: ProductRoute::class, component: fn(ProductRoute $product) => new ProductsPage($product)),
+            new Route(path: "about", component: new AboutPage()),
+            new Route(path: new RoutePath("/products/{category}/{product}", ProductRoute::class), component: fn(ProductRoute $product) => new ProductsPage($product)),
         ], fallback: new AboutPage());
 
-
-        /*
-                $other = new Counter();
-
-                return new Div(children: [
-                    new Div(children: [
-                        new HtmlText("0,0,0"),
-                    ]),
-                    new HtmlText("0,1"),
-
-                    // if condition
-        //            $this->text == "hap"
-        //                ? new Div(class: "hap-true", children: [new HtmlText("true")])
-        //                : new Div(class: "hap-false", children: [new HtmlText("false")]),
-
-                    new InputText(class: "m-2 p-2 border", value: $this->text, onInput: fn($value) => $this->text = $value),
-
-                    new Div(class: "m-2 p-2 border bg-orange-200", children: [new HtmlText("Reversed: " . $this->reverse())]),
-
-                    new Div(children: array_map(fn($i) => new Div(key: "#" . $i, children: [
-                        new HtmlText("Item $i render"),
-                        new Counter(onChange: function ($value) use ($other) {
-        //                    $this->last?->setCounter($value);
-        //                    $other->setCounter($value);
-                        }),
-                    ]), [5, 6])),
-
-        //            new Div(class: "last", children: [
-        //                new HtmlText("Last "),
-        //            ]),
-
-        //            new Counter(ref: function ($instance) {
-        //                $this->last = $instance;
-        //            }),
-        //            $other
-                ]);*/
     }
 }

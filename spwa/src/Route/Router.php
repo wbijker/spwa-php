@@ -2,9 +2,7 @@
 
 namespace Spwa\Route;
 
-use Spwa\Http\HttpRequest;
 use Spwa\Http\HttpRequestPath;
-use Spwa\Js\Console;
 use Spwa\Nodes\Component;
 use Spwa\Nodes\HtmlText;
 use Spwa\Nodes\Node;
@@ -13,7 +11,8 @@ class Router extends Component
 {
     private static ?string $uri = null;
 
-    public static function navigate(string $uri): void {
+    public static function navigate(string $uri): void
+    {
         self::$uri = $uri;
     }
 
@@ -43,10 +42,18 @@ class Router extends Component
         $path = new HttpRequestPath($uri);
 
         foreach ($this->routes as $route) {
+            if (is_string($route->path)) {
+                if ($route->path == $path->uri()) {
+                    return $this->invokeOrGet($route->component, null);
+                }
+                continue;
+            }
 
-            $found = $route->match($path);
-            if ($found) {
-                return $this->invokeOrGet($route->component, $found);
+            if ($route->path instanceof RoutePath) {
+                $instance = $route->path->match($path);
+                if ($instance != null) {
+
+                }
             }
         }
         return $this->invokeOrGet($this->fallback, null);

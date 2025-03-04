@@ -2,10 +2,35 @@
 
 namespace Spwa\Route;
 
+use Spwa\Http\HttpRequestPath;
+use Spwa\Js\Console;
 
-use Attribute;
+/*
+ * @template T extends RouteParams
+ */
 
-#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_PROPERTY)]
-class RoutePath {
-    public function __construct(public string $path) {}
+class RoutePath
+{
+    /*
+     * @param string $path
+     * @param class-string<T> $class
+     */
+    public function __construct(public string $path, public $class)
+    {
+    }
+
+    /*
+     * @param T $instance
+     */
+    public function toUrl($instance): string
+    {
+        return "";
+    }
+
+    public function match(HttpRequestPath $path): ?array
+    {
+        Console::log("Trying to match " . $this->path . " with " . $path->uri());
+        return null;
+    }
+
 }
