@@ -4,6 +4,7 @@ namespace Spwa\Route;
 
 use Spwa\Http\HttpRequestPath;
 use Spwa\Js\Console;
+use function App\Components\convert;
 
 function getBetween(string $str, array $arr): array
 {
@@ -45,22 +46,35 @@ class RoutePath
     /*
      * @param T $instance
      */
+    /**
+     * @throws \Exception
+     */
     public function toUrl($instance): string
     {
-        return "";
+        if (get_class($instance) != $this->class) {
+            throw new \Exception("Route path class must be instance of $this->class");
+        }
+
+        // replace all members of the class in pattern
+        $values = get_object_vars($instance);
+        $ret = $this->path;
+        foreach ($values as $key => $value) {
+            $ret = str_replace("{{$key}}", $value, $ret);
+        }
+        return $ret;
     }
 
 
     public function match(HttpRequestPath $path): ?array
     {
-        $url = "/products/seek-cat-electronics-4kw-gauteng-deal/44";
-        $p = "/products/{listing}-cat-{category}-{rating}-{place}/{id}";
+        $urlParts = $path->getSegments();
+        $patternParts = explode("/", $this->path);
 
-        $urlParts = explode("/", $url);
-        $patternParts = explode("/", $p);
         if (count($urlParts) != count($patternParts)) {
             return null;
         }
+
+        $ret = [];
 
         for ($i = 0; $i < count($urlParts); $i++) {
             $vars = [];
@@ -71,9 +85,12 @@ class RoutePath
 
             $matches = [];
             preg_match_all('/\{(.+?)}/', $patternPart, $matches, PREG_OFFSET_CAPTURE);
-            if (count($matches[1]) == 0)
+            if (count($matches[1]) == 0) {
                 // check static part
+                if ($urlPart != $patternPart)
+                    return null;
                 continue;
+            }
 
             foreach ($matches[1] as $match) {
                 [$var, $pos] = $match;
@@ -87,19 +104,16 @@ class RoutePath
                 $text[] = substr($patternPart, $last);
 
             if (count($vars) != count($text)) {
-                die("bom");
                 return null;
             }
 
-            print_r($vars);
-            print_r($text);
-            print_r(getBetween($urlPart, $text));
+            $values = getBetween($urlPart, $text);
+            for ($j = 0; $j < count($vars); $j++) {
+                $ret[$vars[$j]] = $values[$j];
+            }
         }
 
-        die();
-
-        Console::log("Trying to match " . $this->path . " with " . $path->uri());
-        return null;
+        return $ret;
     }
 
 }

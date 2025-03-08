@@ -54,9 +54,10 @@ class WelcomePage extends Component
     function body(): Node
     {
         return new Router(routes: [
-            new Route(path: "about", component: new AboutPage()),
-            new Route(path: new RoutePath("/products/{category}/{product}", ProductRoute::class), component: fn(ProductRoute $product) => new ProductsPage($product)),
+            new Route(path: Routes::$about, component: new AboutPage()),
+            new Route(path: Routes::$product, component: fn(ProductRoute $product) => new ProductsPage($product)),
         ], fallback: new AboutPage());
 
     }
 }
+

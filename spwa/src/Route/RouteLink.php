@@ -13,16 +13,20 @@ class RouteLink extends Component
 {
 
 
-    public function __construct(private string $url, private string $text)
+    public function __construct(private string|RoutePath $href, private string $text)
     {
     }
 
 
     private function navigate(): void
     {
-        Router::navigate($this->url);
+        $url = $this->href instanceof RoutePath
+            ? $this->href->toUrl()
+            : $this->href;
+
+        Router::navigate($url);
         // change the URL instruction
-        History::pushState(null, "", $this->url);
+        History::pushState(null, "", $url);
     }
 
     function render(): Node
@@ -30,7 +34,7 @@ class RouteLink extends Component
         return new A(
             class: "underline mx-2 cursor-pointer",
             mouse: MouseEvents::click(fn() => $this->navigate()),
-            href: $this->url,
+            href: $this->href,
             children: [
                 new HtmlText($this->text)]
         );

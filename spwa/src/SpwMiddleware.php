@@ -47,8 +47,12 @@ class SpwMiddleware implements MiddlewareHandler
 
     function handle(HttpRequest $request, callable $next): HttpResponse
     {
-        if ($request->path->startWithSegment(['assets'])) {
+        if ($request->path->startWithSegment(['', 'assets'])) {
             return $this->serveAsset($request);
+        }
+
+        if ($request->path->startWithSegment(['', 'hmr'])) {
+            return $this->hmr($request);
         }
 
         // previous location injected by JS

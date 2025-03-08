@@ -14,7 +14,7 @@ class HttpRequestPath
         $parsedUrl = parse_url($this->_uri);
         $this->path = $parsedUrl['path'] ?? '/'; // Defaults to '/' if empty
         parse_str($parsedUrl['query'] ?? '', $this->query);
-        $this->segments = array_values(array_filter(explode('/', $this->path), fn($segment) => $segment !== ''));
+        $this->segments = explode('/', $this->path);
     }
 
     function uri(): string

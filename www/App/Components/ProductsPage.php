@@ -17,6 +17,8 @@ class ProductsPage extends Component
 
     function render(): Node
     {
+
+
         return new Div(children: [
             new Div(children: [new HtmlText("Category: " . $this->product->category)]),
             new Div(children: [new HtmlText("Product: " . $this->product->product)]),
@@ -24,18 +26,19 @@ class ProductsPage extends Component
 
             new A(class: "underline mx-2 cursor-pointer", href: "/", children: [new HtmlText("Home")]),
 
+
             new RouteLink(
-                url: (new ProductRoute(category: "Clothes", product: 12, limit: 10))->toUrl(),
+                href: Routes::$product->toUrl(new ProductRoute(category: "Clothes", product: 12, limit: 10)),
                 text: "Clothes"
             ),
 
             new RouteLink(
-                url: (new ProductRoute(category: "Electronics", product: 44, limit: 10))->toUrl(),
+                href: Routes::$product->toUrl(new ProductRoute(category: "Electronics", product: 44, limit: 10)),
                 text: "Electronics"
             ),
 
             new RouteLink(
-                url: (new ProductRoute(category: "Appliances", product: 52, limit: 10))->toUrl(),
+                href: Routes::$product->toUrl(new ProductRoute(category: "Appliances", product: 52, limit: 10)),
                 text: "Appliances"
             )
         ]);

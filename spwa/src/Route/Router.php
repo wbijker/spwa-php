@@ -2,6 +2,9 @@
 
 namespace Spwa\Route;
 
+use ReflectionClass;
+use ReflectionNamedType;
+use ReflectionType;
 use Spwa\Http\HttpRequestPath;
 use Spwa\Nodes\Component;
 use Spwa\Nodes\HtmlText;
@@ -50,14 +53,53 @@ class Router extends Component
             }
 
             if ($route->path instanceof RoutePath) {
-                $instance = $route->path->match($path);
-                if ($instance != null) {
-
+                $match = $route->path->match($path);
+                if ($match != null) {
+                    // match is the route params
+                    // bind params to the actual class
+                    $binding = self::bind($route->path->class, $match);
+                    return $this->invokeOrGet($route->component, $binding);
                 }
             }
         }
         return $this->invokeOrGet($this->fallback, null);
     }
+
+    private static function bind($class, $params): object
+    {
+        $instance = new $class;
+        $reflection = new ReflectionClass($instance::class);
+        $properties = $reflection->getProperties();
+
+        foreach ($properties as $property) {
+            $type = $property->getType();
+            $name = $property->getName();
+            self::coarsePart($type, $instance->$name, $params[$name] ?? null);
+        }
+        return $instance;
+    }
+
+    private static function coarsePart(?ReflectionType $type, &$ref, $value): void
+    {
+        if ($type instanceof ReflectionNamedType) {
+
+            if ($type->allowsNull() && $value === null) {
+                $ref = null;
+                return;
+            }
+
+            $ref = match ($type->getName()) {
+                'integer' => intval($value),
+                'float' => floatval($value),
+                'double' => doubleval($value),
+                'boolean' => boolval($value),
+                'string' => (string)$value,
+                'NULL' => null,
+                default => $value,
+            };
+        }
+    }
+
 
     function render(): Node
     {
