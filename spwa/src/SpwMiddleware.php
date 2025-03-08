@@ -57,11 +57,11 @@ class SpwMiddleware implements MiddlewareHandler
 
         // previous location injected by JS
         // for clientside routing we need to know what the previous URL looked like
-        $prev = getallheaders()['Url'] ?? null;
-        $saved = $_SERVER['REQUEST_URI'];
-        if ($prev != null) {
-            $_SERVER['REQUEST_URI'] = $prev;
-        }
+//        $prev = getallheaders()['Url'] ?? null;
+//        $saved = $_SERVER['REQUEST_URI'];
+//        if ($prev != null) {
+//            $_SERVER['REQUEST_URI'] = $prev;
+//        }
 
         $manager = new StateManager();
         $data = $_SESSION['state'] ?? null;
@@ -72,7 +72,7 @@ class SpwMiddleware implements MiddlewareHandler
         $node = $component->node;
         $manager->clear();
 
-        $_SERVER['REQUEST_URI'] = $saved;
+//        $_SERVER['REQUEST_URI'] = $saved;
 
         if ($request->isGet()) {
             $html = $node->renderHtml();

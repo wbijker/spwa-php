@@ -6,17 +6,21 @@ use ReflectionClass;
 use ReflectionNamedType;
 use ReflectionType;
 use Spwa\Http\HttpRequestPath;
+use Spwa\Js\Console;
 use Spwa\Nodes\Component;
 use Spwa\Nodes\HtmlText;
 use Spwa\Nodes\Node;
+use Spwa\Nodes\StateManager;
+
 
 class Router extends Component
 {
     private static ?string $uri = null;
+    private static ?string $navigateUri = null;
 
     public static function navigate(string $uri): void
     {
-        self::$uri = $uri;
+        self::$navigateUri = $uri;
     }
 
     /**
@@ -25,6 +29,17 @@ class Router extends Component
     public function __construct(private array $routes, private $fallback = null)
     {
 
+    }
+
+    function initialPhase(): void
+    {
+        // previous location injected by JS
+        // for clientside routing we need to know what the previous URL looked like
+        self::$uri = getallheaders()['Url'] ?? $_SERVER['REQUEST_URI'];
+    }
+    function patchPhase(): void
+    {
+        self::$uri = self::$navigateUri ?? $_SERVER['REQUEST_URI'];
     }
 
     private function invokeOrGet($component, $param): Node
@@ -41,8 +56,7 @@ class Router extends Component
 
     private function findRoute(): Node
     {
-        $uri = self::$uri ?? $_SERVER['REQUEST_URI'];
-        $path = new HttpRequestPath($uri);
+        $path = new HttpRequestPath(self::$uri);
 
         foreach ($this->routes as $route) {
             if (is_string($route->path)) {

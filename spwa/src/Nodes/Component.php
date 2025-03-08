@@ -10,8 +10,11 @@ use Spwa\Js\JS;
 
 abstract class Component extends Node
 {
-    function initialized() {}
-    function finalized() {}
+    function initialized(): void {}
+    function finalized(): void {}
+
+    function initialPhase(): void {}
+    function patchPhase(): void {}
 
     // rendered node
     public Node $node;
@@ -25,6 +28,7 @@ abstract class Component extends Node
             return;
         }
 
+        $this->patchPhase();
         $this->path = $current->setInstance($this->getInstanceName());
         $this->restoreState($manager->restoreState($this->path->keyStr()));
         $this->node = $this->render();
@@ -49,6 +53,7 @@ abstract class Component extends Node
 
     function initialize(?Node $parent, PathInfo $current, StateManager $manager): void
     {
+        $this->initialPhase();
         $this->path = $current->setInstance($this->getInstanceName());
 
         $this->restoreState($manager->restoreState($this->path->keyStr()));
