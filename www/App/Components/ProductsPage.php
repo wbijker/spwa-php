@@ -17,8 +17,6 @@ class ProductsPage extends Component
 
     function render(): Node
     {
-
-
         return new Div(children: [
             new Div(children: [new HtmlText("Category: " . $this->product->category)]),
             new Div(children: [new HtmlText("Product: " . $this->product->product)]),
@@ -33,12 +31,12 @@ class ProductsPage extends Component
             ),
 
             new RouteLink(
-                href: Routes::$product->toUrl(new ProductRoute(category: "Electronics", product: 44, limit: 10)),
+                href: Routes::$product->toUrl(new ProductRoute(category: "Electronics", product: 44, limit: 11)),
                 text: "Electronics"
             ),
 
             new RouteLink(
-                href: Routes::$product->toUrl(new ProductRoute(category: "Appliances", product: 52, limit: 10)),
+                href: Routes::$product->toUrl(new ProductRoute(category: "Appliances", product: 52, limit: 12)),
                 text: "Appliances"
             )
         ]);

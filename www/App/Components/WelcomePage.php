@@ -11,17 +11,7 @@ use Spwa\Nodes\HtmlNode;
 use Spwa\Nodes\Node;
 use Spwa\Nodes\State;
 use Spwa\Route\Route;
-use Spwa\Route\RoutePath;
 use Spwa\Route\Router;
-
-/* return new Div(children: [
-            new InputText(class: "m-2 p-2 border", value: $this->text, onInput: fn($value) => $this->text = $value),
-            new Div(class: "m-2 p-2 border bg-orange-200", children: [
-                new HtmlText("Reversed: " . $this->reverse())
-            ]),
-        ]);
-*/;
-
 
 class WelcomePage extends Component
 {

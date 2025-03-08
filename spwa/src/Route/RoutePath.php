@@ -39,7 +39,7 @@ class RoutePath
      * @param string $path
      * @param class-string<T> $class
      */
-    public function __construct(public string $path, public $class)
+    public function __construct(public string $path, public ?array $query, public $class)
     {
     }
 
@@ -61,9 +61,23 @@ class RoutePath
         foreach ($values as $key => $value) {
             $ret = str_replace("{{$key}}", $value, $ret);
         }
+        if ($this->query) {
+            // populate values
+            $ret .= "?" . http_build_query(self::mapKeysToValues($this->query, $values));
+        }
         return $ret;
     }
 
+    private static function mapKeysToValues(array $keys, array $params): array
+    {
+        $result = [];
+        foreach ($keys as $key) {
+            if (array_key_exists($key, $params)) {
+                $result[$key] = $params[$key];
+            }
+        }
+        return $result;
+    }
 
     public function match(HttpRequestPath $path): ?array
     {
@@ -74,7 +88,7 @@ class RoutePath
             return null;
         }
 
-        $ret = [];
+        $ret = $path->queryParams();
 
         for ($i = 0; $i < count($urlParts); $i++) {
             $vars = [];

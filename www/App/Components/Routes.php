@@ -11,7 +11,7 @@ class Routes
 
     public static function init(): void
     {
-        self::$product = new RoutePath("/products/{category}/{product}", ProductRoute::class);
+        self::$product = new RoutePath("/products/{category}/{product}", ["limit"], ProductRoute::class);
     }
 }
 

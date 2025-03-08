@@ -13,10 +13,4 @@ class ProductRoute
 
     }
 
-    static function fromRoute(array $parts): ?static
-    {
-        return null;
-    }
-
-
 }
