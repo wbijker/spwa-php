@@ -3,6 +3,7 @@
 namespace Spwa\Nodes;
 
 
+use mysql_xdevapi\Statement;
 use ReflectionClass;
 use ReflectionProperty;
 use Spwa\Js\Console;
@@ -10,11 +11,30 @@ use Spwa\Js\JS;
 
 abstract class Component extends Node
 {
-    function initialized(): void {}
-    function finalized(): void {}
+    function initialized(): void
+    {
+    }
 
-    function initialPhase(): void {}
-    function patchPhase(): void {}
+    function finalized(): void
+    {
+    }
+
+    function initialPhase(): void
+    {
+    }
+
+    function patchPhase(): void
+    {
+    }
+
+    /**
+     * @param static $other
+     * @return bool
+     */
+    function skipPatch(self $other): bool
+    {
+        return false;
+    }
 
     // rendered node
     public Node $node;
@@ -27,6 +47,9 @@ abstract class Component extends Node
             $patch->replace($this, $old);
             return;
         }
+
+        if ($this->skipPatch($old))
+            return;
 
         $this->patchPhase();
         $this->path = $current->setInstance($this->getInstanceName());

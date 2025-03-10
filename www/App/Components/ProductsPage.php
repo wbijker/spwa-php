@@ -15,6 +15,12 @@ class ProductsPage extends Component
     {
     }
 
+    function skipPatch(self|Component $other): bool
+    {
+        return $this->product->category == $other->product->category;
+    }
+
+
     function render(): Node
     {
         return new Div(children: [
