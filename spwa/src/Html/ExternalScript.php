@@ -4,7 +4,7 @@ namespace Spwa\Html;
 
 use Spwa\Nodes\HtmlNode;
 
-class Script extends HtmlNode
+class ExternalScript extends HtmlNode
 {
     public function __construct(
         ?string $src = null
@@ -21,4 +21,3 @@ class Script extends HtmlNode
         return "script";
     }
 }
-

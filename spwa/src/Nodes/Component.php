@@ -3,11 +3,8 @@
 namespace Spwa\Nodes;
 
 
-use mysql_xdevapi\Statement;
 use ReflectionClass;
 use ReflectionProperty;
-use Spwa\Js\Console;
-use Spwa\Js\JS;
 
 abstract class Component extends Node
 {

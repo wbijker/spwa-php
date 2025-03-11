@@ -2,19 +2,15 @@
 
 namespace Spwa\Html;
 
-use Spwa\Js\JS;
 use Spwa\Nodes\HtmlNode;
 use Spwa\Nodes\Node;
-use Spwa\Nodes\PathInfo;
-use Spwa\Nodes\RenderContext;
-use Spwa\Nodes\StateManager;
 
 class HtmlDocument extends HtmlNode
 {
     public function __construct(
-        string $lang,
-        array  $head,
-        private Node   $body
+        string       $lang,
+        array        $head,
+        private Node $body
     )
     {
         $this->setAttrs([
@@ -46,12 +42,6 @@ class HtmlDocument extends HtmlNode
         return 'html';
     }
 
-//    function initialize(?Node $parent, PathInfo $path, StateManager $manager): void
-//    {
-//        foreach ($this->children as $child) {
-//            $child->initialize($this, $path, $manager);
-//        }
-//    }
 
 
 }
