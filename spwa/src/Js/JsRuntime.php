@@ -18,8 +18,6 @@ class JsRuntime
 
     static function dump(): array
     {
-        $run = self::$calls;
-        self::$calls = [];
-        return $run;
+        return self::$calls;
     }
 }

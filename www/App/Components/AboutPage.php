@@ -2,9 +2,7 @@
 
 namespace App\Components;
 
-use Spwa\Html\A;
 use Spwa\Html\Div;
-use Spwa\Html\MouseEvents;
 use Spwa\Nodes\Component;
 use Spwa\Nodes\HtmlText;
 use Spwa\Nodes\Node;
@@ -17,8 +15,9 @@ class AboutPage extends Component
     {
         return new Div(children: [
             new HtmlText("About page"),
+
             new RouteLink(
-                href: "/products/electronics/44",
+                href: Routes::$product->toUrl(new ProductRoute("electronics", 44, 50)),
                 text: "Kettle"
             )
         ]);

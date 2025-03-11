@@ -2,13 +2,17 @@
 
 namespace Spwa;
 
+use Spwa\Html\Body;
+use Spwa\Html\Div;
 use Spwa\Http\HttpRequest;
 use Spwa\Http\HttpResponse;
 use Spwa\Http\MiddlewareHandler;
+use Spwa\Js\Console;
 use Spwa\Js\JsRuntime;
 use Spwa\Nodes\Component;
 use Spwa\Nodes\HtmlNode;
 use Spwa\Nodes\Node;
+use Spwa\Nodes\Page;
 use Spwa\Nodes\PatchBuilder;
 use Spwa\Nodes\PathInfo;
 use Spwa\Nodes\StateManager;
@@ -24,9 +28,9 @@ session_start();
 class SpwMiddleware implements MiddlewareHandler
 {
     /**
-     * @param callable(): Component $render
+     * @param callable(): Page $render
      */
-    public function __construct(private  $render)
+    public function __construct(private $render)
     {
     }
 
@@ -51,18 +55,28 @@ class SpwMiddleware implements MiddlewareHandler
             return $this->serveAsset($request);
         }
 
-        if ($request->path->startWithSegment(['', 'hmr'])) {
-            return $this->hmr($request);
+        try {
+            return $this->innerHandle($request);
+        } catch (\Exception $e) {
+
+            $template = ($this->render)()->error();
+            if ($request->isGet()) {
+                return HttpResponse::html($template->renderHtml());
+            }
+
+            $patch = new PatchBuilder();
+            // dummy div to create node with path []
+//            $patch->replace($template, new Div());
+
+            return HttpResponse::json([
+                'p' => $patch->patches,
+                'j' => JsRuntime::dump()
+            ]);
         }
+    }
 
-        // previous location injected by JS
-        // for clientside routing we need to know what the previous URL looked like
-//        $prev = getallheaders()['Url'] ?? null;
-//        $saved = $_SERVER['REQUEST_URI'];
-//        if ($prev != null) {
-//            $_SERVER['REQUEST_URI'] = $prev;
-//        }
-
+    private function innerHandle(HttpRequest $request): HttpResponse
+    {
         $manager = new StateManager();
         $data = $_SESSION['state'] ?? null;
         $manager->unserialize($data);
@@ -72,13 +86,11 @@ class SpwMiddleware implements MiddlewareHandler
         $node = $component->node;
         $manager->clear();
 
-//        $_SERVER['REQUEST_URI'] = $saved;
-
         if ($request->isGet()) {
             $html = $node->renderHtml();
             $this->finalize($component, $manager);
 
-            return HttpResponse::html(fn() => $html . "<script>executeJsDump(" . json_encode(JsRuntime::dump()) . ")</script>");
+            return HttpResponse::html(fn() => $html);
         }
 
         // http post, read JSON body
@@ -92,8 +104,6 @@ class SpwMiddleware implements MiddlewareHandler
 
         $new = ($this->render)();
         $new->initializeAndCompare(null, PathInfo::root(), $manager, $component, $patch);
-
-
 
         return HttpResponse::json([
             'p' => $patch->patches,
