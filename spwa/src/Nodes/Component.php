@@ -24,6 +24,11 @@ abstract class Component extends Node
     {
     }
 
+    function hasState(): bool
+    {
+        return true;
+    }
+
     /**
      * @param static $other
      * @return bool
@@ -50,7 +55,9 @@ abstract class Component extends Node
 
         $this->patchPhase();
         $this->path = $current->setInstance($this->getInstanceName());
-        $this->restoreState($manager->restoreState($this->path->keyStr()));
+        if ($this->hasState())
+            $this->restoreState($manager->restoreState($this->path->keyStr()));
+
         $this->node = $this->render();
         $this->node->initializeAndCompare($this, $this->path, $manager, $old->node, $patch);
     }
@@ -76,7 +83,8 @@ abstract class Component extends Node
         $this->initialPhase();
         $this->path = $current->setInstance($this->getInstanceName());
 
-        $this->restoreState($manager->restoreState($this->path->keyStr()));
+        if ($this->hasState())
+            $this->restoreState($manager->restoreState($this->path->keyStr()));
 
         $this->node = $this->render();
         $this->node->initialize($this, $this->path, $manager);
@@ -117,7 +125,8 @@ abstract class Component extends Node
     function finalize(StateManager $manager): void
     {
         $this->finalized();
-        $manager->saveState($this->path->keyStr(), $this->saveState());
+        if ($this->hasState())
+            $manager->saveState($this->path->keyStr(), $this->saveState());
         $this->node->finalize($manager);
     }
 
