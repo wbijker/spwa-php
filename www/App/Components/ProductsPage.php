@@ -15,9 +15,9 @@ class ProductsPage extends Component
     {
     }
 
-    function skipPatch(self|Component $other): bool
+    function shouldPatch(self|Component $other): bool
     {
-        return $this->product->category == $other->product->category;
+        return $this->product->category != $other->product->category;
     }
 
 

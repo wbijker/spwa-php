@@ -33,9 +33,9 @@ abstract class Component extends Node
      * @param static $other
      * @return bool
      */
-    function skipPatch(self $other): bool
+    function shouldPatch(self $other): bool
     {
-        return false;
+        return true;
     }
 
     // rendered node
@@ -50,7 +50,7 @@ abstract class Component extends Node
             return;
         }
 
-        if ($this->skipPatch($old))
+        if (!$this->shouldPatch($old))
             return;
 
         $this->patchPhase();
