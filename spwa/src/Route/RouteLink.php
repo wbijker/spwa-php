@@ -24,6 +24,8 @@ class RouteLink extends Component
             ? $this->href->toUrl()
             : $this->href;
 
+        echo "Navigating to $url\n";
+
         Router::navigate($url);
         // change the URL instruction
         History::pushState(null, "", $url);

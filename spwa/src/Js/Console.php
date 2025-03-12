@@ -12,7 +12,11 @@ class Console
     static function warn(...$args): void
     {
         JsRuntime::invoke(["console", "warn"], $args);
+    }
 
+    static function dir(...$args): void
+    {
+        JsRuntime::invoke(["console", "warn"], $args);
     }
 
     static function error(...$args): void

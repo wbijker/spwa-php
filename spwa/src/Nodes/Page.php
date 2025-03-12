@@ -2,16 +2,17 @@
 
 namespace Spwa\Nodes;
 
+use Spwa\FatalError;
 use Spwa\Html\Div;
-use Spwa\Html\HtmlDocument;
 use Spwa\Html\ExternalScript;
+use Spwa\Html\HtmlDocument;
 use Spwa\Html\InlineScript;
 use Spwa\Js\JsFunction;
 use Spwa\Js\JsRuntime;
 
 abstract class Page extends Component
 {
-    function error(): Node
+    function error(FatalError $error): Node
     {
         return new Div(children: [new HtmlText("Error")]);
     }
