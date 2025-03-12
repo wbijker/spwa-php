@@ -9,6 +9,8 @@ use Spwa\Js\JsLiteral;
 abstract class HtmlNode extends Node
 {
 
+    protected bool $ignore = false;
+
     function initialize(?Node $parent, PathInfo $current, StateManager $manager): void
     {
         $this->path = $current->setKey($this->key);
@@ -24,6 +26,11 @@ abstract class HtmlNode extends Node
             // initialize everything before rendering
             $this->initialize($this, $current, $manager);
             $patch->replace($this, $old);
+            return;
+        }
+
+        // ignore patches
+        if ($this->ignore) {
             return;
         }
 

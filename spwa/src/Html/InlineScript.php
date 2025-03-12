@@ -4,21 +4,15 @@ namespace Spwa\Html;
 
 use Spwa\Nodes\HtmlNode;
 use Spwa\Nodes\HtmlText;
-use Spwa\Nodes\Node;
-use Spwa\Nodes\PatchBuilder;
-use Spwa\Nodes\PathInfo;
-use Spwa\Nodes\StateManager;
 
 class InlineScript extends HtmlNode
 {
-    function initializeAndCompare(?Node $parent, PathInfo $current, StateManager $manager, Node $old, PatchBuilder $patch): void
-    {
-    }
-
     public function __construct(
-        string $js = null
+        string $js = null,
+        bool $ignore = false
     )
     {
+        $this->ignore = $ignore;
         $this->setAttrs([
             "type" => "text/javascript",
         ]);
