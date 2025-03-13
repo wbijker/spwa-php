@@ -26,7 +26,7 @@ class JsFunction
     {
         $args = array_map(fn($arg) => $arg instanceof JsLiteral
             ? $arg->name
-            : htmlspecialchars(json_encode($arg), ENT_QUOTES), $this->args);
+            : json_encode($arg), $this->args);
         
         return "$this->name(" . implode(", ", $args) . ")";
     }

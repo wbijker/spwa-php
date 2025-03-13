@@ -121,7 +121,8 @@ abstract class HtmlNode extends Node
         }
 
         foreach ($copy as $key => $value) {
-            $ret .= " $key=\"$value\"";
+            $v = htmlentities($value);
+            $ret .= " $key=\"$v\"";
         }
 
         if ($this->closed()) {

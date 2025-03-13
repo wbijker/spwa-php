@@ -138,6 +138,13 @@ class SpwMiddleware implements MiddlewareHandler
         return $ret;
     }
 
+    private function processOutput(): void
+    {
+        $clean = ob_get_clean();
+        if ($clean !== false && $clean !== "") 
+            Console::log($clean);
+    }
+
     private function innerHandle(HttpRequest $request): HttpResponse
     {
         ob_start();
@@ -154,7 +161,7 @@ class SpwMiddleware implements MiddlewareHandler
         if ($request->isGet()) {
             $html = $node->renderHtml();
             $this->finalize($component, $manager);
-
+            $this->processOutput();
             return HttpResponse::html(fn() => $html);
         }
 
@@ -170,9 +177,7 @@ class SpwMiddleware implements MiddlewareHandler
         $new = ($this->render)();
         $new->initializeAndCompare(null, PathInfo::root(), $manager, $component, $patch);
 
-        $clean = ob_get_clean();
-        if ($clean !== false)
-            Console::log($clean);
+        $this->processOutput();
 
         return HttpResponse::json([
             'p' => $patch->patches,

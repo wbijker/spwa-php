@@ -2,7 +2,6 @@
 
 namespace Spwa\Nodes;
 
-use Spwa\Js\JS;
 
 class HtmlText extends Node
 {
@@ -35,8 +34,7 @@ class HtmlText extends Node
 
     function renderHtml(): string
     {
-//        return '(' . $this->path->pathStr() . ') ' . $this->text;
-        return htmlentities($this->text);
+        return htmlentities($this->text, ENT_NOQUOTES | ENT_SUBSTITUTE);
     }
 
     function initialize(?Node $parent, PathInfo $current, StateManager $manager): void
