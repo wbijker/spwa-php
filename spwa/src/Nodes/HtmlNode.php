@@ -90,6 +90,15 @@ abstract class HtmlNode extends Node
         $this->events = array_merge($this->events, $filtered);
     }
 
+    protected function setStyle(array $style)
+    {
+        $this->attrs['style'] = implode('; ', array_map(
+                fn($key, $value) => "{$key}: {$value}",
+                array_keys($style),
+                $style
+            )) . ';';
+    }
+
     protected function setAttrs(array $attrs)
     {
         // filter null values
