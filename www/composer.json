@@ -11,10 +11,15 @@
         {
             "type": "path",
             "url": "../spwa/"
+        },
+        {
+            "type": "path",
+            "url": "../codequery/"
         }
     ],
     "require": {
         "spwa/spwa": "*",
+        "itecho/codequery": "*",
         "ext-json": "*",
         "ext-zlib": "*"
     }

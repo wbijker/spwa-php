@@ -4,18 +4,40 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5a6043e11b5b6888494626b79cde905b",
+    "content-hash": "f23644e62dd6c9c64bd184848086fd99",
     "packages": [
+        {
+            "name": "itecho/codequery",
+            "version": "1.0.0",
+            "dist": {
+                "type": "path",
+                "url": "../codequery",
+                "reference": "6fa7118bf275a9b24607b69fbb3e3a260bd352cb"
+            },
+            "require": {
+                "php": ">=8.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "CodeQuery\\": "src/"
+                },
+                "files": []
+            },
+            "transport-options": {
+                "relative": true
+            }
+        },
         {
             "name": "spwa/spwa",
             "version": "1.0.0",
             "dist": {
                 "type": "path",
                 "url": "../spwa",
-                "reference": "182c7e47716ac0a88a4e852ed045e42e847166d0"
+                "reference": "e3dc1f8c881528134eb8b2c2cfc8e333a6a431b6"
             },
             "require": {
-                "php": ">=5.6"
+                "php": ">=8.0"
             },
             "type": "library",
             "autoload": {

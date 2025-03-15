@@ -1,0 +1,15 @@
+{
+  "name": "itecho/codequery",
+  "type": "library",
+  "version": "1.0.0",
+  "autoload": {
+    "psr-4": {
+      "CodeQuery\\": "src/"
+    },
+    "files": [
+    ]
+  },
+  "require": {
+    "php": ">=8.0"
+  }
+}

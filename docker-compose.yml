@@ -22,8 +22,12 @@ services:
       dockerfile: Dockerfile
 #    depends_on:
 #      - db
+
+#    ultimately packages would be installed from composer, but now we are referencing the folder directly
+
     volumes:
       - ./www:/var/www/html/
       - ./spwa:/var/www/spwa/
+      - ./codequery:/var/www/codequery/
     ports:
       - "8000:80"
