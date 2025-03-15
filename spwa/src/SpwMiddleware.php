@@ -116,7 +116,8 @@ class SpwMiddleware implements MiddlewareHandler
 
         if ($ret instanceof FatalError) {
 
-            $template = ($this->render)()->error($ret);
+            $p = ($this->render)();
+            $template = $p->build($p->error($ret));
 
             if ($request->isGet()) {
                 return HttpResponse::html($template->renderHtml());
