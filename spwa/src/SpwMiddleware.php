@@ -2,8 +2,6 @@
 
 namespace Spwa;
 
-use Error;
-use Spwa\Html\Body;
 use Spwa\Html\Div;
 use Spwa\Http\HttpRequest;
 use Spwa\Http\HttpResponse;
@@ -114,7 +112,6 @@ class SpwMiddleware implements MiddlewareHandler
 
         // ob_start() captures only standard output (echo, print).
 
-
         $ret = safeInvoke(fn() => $this->innerHandle($request));
 
         if ($ret instanceof FatalError) {
@@ -141,7 +138,7 @@ class SpwMiddleware implements MiddlewareHandler
     private function processOutput(): void
     {
         $clean = ob_get_clean();
-        if ($clean !== false && $clean !== "") 
+        if ($clean !== false && $clean !== "")
             Console::log($clean);
     }
 
@@ -154,14 +151,16 @@ class SpwMiddleware implements MiddlewareHandler
         $manager->unserialize($data);
 
         $component = ($this->render)();
+
         $component->initialize(null, PathInfo::root(), $manager);
         $node = $component->node;
         $manager->clear();
 
         if ($request->isGet()) {
-            $html = $node->renderHtml();
             $this->finalize($component, $manager);
+
             $this->processOutput();
+            $html = $node->renderHtml();
             return HttpResponse::html(fn() => $html);
         }
 
