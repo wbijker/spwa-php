@@ -1,10 +1,10 @@
 {
-  "name": "itecho/codequery",
+  "name": "itecho/heroicons",
   "type": "library",
   "version": "1.0.0",
   "autoload": {
     "psr-4": {
-      "CodeQuery\\": "CodeQuery/"
+      "HeroIcons\\": "HeroIcons/"
     },
     "files": [
     ]

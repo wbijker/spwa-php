@@ -15,11 +15,16 @@
         {
             "type": "path",
             "url": "../codequery/"
+        },
+        {
+            "type": "path",
+            "url": "../heroicons/"
         }
     ],
     "require": {
         "spwa/spwa": "*",
         "itecho/codequery": "*",
+        "itecho/heroicons": "*",
         "ext-json": "*",
         "ext-zlib": "*"
     }

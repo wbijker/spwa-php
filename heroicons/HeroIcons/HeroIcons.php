@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Spwa;
+namespace HeroIcons;
 
 use Spwa\Html\Svg;
 use Spwa\Html\SvgPath;

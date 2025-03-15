@@ -29,5 +29,6 @@ services:
       - ./www:/var/www/html/
       - ./spwa:/var/www/spwa/
       - ./codequery:/var/www/codequery/
+      - ./heroicons:/var/www/heroicons/
     ports:
       - "8000:80"

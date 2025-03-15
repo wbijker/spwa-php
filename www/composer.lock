@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f23644e62dd6c9c64bd184848086fd99",
+    "content-hash": "3c94cc82cb811f3459a76253cc59955f",
     "packages": [
         {
             "name": "itecho/codequery",
@@ -12,7 +12,7 @@
             "dist": {
                 "type": "path",
                 "url": "../codequery",
-                "reference": "6fa7118bf275a9b24607b69fbb3e3a260bd352cb"
+                "reference": "204839f50ed79bb59446c90166fcebb2011a5364"
             },
             "require": {
                 "php": ">=8.0"
@@ -20,7 +20,29 @@
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "CodeQuery\\": "src/"
+                    "CodeQuery\\": "CodeQuery/"
+                },
+                "files": []
+            },
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
+            "name": "itecho/heroicons",
+            "version": "1.0.0",
+            "dist": {
+                "type": "path",
+                "url": "../heroicons",
+                "reference": "daa071b21833dd8ce9d868da5513aca013c49368"
+            },
+            "require": {
+                "php": ">=8.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "HeroIcons\\": "HeroIcons/"
                 },
                 "files": []
             },
