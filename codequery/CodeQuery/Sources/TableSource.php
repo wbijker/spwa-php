@@ -12,11 +12,6 @@ abstract class TableSource extends SqlSource
         return $this->tableName();
     }
 
-    function alias(): string
-    {
-        return $this->tableName();
-    }
-
     abstract function create(TableBuilder $builder);
 
     abstract function tableName(): string;

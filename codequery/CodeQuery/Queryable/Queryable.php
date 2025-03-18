@@ -9,7 +9,7 @@ use ReflectionNamedType;
 
 class Queryable
 {
-    private ?SqlContext $context = null;
+    private SqlContext $context;
 
     public function __construct(SqlSource $source)
     {
@@ -56,14 +56,17 @@ class Queryable
     {
         // inspect parameters and their types
         $ret = $this->invokeCallback($callback);
-
-        echo $ret->toSql();
-
+        $this->context->where[] = $ret;
         return $this;
     }
 
     function fetchArray(): array
     {
         return [];
+    }
+
+    function toSql(): string
+    {
+        return $this->context->toSql();
     }
 }
