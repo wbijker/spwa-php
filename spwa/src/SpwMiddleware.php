@@ -52,15 +52,11 @@ function safeInvoke(callable $callback): mixed
         }
     });
 
-    // Both Error and Exception classes implement Throwable interface
-    set_exception_handler(function ($e) use (&$error) {
-        $error = FatalError::fromThrowable($e);
-    });
-
     // Fatal errors require register_shutdown_function() with error_get_last().
     register_shutdown_function(function () use (&$error) {
         $lastError = error_get_last();
         if ($lastError) {
+            // PHP 7+ introduced Throwable, making Error objects catchable like exceptions.
             $error = FatalError::fromError($lastError);
         }
     });
@@ -69,7 +65,7 @@ function safeInvoke(callable $callback): mixed
         $error = $callback();
 
     } catch (Throwable $ex) {
-        $error = FatalError::fromThrowable($ex);
+        $error = $ex;
     }
     restore_error_handler();
     restore_exception_handler();
@@ -114,7 +110,7 @@ class SpwMiddleware implements MiddlewareHandler
 
         $ret = safeInvoke(fn() => $this->innerHandle($request));
 
-        if ($ret instanceof FatalError) {
+        if ($ret instanceof Throwable) {
 
             $p = ($this->render)();
             $template = $p->build($p->error($ret));
