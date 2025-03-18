@@ -2,17 +2,20 @@
 
 namespace CodeQuery\Queryable;
 
-use CodeQuery\Expressions\SqlExpression;
-use CodeQuery\Sources\TableSource;
-use mysql_xdevapi\Exception;
+use CodeQuery\Sources\SqlSource;
+use Exception;
 use ReflectionFunction;
 use ReflectionNamedType;
-use ReflectionParameter;
 
 class Queryable
 {
-
     private ?SqlContext $context = null;
+
+    public function __construct(SqlSource $source)
+    {
+        $this->context = new SqlContext($source, new SqlRootContext());
+    }
+
 
     function select(callable $callback): Queryable
     {
@@ -20,25 +23,28 @@ class Queryable
     }
 
     /**
-     * @param ReflectionParameter[] $reflection
-     * @return void
+     * @throws \ReflectionException
+     * @throws Exception
      */
-    private function fillContextIfNull(array $params): void
+    private function invokeCallback(callable $callback)
     {
-        if ($this->context != null)
-            return;
+        $reflection = new ReflectionFunction($callback);
+        $params = $reflection->getParameters();
 
-        if (count($params) != 1)
-            throw new Exception("Only one parameter is allowed");
+        $arguments = array_map(function ($param) {
+            $type = $param->getType();
+            if (!$type instanceof ReflectionNamedType)
+                throw new Exception("Parameter type is required");
 
-        $param = $params[0];
-        $type = $param->getType();
-        if (!$type instanceof ReflectionNamedType)
-            throw new Exception("Parameter type is required");
+            $name = $param->getType()->getName();
+            if (get_class($this->context->from) == $name)
+                return $this->context->from;
 
-//        if (is_subclass_of($type->getName(), TableSource::class))
+            throw new Exception("Could not resolve source for parameter $name ($param->name)");
+        }, $params);
 
-        $this->context = new SqlContext(new TableSource($type->getName()), new SqlRootContext());
+        // invoke callback with arguments
+        return $callback(...$arguments);
     }
 
 
@@ -49,23 +55,10 @@ class Queryable
     function where(callable $callback): Queryable
     {
         // inspect parameters and their types
-        $reflection = new ReflectionFunction($callback);
-        $params = $reflection->getParameters();
-        $this->fillContextIfNull($params);
+        $ret = $this->invokeCallback($callback);
 
+        echo $ret->toSql();
 
-        foreach ($params as $param) {
-            $type = $param->getType();
-            if (!$type instanceof ReflectionNamedType) {
-                throw new \Exception("Parameter type is required");
-            }
-
-            // check context sources
-            if ($this->context == null)
-
-                echo "Parameter: " . $param->getName() . "\n";
-            echo "  Type: " . $type->getName() . "\n";
-        }
         return $this;
     }
 

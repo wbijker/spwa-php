@@ -28,11 +28,11 @@ class SqlContext
     public array $orderBy = [];
 
     /**
-     * @var SqlJoin[] $joins
+ * @var SqlJoin[] $joins
      */
     public array $joins = [];
 
-    public SqlSource $source;
+    public SqlSource $from;
     public SqlRootContext $root;
 
     /**
@@ -41,7 +41,7 @@ class SqlContext
      */
     function __construct(SqlSource $source, SqlRootContext $root)
     {
-        $this->source = $source;
+        $this->from = $source;
         $this->root = $root;
     }
 
@@ -72,7 +72,7 @@ class SqlContext
         $sql .= implode(",\n", $columns) . "\n";
 
         $sql .= "FROM\n";
-        $sql .= $this->source->toSql() . "\n";
+        $sql .= $this->from->toSql() . "\n";
 
         if (!empty($this->joins)) {
             foreach ($this->joins as $join) {

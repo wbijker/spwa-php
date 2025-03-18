@@ -2,8 +2,7 @@
 
 namespace CodeQuery;
 
-abstract class
-DbColumn
+abstract class DbColumn
 {
 }
 
