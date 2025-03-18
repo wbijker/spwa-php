@@ -2,6 +2,8 @@
 
 namespace CodeQuery\Queryable;
 
+use CodeQuery\Columns\Column;
+use CodeQuery\Expressions\SqlExpression;
 use CodeQuery\Sources\SqlSource;
 use Exception;
 use ReflectionFunction;
@@ -17,8 +19,22 @@ class Queryable
     }
 
 
+    /**
+     * @param callable $callback
+     * @return $this
+     */
     function select(callable $callback): Queryable
     {
+        $ret = $this->invokeCallback($callback);
+        $vars = get_object_vars($ret);
+        $select = [];
+
+        foreach ($vars as $key => $value) {
+            if ($value instanceof SqlExpression) {
+                $select[] = $value;
+            }
+        }
+        $this->context->select = $select;
         return $this;
     }
 
@@ -57,6 +73,14 @@ class Queryable
         // inspect parameters and their types
         $ret = $this->invokeCallback($callback);
         $this->context->where[] = $ret;
+        return $this;
+    }
+
+    function orderBy(callable $callback): Queryable
+    {
+        // inspect parameters and their types
+        $ret = $this->invokeCallback($callback);
+        $this->context->orderBy[] = $ret;
         return $this;
     }
 
