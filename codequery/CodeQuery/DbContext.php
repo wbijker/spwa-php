@@ -2,8 +2,9 @@
 
 namespace CodeQuery;
 
-use CodeQuery\Columns\TableBuilder;
 use CodeQuery\Queryable\Queryable;
+use CodeQuery\Schema\Table;
+use CodeQuery\Schema\TableBuilder;
 use CodeQuery\Sources\TableSource;
 
 class DbContext
@@ -16,11 +17,9 @@ class DbContext
      */
     function from(string $table): Queryable
     {
-        $source = new $table();
-        if (!$source instanceof TableSource) {
-            throw new \Exception("Table must be an instance of TableSource");
-        }
-        $source->create(new TableBuilder($source->tableName()));
+        /** @var Table $table */
+        $builder = $table::create();
+        $source = new TableSource($builder, "");
         return new Queryable($source);
     }
 

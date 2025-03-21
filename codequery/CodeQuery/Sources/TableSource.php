@@ -2,15 +2,22 @@
 
 namespace CodeQuery\Sources;
 
-abstract class TableSource extends SqlSource
+use CodeQuery\Schema\TableBuilder;
+
+class TableSource extends SqlSource
 {
-    public function __construct(public string $tableName, public string $alias)
+    public function __construct(private TableBuilder $table, public string $alias)
     {
     }
 
     function toSql(): string
     {
-        return "`$this->tableName` AS `$this->alias`";
+        return "`{$this->table->tableName} tableName` AS `$this->alias`";
+    }
+
+    function getInstance()
+    {
+        return $this->table->instance;
     }
 
 }

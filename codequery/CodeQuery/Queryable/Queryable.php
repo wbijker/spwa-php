@@ -2,6 +2,7 @@
 
 namespace CodeQuery\Queryable;
 
+use CodeQuery\Columns\BoolColumn;
 use CodeQuery\Columns\Column;
 use CodeQuery\Expressions\AliasExpression;
 use CodeQuery\Expressions\SqlExpression;
@@ -9,6 +10,17 @@ use CodeQuery\Sources\SqlSource;
 use Exception;
 use ReflectionFunction;
 use ReflectionNamedType;
+
+function toExpression($value): SqlExpression
+{
+    if ($value instanceof Column)
+        return $value->exp;
+
+    if ($value instanceof SqlExpression)
+        return $value;
+
+    throw new Exception("Expecting SqlExpression or Column");
+}
 
 class Queryable
 {
@@ -18,7 +30,6 @@ class Queryable
     {
         $this->context = new SqlContext($source, new SqlRootContext());
     }
-
 
     /**
      * @param callable $callback
@@ -56,6 +67,7 @@ class Queryable
         return $this;
     }
 
+
     /**
      * @throws \ReflectionException
      * @throws Exception
@@ -71,8 +83,9 @@ class Queryable
                 throw new Exception("Parameter type is required");
 
             $name = $param->getType()->getName();
-            if (get_class($this->context->from) == $name)
-                return $this->context->from;
+            $instance = $this->context->from->getInstance();
+            if ($instance::class == $name)
+                return $instance;
 
             throw new Exception("Could not resolve source for parameter $name ($param->name)");
         }, $params);
@@ -83,6 +96,8 @@ class Queryable
 
 
     /**
+     * @param callable(mixed ...$args): BoolColumn $callback
+     * @return $this
      * @throws \ReflectionException
      * @throws \Exception
      */
@@ -90,15 +105,21 @@ class Queryable
     {
         // inspect parameters and their types
         $ret = $this->invokeCallback($callback);
-        $this->context->where[] = $ret;
+        $this->context->where[] = toExpression($ret);
         return $this;
     }
 
+    /**
+     * @param callable(mixed ...$args): Column $callback
+     * @return $this
+     * @throws \ReflectionException
+     * @throws \Exception
+     */
     function orderBy(callable $callback): Queryable
     {
         // inspect parameters and their types
         $ret = $this->invokeCallback($callback);
-        $this->context->orderBy[] = $ret;
+        $this->context->orderBy[] = toExpression($ret);
         return $this;
     }
 

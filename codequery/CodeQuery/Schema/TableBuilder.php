@@ -5,12 +5,11 @@ namespace CodeQuery\Schema;
 
 class TableBuilder
 {
-    public string $tableName;
 
-    public function __construct()
+    public function __construct(public Table $instance, public string $tableName)
     {
     }
-    
+
     function int(string $column): IntColumnDefinition
     {
         return new IntColumnDefinition($column, $this->tableName);
