@@ -2,20 +2,16 @@
 
 namespace CodeQuery\Sources;
 
-use CodeQuery\Columns\TableBuilder;
-
 abstract class TableSource extends SqlSource
 {
+    public function __construct(public string $tableName, public string $alias)
+    {
+    }
 
     function toSql(): string
     {
-        return $this->tableName();
+        return "`$this->tableName` AS `$this->alias`";
     }
-
-    abstract function create(TableBuilder $builder);
-
-    abstract function tableName(): string;
-
 
 }
 

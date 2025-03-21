@@ -4,12 +4,12 @@ namespace CodeQuery\Expressions;
 
 class ColumnExpression implements SqlExpression
 {
-    public function __construct(private string $column, private string $table)
+    public function __construct(private string $column, private string $prefix)
     {
     }
 
     function toSql(): string
     {
-        return "{$this->column}";
+        return "{$this->prefix}.{$this->column}";
     }
 }
