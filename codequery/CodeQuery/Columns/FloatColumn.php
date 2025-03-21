@@ -8,6 +8,13 @@ use CodeQuery\Expressions\SqlExpression;
 
 class FloatColumn extends Column
 {
+    public float $value;
+
+    function assign($value): void
+    {
+        $this->value = floatval($value);
+    }
+
     private function toExp(float|FloatColumn $value): SqlExpression
     {
         return is_double($value)
@@ -15,42 +22,42 @@ class FloatColumn extends Column
             : $value->exp;
     }
 
-    function equals(float|IntColumn $value): BoolColumn
+    function equals(float|FloatColumn $value): BoolColumn
     {
         return new BoolColumn(new BinaryExpression($this->exp, BinaryExpression::EQUAL, $this->toExp($value)));
     }
 
-    function notEquals(float|IntColumn $value): BoolColumn
+    function notEquals(float|FloatColumn $value): BoolColumn
     {
         return new BoolColumn(new BinaryExpression($this->exp, BinaryExpression::NOT_EQUAL, $this->toExp($value)));
     }
 
-    function greaterThan(float|IntColumn $value): BoolColumn
+    function greaterThan(float|FloatColumn $value): BoolColumn
     {
         return new BoolColumn(new BinaryExpression($this->exp, BinaryExpression::GREATER, $this->toExp($value)));
     }
 
-    function lessThan(float|IntColumn $value): BoolColumn
+    function lessThan(float|FloatColumn $value): BoolColumn
     {
         return new BoolColumn(new BinaryExpression($this->exp, BinaryExpression::LESS, $this->toExp($value)));
     }
 
-    function greaterOrEqual(float|IntColumn $value): BoolColumn
+    function greaterOrEqual(float|FloatColumn $value): BoolColumn
     {
         return new BoolColumn(new BinaryExpression($this->exp, BinaryExpression::GREATER_OR_EQUAL, $this->toExp($value)));
     }
 
-    function lessOrEqual(float|IntColumn $value): BoolColumn
+    function lessOrEqual(float|FloatColumn $value): BoolColumn
     {
         return new BoolColumn(new BinaryExpression($this->exp, BinaryExpression::LESS_OR_EQUAL, $this->toExp($value)));
     }
 
-    function multiply(float|IntColumn $value): IntColumn
+    function multiply(float|FloatColumn $value): FloatColumn
     {
-        return new IntColumn(new BinaryExpression($this->exp, BinaryExpression::MULTIPLY, $this->toExp($value)));
+        return new FloatColumn(new BinaryExpression($this->exp, BinaryExpression::MULTIPLY, $this->toExp($value)));
     }
 
-    function divide(float|IntColumn $value): FloatColumn
+    function divide(float|FloatColumn $value): FloatColumn
     {
         return new FloatColumn(new BinaryExpression($this->exp, BinaryExpression::DIVIDE, $this->toExp($value)));
     }

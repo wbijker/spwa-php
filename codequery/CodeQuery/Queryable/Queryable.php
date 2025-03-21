@@ -2,12 +2,16 @@
 
 namespace CodeQuery\Queryable;
 
+use App\Components\Selection;
 use CodeQuery\Columns\BoolColumn;
 use CodeQuery\Columns\Column;
+use CodeQuery\Columns\IntColumn;
 use CodeQuery\Expressions\AliasExpression;
+use CodeQuery\Expressions\ConstExpression;
 use CodeQuery\Expressions\SqlExpression;
 use CodeQuery\Sources\SqlSource;
 use Exception;
+use ReflectionClass;
 use ReflectionFunction;
 use ReflectionNamedType;
 
@@ -50,17 +54,10 @@ class Queryable
         // 3: Alias members per selection. Select p.id as c1, p.name as c2, p.price * 2 as c3
         $select = [];
         foreach ($vars as $key => $value) {
-            $select[] = new AliasExpression(toExpression($value), $key);
+            $select[$key] = new AliasExpression(toExpression($value), $key);
         }
 
-        // 4: Execute SQL: [ ['c1' => 1, 'c2' => 'P1', 'c3' => 12.12], ['c1' => 2, 'c2' => 'P2', 'c3' => 43.4] ]
-
-        // 5: Selector factory.
-        /*  $reflection = new ReflectionClass(Product::class);
-            $s = $reflection->newInstanceWithoutConstructor();
-            $s->id = $row['c1']; $s->name = $row['c2']; $s->price = $row['c3'];*/
-
-        $this->context->select = $select;
+        $this->context->select = new SqlSelect($select, $ret);
         return $this;
     }
 
@@ -122,11 +119,26 @@ class Queryable
 
     function fetchArray(): array
     {
-        return [];
+        echo $this->toSql();
+        // 4: Execute SQL: [ ['c1' => 1, 'c2' => 'P1', 'c3' => 12.12], ['c1' => 2, 'c2' => 'P2', 'c3' => 43.4] ]
+        $result = [
+            ['id' => 1, 'name' => 'Product#1', 'price2' => 12.12],
+            ['id' => 2, 'name' => 'Product#2', 'price2' => 43.4],
+            ['id' => 3, 'name' => 'Product#3', 'price2' => 54.2],
+            ['id' => 4, 'name' => 'Product#4', 'price2' => 892.3],
+        ];
+
+        $ret = [];
+        foreach ($result as $row) {
+            $obj = $this->context->select->populateRow($row);
+            $ret[] = $obj;
+        }
+        return $ret;
     }
 
     function toSql(): string
     {
         return $this->context->toSql();
     }
+
 }

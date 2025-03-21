@@ -9,6 +9,12 @@ use CodeQuery\Expressions\UnaryExpression;
 
 class BoolColumn extends Column
 {
+    public bool $value;
+    function assign($value): void
+    {
+        $this->value = boolval($value);
+    }
+
     private function toExp(bool|BoolColumn $value): SqlExpression
     {
         return is_bool($value)

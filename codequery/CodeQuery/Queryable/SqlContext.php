@@ -2,6 +2,7 @@
 
 namespace CodeQuery\Queryable;
 
+use App\Components\Selection;
 use CodeQuery\Expressions\BinaryExpression;
 use CodeQuery\Expressions\ConstExpression;
 use CodeQuery\Expressions\SqlExpression;
@@ -9,11 +10,8 @@ use CodeQuery\Sources\SqlSource;
 
 class SqlContext
 {
+    public SqlSelect $select;
 
-    /**
-     * @var SqlExpression[] $select
-     */
-    public array $select = [];
     /**
      * @var SqlExpression[] $where
      */
@@ -28,7 +26,7 @@ class SqlContext
     public array $orderBy = [];
 
     /**
- * @var SqlJoin[] $joins
+     * @var SqlJoin[] $joins
      */
     public array $joins = [];
 
@@ -43,6 +41,7 @@ class SqlContext
     {
         $this->from = $source;
         $this->root = $root;
+        $this->select = new SqlSelect([], null);
     }
 
 
@@ -65,9 +64,9 @@ class SqlContext
     {
         $sql = "SELECT\n";
 
-        $columns = empty($this->select)
+        $columns = empty($this->select->columns)
             ? ["*"]
-            : array_map(fn(SqlExpression $expr) => $expr->toSql(), $this->select);
+            : array_map(fn(SqlExpression $expr) => $expr->toSql(), $this->select->columns);
 
         $sql .= implode(",\n", $columns) . "\n";
 

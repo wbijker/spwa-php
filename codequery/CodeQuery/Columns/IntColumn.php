@@ -8,6 +8,13 @@ use CodeQuery\Expressions\SqlExpression;
 
 class IntColumn extends Column
 {
+    public int $value = 0;
+
+    function assign($value): void
+    {
+        $this->value = intval($value);
+    }
+
     private function toExp(int|IntColumn $value): SqlExpression
     {
         return is_int($value)

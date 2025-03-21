@@ -8,6 +8,13 @@ use CodeQuery\Expressions\SqlExpression;
 
 class StringColumn extends Column
 {
+    public string $value;
+
+    function assign($value): void
+    {
+        $this->value = strval($value);
+    }
+
     private function toExp(string|StringColumn $value): SqlExpression
     {
         return is_string($value)
