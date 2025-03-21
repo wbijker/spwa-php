@@ -6,18 +6,24 @@ use CodeQuery\Schema\TableBuilder;
 
 class TableSource extends SqlSource
 {
-    public function __construct(private TableBuilder $table, public string $alias)
+
+    public function __construct(
+        public string       $alias,
+        public string       $tableName,
+        public              $instance
+    )
     {
+
     }
 
     function toSql(): string
     {
-        return "`{$this->table->tableName} tableName` AS `$this->alias`";
+        return "`{$this->tableName}` {$this->alias}";
     }
 
     function getInstance()
     {
-        return $this->table->instance;
+        return $this->instance;
     }
 
 }

@@ -5,6 +5,7 @@ namespace CodeQuery\Schema;
 use CodeQuery\Columns\BoolColumn;
 use CodeQuery\Expressions\ColumnExpression;
 use CodeQuery\Schema\Traits\NullableTrait;
+use CodeQuery\Sources\TableSource;
 
 class BoolColumnDefinition extends BoolColumn implements ColumnDefinition
 {
@@ -12,7 +13,7 @@ class BoolColumnDefinition extends BoolColumn implements ColumnDefinition
 
     public function __construct(
         private string $column,
-        string         $table
+        TableSource    $table
     )
     {
         parent::__construct(new ColumnExpression($column, $table));

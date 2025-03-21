@@ -49,19 +49,16 @@ class Queryable
 
         // 3: Alias members per selection. Select p.id as c1, p.name as c2, p.price * 2 as c3
         $select = [];
-
         foreach ($vars as $key => $value) {
-            if ($value instanceof SqlExpression) {
-                $select[] = new AliasExpression($value, $key);
-            }
+            $select[] = new AliasExpression(toExpression($value), $key);
         }
 
         // 4: Execute SQL: [ ['c1' => 1, 'c2' => 'P1', 'c3' => 12.12], ['c1' => 2, 'c2' => 'P2', 'c3' => 43.4] ]
+
         // 5: Selector factory.
         /*  $reflection = new ReflectionClass(Product::class);
             $s = $reflection->newInstanceWithoutConstructor();
             $s->id = $row['c1']; $s->name = $row['c2']; $s->price = $row['c3'];*/
-
 
         $this->context->select = $select;
         return $this;

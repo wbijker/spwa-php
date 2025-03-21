@@ -8,6 +8,7 @@ use CodeQuery\Schema\Traits\ForeignKeyTrait;
 use CodeQuery\Schema\Traits\NullableTrait;
 use CodeQuery\Schema\Traits\PrimaryKeyTrait;
 use CodeQuery\Schema\Traits\UniqueTrait;
+use CodeQuery\Sources\TableSource;
 
 
 class IntColumnDefinition extends IntColumn implements ColumnDefinition
@@ -27,7 +28,7 @@ class IntColumnDefinition extends IntColumn implements ColumnDefinition
 
     public function __construct(
         private string $column,
-        string         $table
+        TableSource    $table,
     )
     {
         parent::__construct(new ColumnExpression($column, $table));

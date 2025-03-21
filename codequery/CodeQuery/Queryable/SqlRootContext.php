@@ -4,10 +4,16 @@ namespace CodeQuery\Queryable;
 
 class SqlRootContext
 {
-    private int $count = 0;
+    private array $prefixes = [];
 
-    function alias(): string
+    function alias(string $prefix): string
     {
-        return 'q' . $this->count++;
+        if (!isset($this->prefixes[$prefix])) {
+            $this->prefixes[$prefix] = 1;
+            return $prefix;
+        }
+
+        $this->prefixes[$prefix]++;
+        return $prefix . $this->prefixes[$prefix];
     }
 }
