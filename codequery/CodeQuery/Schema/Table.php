@@ -2,23 +2,39 @@
 
 namespace CodeQuery\Schema;
 
-use CodeQuery\Queryable\SqlRootContext;
 use CodeQuery\Sources\TableSource;
 
 abstract class Table
 {
-    abstract protected function build(TableBuilder $builder): void;
+    private TableSource $source;
 
-    abstract protected function tableName(): string;
-
-    public static function create(SqlRootContext $root): TableSource
+    public function __construct(protected string $tableName)
     {
-        $instance = new static();
-        $tableName = $instance->tableName();
-        $alias = $root->alias(strtolower($tableName[0]));
+        $this->source = new TableSource($this->tableName, $this);
+    }
 
-        $builder = new TableBuilder($instance, $tableName, $alias);
-        $instance->build($builder);
-        return $builder->source;
+    function getSource(): TableSource
+    {
+        return $this->source;
+    }
+
+    protected function int(string $column): IntColumnDefinition
+    {
+        return new IntColumnDefinition($column, $this);
+    }
+
+    protected function string(string $column): StringColumnDefinition
+    {
+        return new StringColumnDefinition($column, $this);
+    }
+
+    protected function bool(string $column): BoolColumnDefinition
+    {
+        return new BoolColumnDefinition($column, $this);
+    }
+
+    protected function float(string $column): FloatColumnDefinition
+    {
+        return new FloatColumnDefinition($column, $this);
     }
 }

@@ -13,7 +13,7 @@ class BoolColumnDefinition extends BoolColumn implements ColumnDefinition
 
     public function __construct(
         private string $column,
-        TableSource    $table
+        Table    $table
     )
     {
         parent::__construct(new ColumnExpression($column, $table));
