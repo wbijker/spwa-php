@@ -2,6 +2,7 @@
 
 namespace Spwa\Nodes;
 
+use Spwa\Js\Console;
 use Spwa\Js\JS;
 
 class StateManager
@@ -19,9 +20,15 @@ class StateManager
         if ($data == null)
             return;
 
-        $unserialize = @unserialize($data);
-        if (is_array($unserialize)) {
-            $this->state = $unserialize;
+        try {
+            $unserialize = unserialize($data);
+
+            if (is_array($unserialize)) {
+                $this->state = $unserialize;
+            }
+        } catch (\Throwable $e) {
+            // deserialization failed
+            Console::error($e->getMessage());
         }
     }
 
