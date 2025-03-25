@@ -3,9 +3,7 @@
 namespace App\Components;
 
 use App\Db\Product;
-use CodeQuery\Columns\FloatColumn;
-use CodeQuery\Columns\StringColumn;
-use CodeQuery\Query;
+use CodeQuery\Queryable\Query;
 use Spwa\Html\Div;
 use Spwa\Html\ExternalScript;
 use Spwa\Html\Img;

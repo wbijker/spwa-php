@@ -1,14 +1,11 @@
 <?php
 
-namespace CodeQuery;
+namespace CodeQuery\Queryable;
 
 use CodeQuery\Columns\BoolColumn;
 use CodeQuery\Columns\Column;
 use CodeQuery\Expressions\AliasExpression;
 use CodeQuery\Expressions\SqlExpression;
-use CodeQuery\Queryable\SqlContext;
-use CodeQuery\Queryable\SqlRootContext;
-use CodeQuery\Queryable\SqlSelect;
 use CodeQuery\Schema\Table;
 use CodeQuery\Sources\SqlSource;
 use Exception;
@@ -89,7 +86,7 @@ class Query
             $ret[] = $obj;
         }
         print_r($ret);
-        
+
         return $ret;
     }
 
