@@ -8,13 +8,6 @@ use CodeQuery\Expressions\SqlExpression;
 
 class StringColumn extends Column
 {
-    public string $value;
-
-    function assign($value): void
-    {
-        $this->value = strval($value);
-    }
-
     private function toExp(string|StringColumn $value): SqlExpression
     {
         return is_string($value)
@@ -30,6 +23,11 @@ class StringColumn extends Column
     function notEquals(string|StringColumn $value): StringColumn
     {
         return new StringColumn(new BinaryExpression($this->exp, BinaryExpression::NOT_EQUAL, $this->toExp($value)));
+    }
+
+    function convertFrom(mixed $val): string
+    {
+        return (string)$val;
     }
 }
 

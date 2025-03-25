@@ -17,30 +17,40 @@ use Spwa\Html\Tr;
 use Spwa\Nodes\HtmlText;
 use Spwa\Nodes\Node;
 use Spwa\Nodes\Page;
+use Spwa\Nodes\State;
 use Spwa\Route\Route;
 use Spwa\Route\Router;
 
 class WelcomePage extends Page
 {
-//    #[State]
+    #[State]
+    /** @var Selection[] $items */
     private array $items = [];
 
-
-    function initialized(): void
+    /**
+     * @return Selection[]
+     */
+    function sir(): array
     {
         $p = new Product();
 
-        /** @var list<object{name: string, price: float}> $query */
-        $query = Query::from($p)
+        return Query::from($p)
             ->where($p->category_id->equals(3))
             ->orderBy($p->price)
             ->orderBy($p->category_id)
-            ->select((object)[
-                "name" => $p->name,
-                "price" => $p->price->multiply(2.4)
+            ->select([
+                'id' => $p->id,
+                'name' => $p->name,
+                'price' => $p->price->multiply(2)
             ])
-            ->fetchArray();
+            ->fetch(Selection::class);
     }
+
+    function initialized(): void
+    {
+        $this->items = $this->sir();
+    }
+
 
     function renderBody(): Node
     {
@@ -62,9 +72,9 @@ class WelcomePage extends Page
                         ]
                         ),
                         ...array_map(fn(Selection $item) => new Tr(children: [
-                            new Td(children: [new HtmlText($item->id->value)]),
-                            new Td(children: [new HtmlText($item->name->value)]),
-                            new Td(children: [new HtmlText($item->price2->value)])
+                            new Td(children: [new HtmlText($item->id)]),
+                            new Td(children: [new HtmlText($item->name)]),
+                            new Td(children: [new HtmlText($item->price)])
                         ]), $this->items),
                     ]),
                 ]),

@@ -9,11 +9,6 @@ use CodeQuery\Expressions\UnaryExpression;
 
 class BoolColumn extends Column
 {
-    public bool $value;
-    function assign($value): void
-    {
-        $this->value = boolval($value);
-    }
 
     private function toExp(bool|BoolColumn $value): SqlExpression
     {
@@ -40,6 +35,11 @@ class BoolColumn extends Column
     function or(bool|BoolColumn $value): BoolColumn
     {
         return new BoolColumn(new BinaryExpression($this->exp, BinaryExpression::OR, $this->toExp($value)));
+    }
+
+    function convertFrom(mixed $val): bool
+    {
+        return boolval($val);
     }
 }
 

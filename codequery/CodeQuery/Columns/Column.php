@@ -2,7 +2,6 @@
 
 namespace CodeQuery\Columns;
 
-use CodeQuery\Expressions\ConstExpression;
 use CodeQuery\Expressions\SqlExpression;
 
 abstract class Column
@@ -11,6 +10,5 @@ abstract class Column
     {
     }
 
-    function assign($value) {
-    }
+    public abstract function convertFrom(mixed $val);
 }

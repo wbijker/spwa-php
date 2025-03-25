@@ -11,7 +11,6 @@ use CodeQuery\Queryable\SqlRootContext;
 use CodeQuery\Queryable\SqlSelect;
 use CodeQuery\Schema\Table;
 use CodeQuery\Sources\SqlSource;
-use CodeQuery\Sources\TableSource;
 use Exception;
 
 function toExpression($value): SqlExpression
@@ -54,12 +53,13 @@ class Query
         return $this;
     }
 
-    function select(mixed $selection): self
+    function select(array|object $selection): self
     {
-        // 1: Trace all members. Inspect members of Selection: ($p->id, $p->name, $p->price->multiply(2))
-        $vars = get_object_vars($selection);
+        $vars = is_array($selection)
+            ? $selection
+            : get_object_vars($selection);
 
-        // 2: Alias members per selection. Select p.id as c1, p.name as c2, p.price * 2 as c3
+        // alias members per selection. Select p.id as c1, p.name as c2, p.price * 2 as c3
         $select = [];
         foreach ($vars as $key => $value) {
             $select[$key] = new AliasExpression(toExpression($value), $key);
@@ -69,10 +69,28 @@ class Query
         return $this;
     }
 
-    function fetchArray(): array
+    /** @param class-string $class */
+    function fetch(string $class): array
     {
-        echo $this->toSql();
-        return [];
+        echo "SQL to execute" . $this->toSql();
+
+        $result = [
+            ['id' => 1, 'name' => 'Product#1', 'price' => 12.12],
+            ['id' => 2, 'name' => 'Product#2', 'price' => 43.4],
+            ['id' => 3, 'name' => 'Product#3', 'price' => 54.2],
+            ['id' => 4, 'name' => 'Product#4', 'price' => 892.3],
+        ];
+
+        $ret = [];
+        foreach ($result as $row) {
+            /** @var object $obj */
+            $obj = new $class();
+            $this->context->select->populateRow($row, $obj);
+            $ret[] = $obj;
+        }
+        print_r($ret);
+        
+        return $ret;
     }
 
     function toSql(): string

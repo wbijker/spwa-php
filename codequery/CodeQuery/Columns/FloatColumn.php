@@ -8,13 +8,6 @@ use CodeQuery\Expressions\SqlExpression;
 
 class FloatColumn extends Column
 {
-    public float $value;
-
-    function assign($value): void
-    {
-        $this->value = floatval($value);
-    }
-
     private function toExp(float|FloatColumn $value): SqlExpression
     {
         return is_double($value)
@@ -70,6 +63,11 @@ class FloatColumn extends Column
     function subtract(float|FloatColumn $value): FloatColumn
     {
         return new FloatColumn(new BinaryExpression($this->exp, BinaryExpression::SUBTRACT, $this->toExp($value)));
+    }
+
+    function convertFrom(mixed $val): float
+    {
+        return floatval($val);
     }
 }
 

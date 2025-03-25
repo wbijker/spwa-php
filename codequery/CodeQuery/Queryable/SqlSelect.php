@@ -23,16 +23,16 @@ class SqlSelect
         $this->instance = $instance;
     }
 
-    public function populateRow(array $row)
+    public function populateRow(array $row, $obj): void
     {
-        $ret = clone $this->instance;
         foreach ($this->columns as $name => $value) {
-            $prop = &$ret->{$name};
+            $prop = is_array($this->instance)
+                ? $this->instance[$name]
+                : $this->instance->$name;
+
             if ($prop instanceof Column) {
-                $prop = clone $prop;
-                $prop->assign($row[$name]);
+                $obj->$name = $prop->convertFrom($row[$name]);
             }
         }
-        return $ret;
     }
 }
