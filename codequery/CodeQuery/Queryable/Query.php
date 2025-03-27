@@ -44,6 +44,12 @@ class Query
         return $this;
     }
 
+    function groupBy(Column $column): self
+    {
+        $this->context->groupBy[] = $column->exp;
+        return $this;
+    }
+
     function orderBy(Column $column): self
     {
         $this->context->orderBy[] = $column->exp;

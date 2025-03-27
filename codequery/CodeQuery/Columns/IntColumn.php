@@ -4,6 +4,7 @@ namespace CodeQuery\Columns;
 
 use CodeQuery\Expressions\BinaryExpression;
 use CodeQuery\Expressions\ConstExpression;
+use CodeQuery\Expressions\FunctionExpression;
 use CodeQuery\Expressions\SqlExpression;
 
 class IntColumn extends Column
@@ -88,6 +89,16 @@ class IntColumn extends Column
     function convertFrom(mixed $val): int
     {
         return intval($val);
+    }
+
+    function count(): IntColumn
+    {
+        return new IntColumn(new FunctionExpression("count", [$this->exp]));
+    }
+
+    function sum(): IntColumn
+    {
+        return new IntColumn(new FunctionExpression("sum", [$this->exp]));
     }
 }
 
