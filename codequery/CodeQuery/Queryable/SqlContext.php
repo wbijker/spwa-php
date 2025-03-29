@@ -44,6 +44,10 @@ class SqlContext
         $this->select = new SqlSelect([], null);
     }
 
+    function subContext(SqlSource $source): SqlContext
+    {
+        return new SqlContext($source, $this->root);
+    }
 
     private function reduceWhere(array $where): SqlExpression
     {

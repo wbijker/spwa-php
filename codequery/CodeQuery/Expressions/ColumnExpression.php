@@ -2,16 +2,16 @@
 
 namespace CodeQuery\Expressions;
 
-use CodeQuery\Schema\Table;
+use CodeQuery\Sources\SqlSource;
 
 class ColumnExpression implements SqlExpression
 {
-    public function __construct(private string $column, private Table $table)
+    public function __construct(private string $column, private SqlSource $source)
     {
     }
 
     function toSql(): string
     {
-        return "{$this->table->getSource()->alias}.{$this->column}";
+        return "{$this->source->alias}.{$this->column}";
     }
 }

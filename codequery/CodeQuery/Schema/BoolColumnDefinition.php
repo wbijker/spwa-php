@@ -16,7 +16,7 @@ class BoolColumnDefinition extends BoolColumn implements ColumnDefinition
         Table    $table
     )
     {
-        parent::__construct(new ColumnExpression($column, $table));
+        parent::__construct(new ColumnExpression($column, $table->getSource()));
     }
 
 

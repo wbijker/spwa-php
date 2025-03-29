@@ -5,8 +5,10 @@ namespace CodeQuery\Queryable;
 use CodeQuery\Columns\BoolColumn;
 use CodeQuery\Columns\Column;
 use CodeQuery\Expressions\AliasExpression;
+use CodeQuery\Expressions\ColumnExpression;
 use CodeQuery\Expressions\SqlExpression;
 use CodeQuery\Schema\Table;
+use CodeQuery\Sources\QuerySource;
 use CodeQuery\Sources\SqlSource;
 use Exception;
 
@@ -68,7 +70,22 @@ class Query
             $select[$key] = new AliasExpression(toExpression($value), $key);
         }
 
+        // create sub subQuery
+        if ($this->context->select->instance != null) {
+
+            $query = new QuerySource($this->context);
+            $flat = $this->context->select->instance;
+            foreach ($flat as $key => $value) {
+                $flat->$key = new AliasExpression(new ColumnExpression($key, $query), $key);
+            }
+
+            $query->setAlias($this->context->root);
+            $this->context = $this->context->subContext($query);
+        }
+
         $this->context->select = new SqlSelect($select, $selection);
+
+
         return $this;
     }
 
@@ -76,6 +93,7 @@ class Query
     function fetch(string $class): array
     {
         echo "SQL to execute" . $this->toSql();
+        return [];
 
         $result = [
             ['id' => 1, 'name' => 'Product#1', 'price' => 12.12],

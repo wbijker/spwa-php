@@ -31,7 +31,7 @@ class IntColumnDefinition extends IntColumn implements ColumnDefinition
         Table    $table,
     )
     {
-        parent::__construct(new ColumnExpression($column, $table));
+        parent::__construct(new ColumnExpression($column, $table->getSource()));
     }
 
     // add FK

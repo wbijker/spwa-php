@@ -16,6 +16,8 @@ class Product extends Table
 
     public function __construct()
     {
+        parent::__construct("product");
+        
         $this->id = $this->int("id")
             ->primaryKey()
             ->autoIncrement();
@@ -28,6 +30,5 @@ class Product extends Table
 
         $this->price = $this->float("price");
 
-        parent::__construct("product");
     }
 }

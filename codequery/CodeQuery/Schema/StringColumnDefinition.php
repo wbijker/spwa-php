@@ -21,7 +21,7 @@ class StringColumnDefinition extends StringColumn implements ColumnDefinition
         Table $table
     )
     {
-        parent::__construct(new ColumnExpression($column, $table));
+        parent::__construct(new ColumnExpression($column, $table->getSource()));
     }
 
     function buildSchema(): string

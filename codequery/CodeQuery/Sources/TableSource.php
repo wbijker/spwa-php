@@ -3,11 +3,9 @@
 namespace CodeQuery\Sources;
 
 use CodeQuery\Queryable\SqlRootContext;
-use CodeQuery\Schema\TableBuilder;
 
 class TableSource extends SqlSource
 {
-    public string $alias;
 
     public function __construct(
         public string $tableName,
@@ -15,7 +13,6 @@ class TableSource extends SqlSource
     )
     {
     }
-
 
     function setAlias(SqlRootContext $root): void
     {
@@ -25,11 +22,6 @@ class TableSource extends SqlSource
     function toSql(): string
     {
         return "`{$this->tableName}` {$this->alias}";
-    }
-
-    function getInstance()
-    {
-        return $this->instance;
     }
 
 }
