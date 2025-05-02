@@ -17,4 +17,12 @@ class UnaryExpression implements SqlExpression
     {
         return "{$this->operator} {$this->exp->toSql()}";
     }
+
+    function replace(SqlExpression $seek, SqlExpression $replace): SqlExpression
+    {
+        if ($this === $seek) {
+            return $replace;
+        }
+        return $this->exp->replace($seek, $replace);
+    }
 }

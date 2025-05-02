@@ -12,4 +12,12 @@ class AliasExpression implements SqlExpression
     {
         return $this->expr->toSql() . " AS " . $this->alias;
     }
+
+    function replace(SqlExpression $seek, SqlExpression $replace): SqlExpression
+    {
+        if ($this === $seek)
+            return $replace;
+
+        return $this->expr->replace($seek, $replace);
+    }
 }

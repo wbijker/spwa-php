@@ -3,7 +3,7 @@
 namespace CodeQuery\Queryable;
 
 use CodeQuery\Columns\IntColumn;
-use CodeQuery\Expressions\StartExpression;
+use CodeQuery\Expressions\StarExpression;
 
 class WindowFunctions
 {
@@ -14,6 +14,6 @@ class WindowFunctions
     */
     static function rowNumber($partitionBy, $orderBy): IntColumn
     {
-        return new IntColumn(new StartExpression());
+        return new IntColumn(new StarExpression());
     }
 }

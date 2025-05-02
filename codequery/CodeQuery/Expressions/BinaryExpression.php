@@ -37,4 +37,13 @@ class BinaryExpression implements SqlExpression
     {
         return "{$this->left->toSql()} {$this->operator} {$this->right->toSql()}";
     }
+
+    function replace(SqlExpression $seek, SqlExpression $replace): SqlExpression
+    {
+        return new BinaryExpression(
+            $this->left->replace($seek, $replace),
+            $this->operator,
+            $this->right->replace($seek, $replace)
+        );
+    }
 }

@@ -2,14 +2,14 @@
 
 namespace CodeQuery\Columns;
 
-use CodeQuery\Expressions\StartExpression;
+use CodeQuery\Expressions\StarExpression;
 
 class DateTimeColumn extends Column
 {
 
     static function now(): DateTimeColumn
     {
-        return new DateTimeColumn(new StartExpression());
+        return new DateTimeColumn(new StarExpression());
     }
 
     public function convertFrom(mixed $val)

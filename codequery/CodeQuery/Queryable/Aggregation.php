@@ -3,7 +3,7 @@
 namespace CodeQuery\Queryable;
 
 use CodeQuery\Columns\IntColumn;
-use CodeQuery\Expressions\StartExpression;
+use CodeQuery\Expressions\StarExpression;
 
 
 class Aggregation
@@ -11,7 +11,7 @@ class Aggregation
 
     static function star(): IntColumn
     {
-        return new IntColumn(new StartExpression());
+        return new IntColumn(new StarExpression());
     }
 
 }
