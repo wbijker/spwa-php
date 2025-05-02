@@ -40,6 +40,9 @@ class BinaryExpression implements SqlExpression
 
     function replace(SqlExpression $seek, SqlExpression $replace): SqlExpression
     {
+        if ($this === $seek) {
+            return $replace;
+        }
         return new BinaryExpression(
             $this->left->replace($seek, $replace),
             $this->operator,
