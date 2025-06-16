@@ -3,9 +3,12 @@
 namespace App\Components;
 
 use App\Db\Product;
+use CodeQuery\Columns\FloatColumn;
+use CodeQuery\Columns\IntColumn;
+use CodeQuery\Expressions\ConstExpression;
+use CodeQuery\Queryable\Aggregation;
 use CodeQuery\Queryable\Query;
 use Spwa\Html\Div;
-use Spwa\Html\ExternalScript;
 use Spwa\Html\Img;
 use Spwa\Html\Meta;
 use Spwa\Html\Table;
@@ -15,15 +18,31 @@ use Spwa\Html\Tr;
 use Spwa\Nodes\HtmlText;
 use Spwa\Nodes\Node;
 use Spwa\Nodes\Page;
-use Spwa\Nodes\State;
 use Spwa\Route\Route;
 use Spwa\Route\Router;
 
+
 class WelcomePage extends Page
 {
-    #[State]
+//    #[State]
     /** @var Selection[] $items */
     private array $items = [];
+
+    /**
+     * @template T
+     * @param class-string<T> $class
+     * @return T[]
+     */
+    function fetch(string $class): array
+    {
+        return [];
+    }
+
+    function test(array &$arr): array
+    {
+        $arr['test'] = new ConstExpression(44);
+        return $arr;
+    }
 
     /**
      * @return Selection[]
@@ -32,16 +51,21 @@ class WelcomePage extends Page
     {
         $p = new Product();
 
-        return Query::from($p)
-            ->where($p->category_id->equals(3))
-            ->orderBy($p->price)
-            ->orderBy($p->category_id)
-            ->select([
-                'id' => $p->id,
-                'name' => $p->name,
-                'price' => $p->price->multiply(2)
-            ])
+        /* @var object{category_id: IntColumn, count: IntColumn, sum: FloatColumn, int: IntColumn} $sub */
+        $sub = (object)[
+            'category_id' => $p->category_id,
+            'count' => $p->category_id->count(),
+            'sum' => $p->price->sum(),
+            'countAll' => Aggregation::star()->count(),
+        ];
+
+        $q = Query::from($p)
+            ->where($p->category_id->greaterThan(3))
+            ->groupBy($p->category_id)
+            ->select($sub)
             ->fetch(Selection::class);
+
+        return [];
     }
 
     function initialized(): void
@@ -90,7 +114,7 @@ class WelcomePage extends Page
             new Title("Some document"),
             new Meta(charset: "UTF-8"),
             new Meta(name: "viewport", content: "width=device-width, initial-scale=1.0"),
-            new ExternalScript(src: "https://cdn.tailwindcss.com"),
+//            new ExternalScript(src: "https://cdn.tailwindcss.com"),
         ];
     }
 

@@ -26,9 +26,9 @@ class BinaryExpression implements SqlExpression
 
 
     public function __construct(
-        private SqlExpression $left,
-        private string        $operator,
-        private SqlExpression $right
+        public SqlExpression $left,
+        public string        $operator,
+        public SqlExpression $right
     )
     {
     }

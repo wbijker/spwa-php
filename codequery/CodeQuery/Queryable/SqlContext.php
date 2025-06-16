@@ -33,6 +33,11 @@ class SqlContext
     public SqlSource $from;
     public SqlRootContext $root;
 
+    function isEmptySelect(): bool
+    {
+        return empty($this->select->columns);
+    }
+
     /**
      * @param SqlSource $source
      * @param SqlRootContext $root

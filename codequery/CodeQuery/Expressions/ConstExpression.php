@@ -5,7 +5,7 @@ namespace CodeQuery\Expressions;
 
 class ConstExpression implements SqlExpression
 {
-    public function __construct(private mixed $value)
+    public function __construct(public mixed $value)
     {
     }
 
