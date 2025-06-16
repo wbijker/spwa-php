@@ -9,6 +9,12 @@ use CodeQuery\Expressions\SqlExpression;
 
 class FloatColumn extends Column
 {
+
+    public function createAlias(SqlExpression $exp): static
+    {
+        return new FloatColumn($exp);
+    }
+
     private function toExp(float|FloatColumn $value): SqlExpression
     {
         return is_double($value)

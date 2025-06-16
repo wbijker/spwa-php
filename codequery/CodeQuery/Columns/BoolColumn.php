@@ -2,6 +2,7 @@
 
 namespace CodeQuery\Columns;
 
+use CodeQuery\Expressions\AliasExpression;
 use CodeQuery\Expressions\BinaryExpression;
 use CodeQuery\Expressions\ConstExpression;
 use CodeQuery\Expressions\SqlExpression;
@@ -9,6 +10,10 @@ use CodeQuery\Expressions\UnaryExpression;
 
 class BoolColumn extends Column
 {
+    public function createAlias(SqlExpression $exp): static
+    {
+        return new BoolColumn($exp);
+    }
 
     private function toExp(bool|BoolColumn $value): SqlExpression
     {

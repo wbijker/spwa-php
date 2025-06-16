@@ -10,7 +10,9 @@ use CodeQuery\Sources\SqlSource;
 
 class SqlContext
 {
-    public SqlSelect $select;
+    public ?SqlSelect $select = null;
+
+    public ?SqlContext $next = null;
 
     /**
      * @var SqlExpression[] $where
@@ -46,7 +48,7 @@ class SqlContext
     {
         $this->from = $source;
         $this->root = $root;
-        $this->select = new SqlSelect([], null);
+
     }
 
     function subContext(SqlSource $source): SqlContext

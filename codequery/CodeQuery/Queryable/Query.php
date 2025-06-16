@@ -4,6 +4,7 @@ namespace CodeQuery\Queryable;
 
 use CodeQuery\Columns\BoolColumn;
 use CodeQuery\Columns\Column;
+use CodeQuery\Columns\IntColumn;
 use CodeQuery\Expressions\AliasExpression;
 use CodeQuery\Expressions\BinaryExpression;
 use CodeQuery\Expressions\ColumnExpression;
@@ -59,15 +60,28 @@ class Query
 
     function select(object $selection): self
     {
+        $nextSource = new QuerySource($this->context);
+        $next = [];
         $select = [];
         // alias members per selection. Select p.id as c1, p.name as c2, p.price * 2 as c3
         foreach ($selection as $key => $value) {
             $exp = toExpression($value);
             $select[] = new AliasExpression($exp, $key);
+            $n = new ColumnExpression($key, $nextSource);
+            $selection->$key = $value->createAlias($n);
+            $next[] = $n;
         }
 
-        $this->context->select = new SqlSelect($select, null);
-        $sql = $this->toSql();
+        if ($this->context->select == null) {
+            $this->context->select = new SqlSelect($select, null);
+            $sql = $this->toSql();
+        } else {
+
+        }
+
+        $this->context->next = new SqlContext($nextSource, $this->context->root);
+        $this->context->next->select = new SqlSelect($next, null);
+
         return $this;
     }
 

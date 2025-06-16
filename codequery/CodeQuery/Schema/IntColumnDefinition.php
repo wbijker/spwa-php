@@ -4,6 +4,7 @@ namespace CodeQuery\Schema;
 
 use CodeQuery\Columns\IntColumn;
 use CodeQuery\Expressions\ColumnExpression;
+use CodeQuery\Expressions\SqlExpression;
 use CodeQuery\Schema\Traits\ForeignKeyTrait;
 use CodeQuery\Schema\Traits\NullableTrait;
 use CodeQuery\Schema\Traits\PrimaryKeyTrait;
@@ -28,10 +29,15 @@ class IntColumnDefinition extends IntColumn implements ColumnDefinition
 
     public function __construct(
         private string $column,
-        Table    $table,
+        private Table    $table,
     )
     {
         parent::__construct(new ColumnExpression($column, $table->getSource()));
+    }
+
+    public function createAlias(SqlExpression $exp): static
+    {
+        return new IntColumnDefinition($this->column, $this->table);
     }
 
     // add FK

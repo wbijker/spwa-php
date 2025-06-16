@@ -63,6 +63,10 @@ class WelcomePage extends Page
             ->where($p->category_id->greaterThan(3))
             ->groupBy($p->category_id)
             ->select($sub)
+            ->select((object)[
+                'sub1' => $sub->sum->multiply(2),
+                'sub2' => $sub->count->multiply(2)
+            ])
             ->fetch(Selection::class);
 
         return [];

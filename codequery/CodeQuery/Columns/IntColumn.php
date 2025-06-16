@@ -9,6 +9,12 @@ use CodeQuery\Expressions\SqlExpression;
 
 class IntColumn extends Column
 {
+
+    public function createAlias(SqlExpression $exp): static
+    {
+        return new IntColumn($exp);
+    }
+
     private function toExp(int|IntColumn $value): SqlExpression
     {
         return is_int($value)
