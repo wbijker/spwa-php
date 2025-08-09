@@ -5,6 +5,7 @@ namespace CodeQuery\Schema;
 use CodeQuery\Columns\FloatColumn;
 use CodeQuery\Expressions\ColumnExpression;
 use CodeQuery\Schema\Traits\NullableTrait;
+use CodeQuery\Sources\TableSource;
 
 class FloatColumnDefinition extends FloatColumn implements ColumnDefinition
 {
@@ -12,10 +13,10 @@ class FloatColumnDefinition extends FloatColumn implements ColumnDefinition
 
     public function __construct(
         string      $column,
-        Table $table
+        TableSource $source
     )
     {
-        parent::__construct(new ColumnExpression($column, $table->getSource()));
+        parent::__construct(new ColumnExpression($column, $source));
     }
 
 

@@ -8,6 +8,7 @@ use CodeQuery\Schema\Traits\ForeignKeyTrait;
 use CodeQuery\Schema\Traits\NullableTrait;
 use CodeQuery\Schema\Traits\PrimaryKeyTrait;
 use CodeQuery\Schema\Traits\UniqueTrait;
+use CodeQuery\Sources\TableSource;
 
 class StringColumnDefinition extends StringColumn implements ColumnDefinition
 {
@@ -18,10 +19,10 @@ class StringColumnDefinition extends StringColumn implements ColumnDefinition
 
     public function __construct(
         string      $column,
-        Table $table
+        TableSource $source
     )
     {
-        parent::__construct(new ColumnExpression($column, $table->getSource()));
+        parent::__construct(new ColumnExpression($column, $source));
     }
 
     function buildSchema(): string

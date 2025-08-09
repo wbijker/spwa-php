@@ -29,15 +29,15 @@ class IntColumnDefinition extends IntColumn implements ColumnDefinition
 
     public function __construct(
         private string $column,
-        private Table    $table,
+        private TableSource    $source,
     )
     {
-        parent::__construct(new ColumnExpression($column, $table->getSource()));
+        parent::__construct(new ColumnExpression($column, $this->source));
     }
 
     public function createAlias(SqlExpression $exp): static
     {
-        return new IntColumnDefinition($this->column, $this->table);
+        return new IntColumnDefinition($this->column, $this->source);
     }
 
     // add FK
