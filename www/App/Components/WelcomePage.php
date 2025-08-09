@@ -49,25 +49,45 @@ class WelcomePage extends Page
      */
     function sir(): array
     {
-        $p = new Product();
+        
+        echo "Sir has been executed\n";
 
-        /* @var object{category_id: IntColumn, count: IntColumn, sum: FloatColumn, int: IntColumn} $sub */
-        $sub = (object)[
-            'category_id' => $p->category_id,
-            'count' => $p->category_id->count(),
-            'sum' => $p->price->sum(),
-            'countAll' => Aggregation::star()->count(),
-        ];
+//        $p = new Product();
 
-        $q = Query::from($p)
-            ->where($p->category_id->greaterThan(3))
-            ->groupBy($p->category_id)
-            ->select($sub)
-            ->select((object)[
-                'sub1' => $sub->sum->multiply(2),
-                'sub2' => $sub->count->multiply(2)
-            ])
-            ->fetch(Selection::class);
+//        Query::from(Product::class)
+//            // sources [type, instance]
+//            ->where(fn(Product $p) => $p->category()->id->equals(33));
+//            // function introspec, match source type, pass instance to function
+            // return of function inspect
+
+//            ->select(fn(Product $p) => (object)[
+//                'id' => $p->id,
+//                'name' => $p->name,
+//                'price' => $p->price,
+//                'categoryId' => $p->category()->id,
+//                'categoryName' => $p->category()->name
+//            ]);
+
+//        $p = new Product();
+//
+//        /* @var object{category_id: IntColumn, count: IntColumn, sum: FloatColumn, int: IntColumn} $sub */
+//        $sub = (object)[
+//            'category_id' => $p->category_id,
+//            'count' => $p->category_id->count(),
+//            'sum' => $p->price->sum(),
+//            'countAll' => Aggregation::star()->count(),
+//        ];
+//
+//
+//        $q = Query::from($p)
+//            ->where($p->category_id->greaterThan(3))
+//            ->groupBy($p->category_id)
+//            ->select($sub)
+//            ->select((object)[
+//                'sub1' => $sub->sum->multiply(2),
+//                'sub2' => $sub->count->multiply(2)
+//            ])
+//            ->fetch(Selection::class);
 
         return [];
     }

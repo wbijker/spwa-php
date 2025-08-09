@@ -2,38 +2,43 @@
 
 namespace CodeQuery\Schema;
 
-
 use CodeQuery\Sources\TableSource;
 
 class TableBuilder
 {
-
-    public TableSource $source;
-
-    public function __construct(Table $instance, string $tableName, string $alias)
+    public function __construct(protected Table $table)
     {
-        $this->source = new TableSource($alias, $tableName, $instance);
+    }
+
+    function getSource(): TableSource
+    {
+        return new TableSource($this->tableName, $this->table);
+    }
+
+    private ?string $tableName = null;
+
+    function tableName(string $name): void
+    {
+        $this->tableName = $name;
     }
 
     function int(string $column): IntColumnDefinition
     {
-        return new IntColumnDefinition($column, $this->source);
+        return new IntColumnDefinition($column, $this->table);
     }
 
     function string(string $column): StringColumnDefinition
     {
-        return new StringColumnDefinition($column, $this->source);
+        return new StringColumnDefinition($column, $this->table);
     }
 
     function bool(string $column): BoolColumnDefinition
     {
-        return new BoolColumnDefinition($column, $this->source);
+        return new BoolColumnDefinition($column, $this->table);
     }
 
     function float(string $column): FloatColumnDefinition
     {
-        return new FloatColumnDefinition($column, $this->source);
+        return new FloatColumnDefinition($column, $this->table);
     }
-
 }
-
