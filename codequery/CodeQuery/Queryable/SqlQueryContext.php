@@ -8,11 +8,11 @@ use CodeQuery\Expressions\ConstExpression;
 use CodeQuery\Expressions\SqlExpression;
 use CodeQuery\Sources\SqlSource;
 
-class SqlContext
+class SqlQueryContext
 {
     public ?SqlSelect $select = null;
 
-    public ?SqlContext $next = null;
+    public ?SqlQueryContext $next = null;
 
     /**
      * @var SqlExpression[] $where
@@ -51,9 +51,9 @@ class SqlContext
 
     }
 
-    function subContext(SqlSource $source): SqlContext
+    function subContext(SqlSource $source): SqlQueryContext
     {
-        return new SqlContext($source, $this->root);
+        return new SqlQueryContext($source, $this->root);
     }
 
     private function reduceWhere(array $where): SqlExpression

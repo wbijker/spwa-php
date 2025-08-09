@@ -2,12 +2,12 @@
 
 namespace CodeQuery\Sources;
 
-use CodeQuery\Queryable\SqlContext;
+use CodeQuery\Queryable\SqlQueryContext;
 use CodeQuery\Queryable\SqlRootContext;
 
 class QuerySource extends SqlSource
 {
-    public function __construct(private SqlContext $context)
+    public function __construct(private SqlQueryContext $context)
     {
     }
 

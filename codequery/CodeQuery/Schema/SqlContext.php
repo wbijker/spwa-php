@@ -7,7 +7,7 @@ class SqlContext
 {
     private array $cache = [];
 
-    public function tableInstance(string $tableClass): Table
+    public function build(string $tableClass): TableBuilder
     {
         $hit = $this->cache[$tableClass] ?? null;
         if ($hit) {
@@ -18,10 +18,12 @@ class SqlContext
         if (!$table instanceof Table) {
             throw new \InvalidArgumentException("Class $tableClass must be an instance of " . Table::class);
         }
+        $builder = new TableBuilder($table);
         // invoke the builder to build the table structure
-        $table->buildTable(new TableBuilder($table));
-        $this->cache[$tableClass] = $table;
-        return $table;
+        $table->buildTable($builder);
+        $this->cache[$tableClass] = $builder;
+
+        return $builder;
     }
 
 }

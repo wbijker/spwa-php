@@ -9,6 +9,7 @@ use CodeQuery\Expressions\AliasExpression;
 use CodeQuery\Expressions\BinaryExpression;
 use CodeQuery\Expressions\ColumnExpression;
 use CodeQuery\Expressions\SqlExpression;
+use CodeQuery\Schema\SqlContext;
 use CodeQuery\Schema\Table;
 use CodeQuery\Sources\QuerySource;
 use CodeQuery\Sources\SqlSource;
@@ -25,19 +26,21 @@ function toExpression(SqlExpression|Column $value): SqlExpression
 
 class Query
 {
-    private SqlContext $context;
+    private SqlQueryContext $context;
 
     public function __construct(SqlSource $source, SqlRootContext $root)
     {
-        $this->context = new SqlContext($source, $root);
+        $this->context = new SqlQueryContext($source, $root);
     }
 
-    static function from(Table $table): self
+    static function from(string $className): self
     {
+        $ctx = new SqlContext();
+        $build = $ctx->build($className);
         $root = new SqlRootContext();
-        $source = $table->getSource();
-        $source->setAlias($root);
-        return new Query($source, $root);
+
+        $build->source->setAlias($root);
+        return new Query($build->source, $root);
     }
 
     function where(BoolColumn $predicate): self
@@ -79,7 +82,7 @@ class Query
 
         }
 
-        $this->context->next = new SqlContext($nextSource, $this->context->root);
+        $this->context->next = new SqlQueryContext($nextSource, $this->context->root);
         $this->context->next->select = new SqlSelect($next, null);
 
         return $this;

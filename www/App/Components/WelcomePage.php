@@ -49,9 +49,6 @@ class WelcomePage extends Page
      */
     function sir(): array
     {
-        
-        echo "Sir has been executed\n";
-
 //        $p = new Product();
 
 //        Query::from(Product::class)

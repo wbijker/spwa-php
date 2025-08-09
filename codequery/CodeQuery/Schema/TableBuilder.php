@@ -6,9 +6,9 @@ use CodeQuery\Sources\TableSource;
 
 class TableBuilder
 {
-    private TableSource $source;
+    public TableSource $source;
 
-    public function __construct(protected Table $table)
+    public function __construct(public Table $table)
     {
         $this->source = new TableSource(get_class($table), $this->table);
     }
