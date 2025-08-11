@@ -20,6 +20,9 @@ abstract class Table
      */
     protected function innerJoin(callable $condition)
     {
+
+        // innerJoin(fn(DependantTable $d) => $this->fk->equals($d->id));
+
         // inspect argument passed to $condition
         $reflection = new \ReflectionFunction($condition);
         $params = $reflection->getParameters();
@@ -37,7 +40,8 @@ abstract class Table
         if (!is_subclass_of($className, self::class)) {
             throw new \InvalidArgumentException("Class $className must be a Table.");
         }
-        $instance = new $className();
+
+        $instance = $this->context->build($className);
 
         // then call the condition with an instance of that class
         $result = $condition($instance);
@@ -45,6 +49,8 @@ abstract class Table
         if (!is_subclass_of($result, SqlExpression::class)) {
             throw new \InvalidArgumentException("Condition must return an instance of SqlExpression.");
         }
+
+        // source is $instance->source, join is inner and condition is $result
 
         echo $result->toSql();
 
