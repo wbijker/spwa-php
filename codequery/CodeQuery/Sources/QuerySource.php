@@ -2,18 +2,13 @@
 
 namespace CodeQuery\Sources;
 
-use CodeQuery\Queryable\SqlQueryContext;
-use CodeQuery\Queryable\SqlRootContext;
+
+use CodeQuery\Schema\SqlContext;
 
 class QuerySource extends SqlSource
 {
-    public function __construct(private SqlQueryContext $context)
+    public function __construct(private SqlContext $context)
     {
-    }
-
-    function setAlias(SqlRootContext $root): void
-    {
-        $this->alias = $root->alias("q");
     }
 
     function toSql(): string

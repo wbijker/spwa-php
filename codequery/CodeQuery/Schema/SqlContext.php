@@ -3,19 +3,65 @@
 namespace CodeQuery\Schema;
 
 
+use CodeQuery\Expressions\BinaryExpression;
+use CodeQuery\Expressions\ConstExpression;
+use CodeQuery\Expressions\SqlExpression;
+use CodeQuery\Queryable\SqlJoin;
+use CodeQuery\Queryable\SqlSelect;
+use CodeQuery\Sources\SqlSource;
+use CodeQuery\Sources\TableSource;
+
+// created SQl context. Holding sources, select, where, group by, order by, joins
+// each block defined it's own context.
+// The scope of a SQL query
+// Each table is created from a SqlContext
+
 class SqlContext
 {
-    private array $cache = [];
+    // combination of all sources used in this query
+    // dictionary<type, SqlSource>
+    // from + joins
+    private array $sources = [];
 
-    // aliases inside a subquery are local to that subquery
-    // they are scoped to the block they're defined in
-    function nextAlias(): string {
-        return "";
-    }
+//    private array $prefixes = [];
+//
+//    function alias(string $prefix): string
+//    {
+//        if (!isset($this->prefixes[$prefix])) {
+//            $this->prefixes[$prefix] = 1;
+//            return $prefix;
+//        }
+//
+//        $this->prefixes[$prefix]++;
+//        return $prefix . $this->prefixes[$prefix];
+//    }
 
-    public function build(string $tableClass): TableBuilder
+    public ?SqlSelect $select = null;
+
+    /**
+     * @var SqlExpression[] $where
+     */
+    public array $where = [];
+    /**
+     * @var SqlExpression[] $groupBy
+     */
+    public array $groupBy = [];
+    /**
+     * @var SqlExpression[] $orderBy
+     */
+    public array $orderBy = [];
+
+    /**
+     * @var SqlJoin[] $joins
+     */
+    public array $joins = [];
+
+    public SqlSource $from;
+
+
+    public function build(string $tableClass): TableSource
     {
-        $hit = $this->cache[$tableClass] ?? null;
+        $hit = $this->sources[$tableClass] ?? null;
         if ($hit) {
             return $hit;
         }
@@ -27,9 +73,65 @@ class SqlContext
         $builder = new TableBuilder($table);
         // invoke the builder to build the table structure
         $table->buildTable($builder);
-        $this->cache[$tableClass] = $builder;
+        $this->sources[$tableClass] = $builder->source;
 
-        return $builder;
+        return $builder->source;
     }
+
+
+    private function reduceWhere(array $where): SqlExpression
+    {
+        if (empty($where)) {
+            return new ConstExpression(true);
+        }
+
+        $first = $where[0];
+
+        return array_reduce(
+            array_slice($where, 1),
+            fn(SqlExpression $prev, SqlExpression $current) => new BinaryExpression($prev, "AND", $current),
+            $first
+        );
+    }
+
+    function toSql(): string
+    {
+        $sql = "SELECT\n";
+
+        $columns = empty($this->select->columns)
+            ? ["*"]
+            : array_map(fn(SqlExpression $expr) => $expr->toSql(), $this->select->columns);
+
+        $sql .= implode(",\n", $columns) . "\n";
+
+        $sql .= "FROM\n";
+        $sql .= $this->from->toSql() . "\n";
+
+        if (!empty($this->joins)) {
+            foreach ($this->joins as $join) {
+                $sql .= strtoupper($join->type) . " JOIN ";
+                $sql .= $join->source->toSql();
+                $sql .= " ON " . $join->on->toSql() . "\n";
+            }
+        }
+
+        if (!empty($this->where)) {
+            $whereClause = $this->reduceWhere($this->where)->toSql();
+            $sql .= "WHERE" . $whereClause;
+        }
+
+        if (!empty($this->groupBy)) {
+            $groupByClause = implode(",\n", array_map(fn(SqlExpression $expr) => $expr->toSql(), $this->groupBy));
+            $sql .= "GROUP BY" . $groupByClause;
+        }
+
+        if (!empty($this->orderBy)) {
+            $orderByClause = implode(",\n", array_map(fn(SqlExpression $expr) => $expr->toSql(), $this->orderBy));
+            $sql .= "ORDER BY" . $orderByClause;
+        }
+
+        return trim($sql);
+    }
+
 
 }

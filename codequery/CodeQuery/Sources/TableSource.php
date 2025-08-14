@@ -2,8 +2,6 @@
 
 namespace CodeQuery\Sources;
 
-use CodeQuery\Queryable\SqlRootContext;
-
 class TableSource extends SqlSource
 {
 
@@ -12,11 +10,6 @@ class TableSource extends SqlSource
         public        $instance
     )
     {
-    }
-
-    function setAlias(SqlRootContext $root): void
-    {
-        $this->alias = $root->alias(strtolower($this->tableName[0]));
     }
 
     function toSql(): string

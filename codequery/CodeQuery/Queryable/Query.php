@@ -4,17 +4,11 @@ namespace CodeQuery\Queryable;
 
 use CodeQuery\Columns\BoolColumn;
 use CodeQuery\Columns\Column;
-use CodeQuery\Columns\IntColumn;
 use CodeQuery\Expressions\AliasExpression;
-use CodeQuery\Expressions\BinaryExpression;
 use CodeQuery\Expressions\ColumnExpression;
 use CodeQuery\Expressions\SqlExpression;
 use CodeQuery\Schema\SqlContext;
-use CodeQuery\Schema\Table;
 use CodeQuery\Sources\QuerySource;
-use CodeQuery\Sources\SqlSource;
-use Exception;
-use mysql_xdevapi\SqlStatement;
 
 function toExpression(SqlExpression|Column $value): SqlExpression
 {
@@ -26,21 +20,17 @@ function toExpression(SqlExpression|Column $value): SqlExpression
 
 class Query
 {
-    private SqlQueryContext $context;
-
-    public function __construct(SqlSource $source, SqlRootContext $root)
+    public function __construct(private SqlContext $context)
     {
-        $this->context = new SqlQueryContext($source, $root);
     }
 
     static function from(string $className): self
     {
-        $ctx = new SqlContext();
-        $build = $ctx->build($className);
-        $root = new SqlRootContext();
+        $context = new SqlContext();
+        $source = $context->build($className);
+        $context->from = $source;
 
-        $build->source->setAlias($root);
-        return new Query($build->source, $root);
+        return new Query($context);
     }
 
     function where(BoolColumn $predicate): self

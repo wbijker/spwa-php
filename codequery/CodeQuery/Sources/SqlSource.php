@@ -2,13 +2,15 @@
 
 namespace CodeQuery\Sources;
 
-use CodeQuery\Queryable\SqlRootContext;
 
 abstract class SqlSource
 {
     public string $alias = "";
 
-    abstract function setAlias(SqlRootContext $root): void;
+    function setAlias(string $alias): void
+    {
+        $this->alias = $alias;
+    }
 
     abstract function toSql(): string;
 }

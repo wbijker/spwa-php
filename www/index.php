@@ -12,9 +12,13 @@ use Spwa\SpwMiddleware;
 require 'vendor/autoload.php';
 
 
+// created SQl context. Holding sources, select, where, group by, order by, joins
+// each block defined it's own context.
+
 $query = Query::from(Product::class);
 
-echo "done deal";
+echo $query->toSql();
+
 
 
 //App::run([
