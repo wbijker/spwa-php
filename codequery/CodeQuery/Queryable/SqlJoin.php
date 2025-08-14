@@ -3,7 +3,7 @@
 namespace CodeQuery\Queryable;
 
 use CodeQuery\Expressions\SqlExpression;
-use CodeQuery\Columns\SqlSource;
+use CodeQuery\Sources\SqlSource;
 
 class SqlJoin
 {

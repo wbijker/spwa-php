@@ -62,6 +62,13 @@ class SqlContext
     public SqlSource $from;
 
 
+    private int $aliasCounter = 0;
+
+    protected function nextAlias(): string
+    {
+        return "t" . $this->aliasCounter++;
+    }
+
     public function build(string $tableClass): TableBuilder
     {
         $hit = $this->sources[$tableClass] ?? null;
@@ -76,6 +83,7 @@ class SqlContext
         $builder = new TableBuilder($table);
         // invoke the builder to build the table structure
         $table->buildTable($builder);
+        $builder->source->setAlias($this->nextAlias());
         $this->sources[$tableClass] = $builder;
 
         return $builder;
@@ -120,8 +128,6 @@ class SqlContext
 
     function toSql(): string
     {
-        $this->from->alias = "p";
-
         $sql = "SELECT\n";
 
         $columns = empty($this->select)

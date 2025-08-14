@@ -29,7 +29,6 @@ class Query
         $context = new SqlContext();
         $builder = $context->build($className);
         $context->from = $builder->source;
-
         return new Query($context);
     }
 

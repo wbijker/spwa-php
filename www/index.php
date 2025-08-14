@@ -19,6 +19,7 @@ $query = Query::from(Product::class)
     ->select(fn(Product $product) => (object)[
         'id' => $product->id,
         'name' => $product->name,
+        'categoryName' => $product->category()->name,
         'price' => $product->price->multiply(3.14),
         'isAbove10' => $product->category_id->greaterOrEqual(10),
     ]);

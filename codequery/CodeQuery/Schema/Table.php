@@ -2,7 +2,9 @@
 
 namespace CodeQuery\Schema;
 
+use CodeQuery\Columns\BoolColumn;
 use CodeQuery\Expressions\SqlExpression;
+use CodeQuery\Queryable\SqlJoin;
 
 abstract class Table
 {
@@ -20,7 +22,6 @@ abstract class Table
      */
     protected function innerJoin(callable $condition)
     {
-
         // innerJoin(fn(DependantTable $d) => $this->fk->equals($d->id));
 
         // inspect argument passed to $condition
@@ -41,19 +42,20 @@ abstract class Table
             throw new \InvalidArgumentException("Class $className must be a Table.");
         }
 
-        $instance = $this->context->build($className);
+        $builder = $this->context->build($className);
 
+        $instance = $builder->source->instance;
         // then call the condition with an instance of that class
         $result = $condition($instance);
-        // assert $result is of type SqlExpression
-        if (!is_subclass_of($result, SqlExpression::class)) {
-            throw new \InvalidArgumentException("Condition must return an instance of SqlExpression.");
+
+        if (get_class($result) != BoolColumn::class) {
+            throw new \InvalidArgumentException("Condition must return an instance of BoolColumn.");
         }
 
         // source is $instance->source, join is inner and condition is $result
+        $this->context->joins[] = new SqlJoin("inner", $builder->source, $result->exp);
 
-        echo $result->toSql();
-
+        // return the joining instance
         return $instance;
     }
 
