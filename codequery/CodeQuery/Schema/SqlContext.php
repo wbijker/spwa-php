@@ -36,7 +36,10 @@ class SqlContext
 //        return $prefix . $this->prefixes[$prefix];
 //    }
 
-    public ?SqlSelect $select = null;
+    /**
+     * @var SqlExpression[] $select
+     */
+    public array $select = [];
 
     /**
      * @var SqlExpression[] $where
@@ -59,7 +62,7 @@ class SqlContext
     public SqlSource $from;
 
 
-    public function build(string $tableClass): TableSource
+    public function build(string $tableClass): TableBuilder
     {
         $hit = $this->sources[$tableClass] ?? null;
         if ($hit) {
@@ -73,9 +76,30 @@ class SqlContext
         $builder = new TableBuilder($table);
         // invoke the builder to build the table structure
         $table->buildTable($builder);
-        $this->sources[$tableClass] = $builder->source;
+        $this->sources[$tableClass] = $builder;
 
-        return $builder->source;
+        return $builder;
+    }
+
+
+    public function invokeCallback(callable $callback): mixed
+    {
+        // using reflection to get the parameters of the callback
+        $reflection = new \ReflectionFunction($callback);
+        $params = $reflection->getParameters();
+
+        $filledParams = array_map(function ($param) {
+            $class = $param->getType()->getName();
+            $hit = $this->sources[$class];
+            if ($hit == null) {
+                throw new \InvalidArgumentException("Source $class not part of the query.");
+            }
+            return $hit->table;
+        }, $params);
+
+        // invoke the callback with the filled parameters
+        $res = $callback(...$filledParams);
+        return $res;
     }
 
 
@@ -96,11 +120,13 @@ class SqlContext
 
     function toSql(): string
     {
+        $this->from->alias = "p";
+
         $sql = "SELECT\n";
 
-        $columns = empty($this->select->columns)
+        $columns = empty($this->select)
             ? ["*"]
-            : array_map(fn(SqlExpression $expr) => $expr->toSql(), $this->select->columns);
+            : array_map(fn(SqlExpression $expr) => $expr->toSql(), $this->select);
 
         $sql .= implode(",\n", $columns) . "\n";
 

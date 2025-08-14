@@ -27,8 +27,8 @@ class Query
     static function from(string $className): self
     {
         $context = new SqlContext();
-        $source = $context->build($className);
-        $context->from = $source;
+        $builder = $context->build($className);
+        $context->from = $builder->source;
 
         return new Query($context);
     }
@@ -51,30 +51,25 @@ class Query
         return $this;
     }
 
-    function select(object $selection): self
+    function select(callable $callback): self
     {
-        $nextSource = new QuerySource($this->context);
-        $next = [];
+        $selection = $this->context->invokeCallback($callback);
+        if (gettype($selection) != 'object') {
+            throw new \InvalidArgumentException("Selection must return an object, got " . gettype($selection));
+        }
+
+        // convert object to array
+        // make sure each property is a SqlExpression
+        // and select the underlying expression
         $select = [];
-        // alias members per selection. Select p.id as c1, p.name as c2, p.price * 2 as c3
-        foreach ($selection as $key => $value) {
-            $exp = toExpression($value);
-            $select[] = new AliasExpression($exp, $key);
-            $n = new ColumnExpression($key, $nextSource);
-            $selection->$key = $value->createAlias($n);
-            $next[] = $n;
+        foreach ((array)$selection as $key => $value) {
+            if (!$value instanceof Column) {
+                throw new \InvalidArgumentException("Selection property '$key' must be an instance of " . Column::class . ", got " . gettype($value));
+            }
+            $select[$key] = $value->exp;
         }
 
-        if ($this->context->select == null) {
-            $this->context->select = new SqlSelect($select, null);
-            $sql = $this->toSql();
-        } else {
-
-        }
-
-        $this->context->next = new SqlQueryContext($nextSource, $this->context->root);
-        $this->context->next->select = new SqlSelect($next, null);
-
+        $this->context->select = $select;
         return $this;
     }
 

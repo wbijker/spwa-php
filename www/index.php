@@ -15,7 +15,13 @@ require 'vendor/autoload.php';
 // created SQl context. Holding sources, select, where, group by, order by, joins
 // each block defined it's own context.
 
-$query = Query::from(Product::class);
+$query = Query::from(Product::class)
+    ->select(fn(Product $product) => (object)[
+        'id' => $product->id,
+        'name' => $product->name,
+        'price' => $product->price->multiply(3.14),
+        'isAbove10' => $product->category_id->greaterOrEqual(10),
+    ]);
 
 echo $query->toSql();
 
