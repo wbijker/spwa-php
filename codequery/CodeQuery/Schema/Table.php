@@ -15,6 +15,10 @@ abstract class Table
 
     abstract function buildTable(TableBuilder $builder): void;
 
+
+    // cache for storing joins to avoid duplication
+    private $joins = [];
+
     /**
      * @template T
      * @param callable(T): bool $condition
@@ -22,11 +26,18 @@ abstract class Table
      */
     protected function innerJoin(callable $condition)
     {
-        // innerJoin(fn(DependantTable $d) => $this->fk->equals($d->id));
-
         // inspect argument passed to $condition
-        $reflection = new \ReflectionFunction($condition);
-        $params = $reflection->getParameters();
+        $r = new \ReflectionFunction($condition);
+
+        // cahe function based on file and line number only
+        $key = $r->getStartLine();
+        $hit = $this->joins[$key] ?? null;
+        if ($hit) {
+            // if we have a hit, return the instance
+            return $hit;
+        }
+
+        $params = $r->getParameters();
         if (count($params) !== 1) {
             throw new \InvalidArgumentException("Condition must accept exactly one parameter.");
         }
@@ -55,6 +66,8 @@ abstract class Table
         // source is $instance->source, join is inner and condition is $result
         $this->context->joins[] = new SqlJoin("inner", $builder->source, $result->exp);
 
+        // add to the join cache
+        $this->joins[$key] = $instance;
         // return the joining instance
         return $instance;
     }

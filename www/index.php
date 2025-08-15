@@ -20,6 +20,7 @@ $query = Query::from(Product::class)
         'id' => $product->id,
         'name' => $product->name,
         'categoryName' => $product->category()->name,
+        'categoryId' => $product->category()->id,
         'price' => $product->price->multiply(3.14),
         'isAbove10' => $product->category_id->greaterOrEqual(10),
     ]);
