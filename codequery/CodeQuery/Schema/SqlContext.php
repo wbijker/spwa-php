@@ -8,6 +8,7 @@ use CodeQuery\Expressions\ConstExpression;
 use CodeQuery\Expressions\SqlExpression;
 use CodeQuery\Queryable\SqlJoin;
 use CodeQuery\Queryable\SqlSelect;
+use CodeQuery\Sources\QuerySource;
 use CodeQuery\Sources\SqlSource;
 use CodeQuery\Sources\TableSource;
 
@@ -21,7 +22,7 @@ class SqlContext
     // combination of all sources used in this query
     // dictionary<type, SqlSource>
     // from + joins
-    private array $sources = [];
+    public array $sources = [];
 
 //    private array $prefixes = [];
 //
@@ -40,6 +41,8 @@ class SqlContext
      * @var SqlExpression[] $select
      */
     public array $select = [];
+
+    public ?object $selectType = null;
 
     /**
      * @var SqlExpression[] $where
@@ -64,7 +67,7 @@ class SqlContext
 
     private int $aliasCounter = 0;
 
-    protected function nextAlias(): string
+    public function nextAlias(): string
     {
         return "t" . $this->aliasCounter++;
     }
@@ -84,7 +87,7 @@ class SqlContext
         // invoke the builder to build the table structure
         $table->buildTable($builder);
         $builder->source->setAlias($this->nextAlias());
-        $this->sources[$tableClass] = $builder;
+        $this->sources[$tableClass] = $builder->table;
 
         return $builder;
     }
@@ -98,11 +101,11 @@ class SqlContext
 
         $filledParams = array_map(function ($param) {
             $class = $param->getType()->getName();
-            $hit = $this->sources[$class];
+            $hit = $this->sources[$class] ?? null;
             if ($hit == null) {
                 throw new \InvalidArgumentException("Source $class not part of the query.");
             }
-            return $hit->table;
+            return $hit;
         }, $params);
 
         // invoke the callback with the filled parameters

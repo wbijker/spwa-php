@@ -24,9 +24,14 @@ class ProductAgg
 $query = Query::from(Product::class)
     ->groupBy(fn(Product $p) => $p->category_id)
     ->select(fn(Product $p) => new ProductAgg(
-        categoryId: $p->category_id,
-        count: $p->id->count()
-    ));
+        categoryId: $p->category_id->add(100),
+        count: $p->id->count()->multiply(2)
+    ))
+    ->select(fn(ProductAgg $agg) => (object)[
+        'categoryId' => $agg->categoryId,
+        'count' => $agg->count->multiply(3),
+    ]);
+
 //    ->innerJoin(fn(ProductAgg $agg, Category $cat) => $agg->categoryId->equals($cat->id))
 //    ->select(fn(ProductAgg $agg, Category $cat) => [
 //        'categoryName' => $cat->name,

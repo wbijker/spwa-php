@@ -71,6 +71,28 @@ class Query
 
     function select(callable $callback): self
     {
+        if (!empty($this->context->select))
+        {
+            $context = new SqlContext();
+            $context->from = new QuerySource($this->context);
+            $context->from->setAlias($context->nextAlias());
+
+            $last = $this->context->selectType;
+            // loop through all properties of $last
+            foreach ((array)$last as $key => $value) {
+                if (!$value instanceof Column) {
+                    throw new \InvalidArgumentException("Selection property '$key' must be an instance of " . Column::class . ", got " . gettype($value));
+                }
+                $last->$key = $value->createAlias(new ColumnExpression($key, $context->from));
+            }
+
+            $context->sources[get_class($this->context->selectType)] = $last;
+
+            $q = new Query($context);
+            $q->select($callback);
+            return $q;
+        }
+
         $selection = $this->context->invokeCallback($callback);
         if (gettype($selection) != 'object') {
             throw new \InvalidArgumentException("Selection must return an object, got " . gettype($selection));
@@ -84,10 +106,11 @@ class Query
             if (!$value instanceof Column) {
                 throw new \InvalidArgumentException("Selection property '$key' must be an instance of " . Column::class . ", got " . gettype($value));
             }
-            $select[$key] = $value->exp;
+            $select[$key] = new AliasExpression($value->exp, $key);
         }
 
         $this->context->select = $select;
+        $this->context->selectType = $selection;
         return $this;
     }
 
