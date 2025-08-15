@@ -14,12 +14,4 @@ class ColumnExpression implements SqlExpression
     {
         return "{$this->source->alias}.{$this->column}";
     }
-
-    function replace(SqlExpression $seek, SqlExpression $replace): SqlExpression
-    {
-        if ($this === $seek) {
-            return $replace;
-        }
-        return $this;
-    }
 }

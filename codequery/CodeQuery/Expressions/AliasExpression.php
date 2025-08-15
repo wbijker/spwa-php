@@ -2,6 +2,8 @@
 
 namespace CodeQuery\Expressions;
 
+use CodeQuery\Queryable\Query;
+
 class AliasExpression implements SqlExpression
 {
     public function __construct(public SqlExpression $expr, public string $alias)
@@ -11,13 +13,5 @@ class AliasExpression implements SqlExpression
     function toSql(): string
     {
         return $this->expr->toSql() . " AS " . $this->alias;
-    }
-
-    function replace(SqlExpression $seek, SqlExpression $replace): SqlExpression
-    {
-        if ($this === $seek)
-            return $replace;
-
-        return $this->expr->replace($seek, $replace);
     }
 }
