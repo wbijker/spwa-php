@@ -3,9 +3,12 @@
 namespace CodeQuery\Schema;
 
 
+use CodeQuery\Columns\Column;
 use CodeQuery\Expressions\BinaryExpression;
+use CodeQuery\Expressions\ColumnExpression;
 use CodeQuery\Expressions\ConstExpression;
 use CodeQuery\Expressions\SqlExpression;
+use CodeQuery\Queryable\Query;
 use CodeQuery\Queryable\SqlJoin;
 use CodeQuery\Queryable\SqlSelect;
 use CodeQuery\Sources\QuerySource;
@@ -92,6 +95,25 @@ class SqlContext
         return $builder;
     }
 
+
+    public function createSubQuery(): Query
+    {
+        $context = new SqlContext();
+        $context->from = new QuerySource($this);
+        $context->from->setAlias($context->nextAlias());
+
+        $last = $this->selectType;
+        // loop through all properties of $last
+        foreach ((array)$last as $key => $value) {
+            if (!$value instanceof Column) {
+                throw new \InvalidArgumentException("Selection property '$key' must be an instance of " . Column::class . ", got " . gettype($value));
+            }
+            $last->$key = $value->createAlias(new ColumnExpression($key, $context->from));
+        }
+
+        $context->sources[get_class($this->selectType)] = $last;
+        return new Query($context);
+    }
 
     public function invokeCallback(callable $callback): mixed
     {
