@@ -19,14 +19,37 @@ require 'vendor/autoload.php';
 
 class ProductAgg
 {
-public function __construct(
-    public IntColumn $categoryId,
-    public IntColumn $count,
-    public IntColumn $row,
-    public StringColumn $name
-)
-{
+    public function __construct(
+        public IntColumn    $categoryId,
+        public IntColumn    $count,
+        public IntColumn    $row,
+        public StringColumn $name
+    )
+    {
+    }
+
+    public function toFlat(): ProductAggFlat
+    {
+        return new ProductAggFlat(
+            categoryId: $this->categoryId->value,
+            count: $this->count->value,
+            row: $this->row->value,
+            name: $this->name->value
+        );
+    }
 }
+
+class ProductAggFlat
+{
+    public function __construct(
+        public int    $categoryId,
+        public int    $count,
+        public int    $row,
+        public string $name
+    )
+    {
+    }
+
 }
 
 /*SELECT
@@ -64,30 +87,10 @@ $query = Query::from(Product::class)
     ));
 
 
-/* @var ProductAgg[] $results  */
-$results = $query->fetch();
-foreach ($results as $agg) {
-    echo "Category ID: " . $agg->categoryId->value . "\n";
-    echo "Count: " . $agg->count->value . "\n";
-    echo "Row: " . $agg->row->value . "\n";
-    echo "Name: " . $agg->name->value . "\n";
-    echo "-------------------\n";
-}
+/* @var ProductAggFlat[] $results  */
+$results = $query->fetch(fn(ProductAgg $agg) => $agg->toFlat());
 
-//$a = new ProductAgg();
-//echo $a->name->value;
-//echo $a->categoryId->value;
-//echo $a->count->value;
-
-//    ->fetch(fn(ProductAgg $agg) => new ProductAggFetch());
-
-//    ->innerJoin(Category::class, fn(ProductAgg $agg, Category $cat) => $agg->categoryId->equals($cat->id))
-//    ->select(fn(ProductAgg $agg, Category $cat) => (object)[
-//        'categoryId' => $agg->categoryId,
-//        'count' => $agg->count->multiply(3),
-//        'name' => $cat->name,
-//    ]);
-
+print_r($results);
 
 
 

@@ -128,7 +128,7 @@ class Query
         return $this;
     }
 
-    function fetch(): array
+    function fetch(?callable $callback): array
     {
         echo $this->toSql() . "\n";
 
@@ -148,7 +148,7 @@ class Query
             ]
         ];
 
-        return array_map(function ($row) {
+        $filled = array_map(function ($row) {
             $instance = clone $this->context->selectType;
             foreach ($row as $key => $value) {
                 if (property_exists($instance, $key)) {
@@ -160,6 +160,12 @@ class Query
             }
             return $instance;
         }, $results);
+
+        if (!$callback)
+            return $filled;
+
+        // if callback is provided, map the results to the callback
+        return array_map($callback, $filled);
     }
 
     function toSql(): string
