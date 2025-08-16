@@ -135,7 +135,6 @@ class SqlContext
         return $res;
     }
 
-
     private function reduceWhere(array $where): SqlExpression
     {
         if (empty($where)) {
@@ -174,17 +173,17 @@ class SqlContext
 
         if (!empty($this->where)) {
             $whereClause = $this->reduceWhere($this->where)->toSql();
-            $sql .= "WHERE " . $whereClause;
+            $sql .= " WHERE " . $whereClause;
         }
 
         if (!empty($this->groupBy)) {
             $groupByClause = implode(",\n", array_map(fn(SqlExpression $expr) => $expr->toSql(), $this->groupBy));
-            $sql .= "GROUP BY " . $groupByClause;
+            $sql .= " GROUP BY " . $groupByClause;
         }
 
         if (!empty($this->orderBy)) {
             $orderByClause = implode(",\n", array_map(fn(SqlExpression $expr) => $expr->toSql(), $this->orderBy));
-            $sql .= "ORDER BY " . $orderByClause;
+            $sql .= " ORDER BY " . $orderByClause;
         }
 
         return trim($sql);

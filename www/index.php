@@ -18,18 +18,23 @@ class ProductAgg
     public function __construct(
         public IntColumn $categoryId,
         public IntColumn $count
-    ) {}
+    )
+    {
+    }
 }
 
 $query = Query::from(Product::class)
+    ->where(fn(Product $p) => $p->price->greaterThan(0))
     ->groupBy(fn(Product $p) => $p->category_id)
     ->select(fn(Product $p) => new ProductAgg(
         categoryId: $p->category_id->add(100),
         count: $p->id->count()->multiply(2)
     ))
-    ->select(fn(ProductAgg $agg) => (object)[
+    ->innerJoin(Category::class, fn(ProductAgg $agg, Category $cat) => $agg->categoryId->equals($cat->id))
+    ->select(fn(ProductAgg $agg, Category $cat) => (object)[
         'categoryId' => $agg->categoryId,
         'count' => $agg->count->multiply(3),
+        'name' => $cat->name,
     ]);
 
 //    ->innerJoin(fn(ProductAgg $agg, Category $cat) => $agg->categoryId->equals($cat->id))
