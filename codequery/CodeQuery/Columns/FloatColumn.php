@@ -72,9 +72,12 @@ class FloatColumn extends Column
         return new FloatColumn(new BinaryExpression($this->exp, BinaryExpression::SUBTRACT, $this->toExp($value)));
     }
 
-    function convertFrom(mixed $val): float
+
+    public bool $value;
+
+    function convertFrom(mixed $val): void
     {
-        return floatval($val);
+        $this->value = floatval($val);
     }
 
     function count(): IntColumn

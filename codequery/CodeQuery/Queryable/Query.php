@@ -128,29 +128,38 @@ class Query
         return $this;
     }
 
-    /** @param class-string $class */
-    function fetch(string $class): array
+    function fetch(): array
     {
-        echo "SQL to execute" . $this->toSql();
-        return [];
+        echo $this->toSql() . "\n";
 
-        $result = [
-            ['id' => 1, 'name' => 'Product#1', 'price' => 12.12],
-            ['id' => 2, 'name' => 'Product#2', 'price' => 43.4],
-            ['id' => 3, 'name' => 'Product#3', 'price' => 54.2],
-            ['id' => 4, 'name' => 'Product#4', 'price' => 892.3],
+        // $results is a mock of the database results
+        $results = [
+            [
+                'categoryId' => 1,
+                'count' => 1,
+                'row' => 1,
+                'name' => 'Product 1',
+            ],
+            [
+                'categoryId' => 2,
+                'count' => 22,
+                'row' => 2,
+                'name' => 'Product 2',
+            ]
         ];
 
-        $ret = [];
-        foreach ($result as $row) {
-            /** @var object $obj */
-            $obj = new $class();
-            $this->context->select->populateRow($row, $obj);
-            $ret[] = $obj;
-        }
-        print_r($ret);
-
-        return $ret;
+        return array_map(function ($row) {
+            $instance = clone $this->context->selectType;
+            foreach ($row as $key => $value) {
+                if (property_exists($instance, $key)) {
+                    $prop = clone $instance->$key;
+                    $instance->$key = $prop;
+                    if ($prop instanceof Column)
+                        $prop->convertFrom($value);
+                }
+            }
+            return $instance;
+        }, $results);
     }
 
     function toSql(): string

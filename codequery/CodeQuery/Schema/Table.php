@@ -4,6 +4,7 @@ namespace CodeQuery\Schema;
 
 use CodeQuery\Columns\BoolColumn;
 use CodeQuery\Expressions\SqlExpression;
+use CodeQuery\Queryable\Query;
 use CodeQuery\Queryable\SqlJoin;
 use CodeQuery\Sources\SqlSource;
 use function CodeQuery\Queryable\toExpression;
@@ -36,7 +37,7 @@ abstract class Table
         $this->context->joins[] = new SqlJoin(
             "inner",
             $builder->source,
-            toExpression($on)
+            Query::toExpression($on)
         );
         return $instance;
     }

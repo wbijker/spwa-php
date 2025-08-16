@@ -31,9 +31,10 @@ class StringColumn extends Column
         return new StringColumn(new BinaryExpression($this->exp, BinaryExpression::NOT_EQUAL, $this->toExp($value)));
     }
 
-    function convertFrom(mixed $val): string
+    public string $value;
+    function convertFrom(mixed $val): void
     {
-        return (string)$val;
+        $this->value = (string)$val;
     }
 }
 

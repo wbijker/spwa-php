@@ -17,7 +17,7 @@ class DateTimeColumn extends Column
         return new DateTimeColumn(new StarExpression());
     }
 
-    public function convertFrom(mixed $val)
+    public function convertFrom(mixed $val): void
     {
 
     }

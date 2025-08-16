@@ -10,6 +10,7 @@ abstract class Column
     {
     }
 
-    public abstract function convertFrom(mixed $val);
+
+    public abstract function convertFrom(mixed $val): void;
     public abstract function createAlias(SqlExpression $exp): static;
 }

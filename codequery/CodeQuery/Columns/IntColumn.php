@@ -9,7 +9,6 @@ use CodeQuery\Expressions\SqlExpression;
 
 class IntColumn extends Column
 {
-
     public function createAlias(SqlExpression $exp): static
     {
         return new IntColumn($exp);
@@ -92,9 +91,11 @@ class IntColumn extends Column
         return new IntColumn(new BinaryExpression($this->exp, BinaryExpression::BITWISE_XOR, $this->toExp($value)));
     }
 
-    function convertFrom(mixed $val): int
+    public int $value;
+
+    function convertFrom(mixed $val): void
     {
-        return intval($val);
+        $this->value = intval($val);
     }
 
     function count(): IntColumn

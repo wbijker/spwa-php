@@ -42,9 +42,11 @@ class BoolColumn extends Column
         return new BoolColumn(new BinaryExpression($this->exp, BinaryExpression::OR, $this->toExp($value)));
     }
 
-    function convertFrom(mixed $val): bool
+    public bool $value;
+
+    function convertFrom(mixed $val): void
     {
-        return boolval($val);
+        $this->value = boolval($val);
     }
 }
 
