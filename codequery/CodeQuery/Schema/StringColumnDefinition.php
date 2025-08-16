@@ -4,6 +4,7 @@ namespace CodeQuery\Schema;
 
 use CodeQuery\Columns\StringColumn;
 use CodeQuery\Expressions\ColumnExpression;
+use CodeQuery\Expressions\SqlExpression;
 use CodeQuery\Schema\Traits\ForeignKeyTrait;
 use CodeQuery\Schema\Traits\NullableTrait;
 use CodeQuery\Schema\Traits\PrimaryKeyTrait;
@@ -18,11 +19,18 @@ class StringColumnDefinition extends StringColumn implements ColumnDefinition
     use UniqueTrait;
 
     public function __construct(
-        string      $column,
-        TableSource $source
+        private string      $column,
+        private TableSource $source
     )
     {
         parent::__construct(new ColumnExpression($column, $source));
+    }
+    
+    public function createAlias(SqlExpression $exp): static
+    {
+        $def = new StringColumnDefinition($this->column, $this->source);
+        $def->exp = $exp;
+        return $def;
     }
 
     function buildSchema(): string

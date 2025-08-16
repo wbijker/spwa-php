@@ -12,13 +12,12 @@ class Product extends Table
 {
     public IntColumn $id;
     public StringColumn $name;
-
     public IntColumn $category_id;
     public FloatColumn $price;
 
     public function category(): Category
     {
-        return $this->innerJoin(fn(Category $c) => $this->category_id->equals($c->id));
+        return $this->innerJoin(Category::class, fn(Category $c) => $this->category_id->equals($c->id));
     }
 
     function buildTable(TableBuilder $builder): void
