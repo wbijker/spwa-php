@@ -115,13 +115,17 @@ class SqlContext
         return new Query($context);
     }
 
-    public function invokeCallback(callable $callback): mixed
+    public function invokeCallback(callable $callback, ?Query $query = null): mixed
     {
         // using reflection to get the parameters of the callback
         $reflection = new \ReflectionFunction($callback);
         $params = $reflection->getParameters();
 
-        $filledParams = array_map(function ($param) {
+        $filledParams = array_map(function ($param) use ($query) {
+            if ($param->getType()->getName() == Query::class) {
+                return $query;
+            }
+
             $class = $param->getType()->getName();
             $hit = $this->sources[$class] ?? null;
             if ($hit == null) {

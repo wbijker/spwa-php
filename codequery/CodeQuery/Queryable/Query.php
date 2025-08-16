@@ -34,10 +34,19 @@ class Query
         return new Query($context);
     }
 
-    // BoolColumn $predicate
-    function where(callable $callback): self
+    public function scoped(callable $callable): Query
     {
-        $condition = $this->context->invokeCallback($callback);
+        $this->context->invokeCallback($callable, $this);
+        return $this;
+    }
+
+    // BoolColumn $predicate
+    function where(callable|BoolColumn $callback): self
+    {
+        $condition = $callback instanceof BoolColumn
+            ? $callback
+            : $this->context->invokeCallback($callback, $this);
+
         if (!$condition instanceof BoolColumn) {
             throw new \InvalidArgumentException("Where condition must return an instance of " . BoolColumn::class . ", got " . gettype($condition));
         }
@@ -47,7 +56,7 @@ class Query
 
     function groupBy(callable $callback): self
     {
-        $group = $this->context->invokeCallback($callback);
+        $group = $this->context->invokeCallback($callback, $this);
         // or array
         if (!$group instanceof Column) {
             throw new \InvalidArgumentException("Group by must return an instance of " . Column::class . ", got " . gettype($group));
@@ -59,9 +68,12 @@ class Query
     const ORDER_ASC = 0;
     const ORDER_DESC = 1;
 
-    function orderBy(callable $callback, int $direction = self::ORDER_ASC): self
+    function orderBy(callable|Column $callback, int $direction = self::ORDER_ASC): self
     {
-        $order = $this->context->invokeCallback($callback);
+        $order = $callback instanceof Column
+            ? $callback
+            : $this->context->invokeCallback($callback, $this);
+
         // or array
         if (!$order instanceof Column && !$order instanceof SqlExpression) {
             throw new \InvalidArgumentException("Order by must return an instance of " . Column::class . ", got " . gettype($order));
@@ -70,7 +82,7 @@ class Query
         return $this;
     }
 
-    function orderByDesc(callable $callback): self
+    function orderByDesc(callable|Column $callback): self
     {
         return $this->orderBy($callback, self::ORDER_DESC);
     }
@@ -91,7 +103,7 @@ class Query
         $instance = $builder->source->instance;
         $this->context->sources[$source] = $instance;
 
-        $condition = $this->context->invokeCallback($callback);
+        $condition = $this->context->invokeCallback($callback, $this);
         $this->context->joins[] = new SqlJoin(
             "inner",
             $builder->source,
@@ -100,14 +112,17 @@ class Query
         return $this;
     }
 
-    function select(callable $callback): self
+    function select(callable|object $callback): self
     {
         if (!empty($this->context->select)) {
             $q = $this->context->createSubQuery();
             return $q->select($callback);
         }
 
-        $selection = $this->context->invokeCallback($callback);
+        $selection = gettype($callback) == 'object'
+            ? $callback
+            : $this->context->invokeCallback($callback, $this);
+
         if (gettype($selection) != 'object') {
             throw new \InvalidArgumentException("Selection must return an object, got " . gettype($selection));
         }
@@ -172,5 +187,8 @@ class Query
     {
         return $this->context->toSql();
     }
+
+
+
 
 }

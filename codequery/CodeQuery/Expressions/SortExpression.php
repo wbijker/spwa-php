@@ -13,7 +13,7 @@ class SortExpression implements SqlExpression
 
     function toSql(): string
     {
-        return $this->expr->toSql() . " " . $this->direction == Query::ORDER_ASC ? "ASC" : "DESC";
+        return $this->expr->toSql() . " " . ($this->direction == Query::ORDER_ASC ? "ASC" : "DESC");
     }
 
 }

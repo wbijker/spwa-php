@@ -78,13 +78,26 @@ FROM
 // SqlDriver + sql generator;
 
 $query = Query::from(Product::class)
-    ->where(fn(Product $p) => $p->price->greaterThan(0))
-    ->select(fn(Product $p) => new ProductAgg(
-        categoryId: $p->category_id->add(100),
-        count: $p->id->count()->multiply(2),
-        row: WindowFunctions::rowNumber($p->id, null, Frame::rows(null, null)),
-        name: $p->category()->name
-    ));
+    ->scoped(function(Query $q, Product $p) {
+        return $q
+            ->where($p->price->greaterThan(10))
+            ->orderByDesc($p->price)
+            ->orderBy($p->category_id)
+            ->select(new ProductAgg(
+                categoryId: $p->category_id->add(100),
+                count: $p->id->count()->multiply(2),
+                row: WindowFunctions::rowNumber($p->id),
+                name: $p->category()->name
+            ));
+    });
+
+//    ->where(fn(Product $p) => $p->price->greaterThan(0))
+//    ->select(fn(Product $p) => new ProductAgg(
+//        categoryId: $p->category_id->add(100),
+//        count: $p->id->count()->multiply(2),
+//        row: WindowFunctions::rowNumber($p->id, null, Frame::rows(null, null)),
+//        name: $p->category()->name
+//    ));
 
 
 /* @var ProductAggFlat[] $results  */
