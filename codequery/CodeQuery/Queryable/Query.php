@@ -12,18 +12,18 @@ use CodeQuery\Schema\SqlContext;
 use CodeQuery\Sources\QuerySource;
 use CodeQuery\Sources\SqlSource;
 
-function toExpression(SqlExpression|Column $value): SqlExpression
-{
-    if ($value instanceof Column)
-        return $value->exp;
-
-    return $value;
-}
-
 class Query
 {
     public function __construct(private SqlContext $context)
     {
+    }
+
+    static function toExpression(SqlExpression|Column $value): SqlExpression
+    {
+        if ($value instanceof Column)
+            return $value->exp;
+
+        return $value;
     }
 
     static function from(string $className): self
@@ -66,7 +66,7 @@ class Query
         if (!$order instanceof Column && !$order instanceof SqlExpression) {
             throw new \InvalidArgumentException("Order by must return an instance of " . Column::class . ", got " . gettype($order));
         }
-        $this->context->orderBy[] = new SortExpression(toExpression($order), $direction);
+        $this->context->orderBy[] = new SortExpression(self::toExpression($order), $direction);
         return $this;
     }
 
@@ -78,8 +78,7 @@ class Query
     function innerJoin(string|SqlSource $source, callable $callback): self
     {
         // innerJoin just after a select will create a subquery
-        if (!empty($this->context->select))
-        {
+        if (!empty($this->context->select)) {
             $q = $this->context->createSubQuery();
             return $q->innerJoin($source, $callback);
         }
@@ -96,15 +95,14 @@ class Query
         $this->context->joins[] = new SqlJoin(
             "inner",
             $builder->source,
-            toExpression($condition)
+            self::toExpression($condition)
         );
         return $this;
     }
 
     function select(callable $callback): self
     {
-        if (!empty($this->context->select))
-        {
+        if (!empty($this->context->select)) {
             $q = $this->context->createSubQuery();
             return $q->select($callback);
         }

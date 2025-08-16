@@ -4,7 +4,9 @@ namespace CodeQuery\Queryable;
 
 use CodeQuery\Columns\Column;
 use CodeQuery\Columns\IntColumn;
+use CodeQuery\Expressions\Frame;
 use CodeQuery\Expressions\FunctionExpression;
+use CodeQuery\Expressions\OverExpression;
 use CodeQuery\Expressions\StarExpression;
 
 class WindowFunctions
@@ -28,11 +30,15 @@ class WindowFunctions
     ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING
     ) AS sum_rows_1p1f,
 
-    WindowFunction::rowNumber(orderBy: $p->day, frame: Frame::rows(Frame::value(1), Frame::value(1)));
+    Usage: WindowFunction::rowNumber(orderBy: $p->day, frame: Frame::rows(Frame::value(1), Frame::value(1)));
 
      */
 
-        return new IntColumn(new FunctionExpression("ROW_NUMBER", []));
+        return new IntColumn(new OverExpression(
+            base: new FunctionExpression("ROW_NUMBER", []),
+            orderBy: $orderBy ? Query::toExpression($orderBy) : null,
+            partitionBy: $partitionBy ? Query::toExpression($partitionBy) : null,
+            frame: $frame));
     }
 
 

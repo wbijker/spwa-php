@@ -7,6 +7,7 @@ use App\Db\Category;
 use App\Db\Product;
 use CodeQuery\Columns\IntColumn;
 use CodeQuery\Columns\StringColumn;
+use CodeQuery\Expressions\Frame;
 use CodeQuery\Queryable\Query;
 use CodeQuery\Queryable\WindowFunctions;
 use CodeQuery\Schema\SqlContext;
@@ -58,7 +59,7 @@ $query = Query::from(Product::class)
     ->select(fn(Product $p) => new ProductAgg(
         categoryId: $p->category_id->add(100),
         count: $p->id->count()->multiply(2),
-        row: WindowFunctions::rowNumber(null, $p->id),
+        row: WindowFunctions::rowNumber($p->id, null, Frame::rows(null, null)),
         name: $p->name
     ))
     ->innerJoin(Category::class, fn(ProductAgg $agg, Category $cat) => $agg->categoryId->equals($cat->id))
