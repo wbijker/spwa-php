@@ -5,6 +5,7 @@ namespace CodeQuery\Columns;
 use CodeQuery\Expressions\BinaryExpression;
 use CodeQuery\Expressions\ConstExpression;
 use CodeQuery\Expressions\SqlExpression;
+use CodeQuery\Expressions\StringCaseExpression;
 
 class StringColumn extends Column
 {
@@ -35,6 +36,11 @@ class StringColumn extends Column
     function convertFrom(mixed $val): void
     {
         $this->value = (string)$val;
+    }
+
+    static function case(): StringCaseColumn
+    {
+        return new StringCaseColumn();
     }
 }
 

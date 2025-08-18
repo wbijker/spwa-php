@@ -78,7 +78,7 @@ FROM
 // SqlDriver + sql generator;
 
 $query = Query::from(Product::class)
-    ->scoped(function(Query $q, Product $p) {
+    ->scoped(function (Query $q, Product $p) {
         return $q
             ->where($p->price->greaterThan(10))
             ->orderByDesc($p->price)
@@ -87,7 +87,10 @@ $query = Query::from(Product::class)
                 categoryId: $p->category_id->add(100),
                 count: $p->id->count()->multiply(2),
                 row: WindowFunctions::rowNumber($p->id),
-                name: $p->category()->name
+                name: StringColumn::case()
+                    ->when($p->category_id->equals(0), "Uncategorized")
+                    ->when($p->category_id->equals(1), "Food")
+                    ->end()
             ));
     });
 
@@ -100,7 +103,7 @@ $query = Query::from(Product::class)
 //    ));
 
 
-/* @var ProductAggFlat[] $results  */
+/* @var ProductAggFlat[] $results */
 $results = $query->fetch(fn(ProductAgg $agg) => $agg->toFlat());
 
 print_r($results);
