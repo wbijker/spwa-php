@@ -17,7 +17,10 @@ class Database
     {
         $context = new SqlContext();
         $query = new Query($context);
-        $context->invokeCallback($callable, $query);
+        $return = $context->invokeCallback($callable, $query);
+        if ($return instanceof Query) {
+            return $return;
+        }
         return $query;
     }
 }

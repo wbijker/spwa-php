@@ -104,9 +104,15 @@ $q = Database::scoped(fn(Product $p, Category $c, Query $q) => $q
         count: $p->id->count()->multiply(2),
         row: WindowFunction::rowNumber($p->id),
         name: StringColumn::case()
-            ->when($p->category_id->equals(0), $c->name)
+            ->when($p->category_id->equals(0), $p->category()->name)
             ->when($p->category_id->equals(1), "Other")
             ->end()
+    ))
+    ->select(fn(ProductAgg $a) => new ProductAgg(
+        categoryId: $a->categoryId,
+        count: $a->count->multiply(3),
+        row: $a->row,
+        name: $a->name
     ))
 );
 

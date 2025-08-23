@@ -153,7 +153,7 @@ class SqlContext
             $last->$key = $value->createAlias(new ColumnExpression($key, $context->from));
         }
 
-        $context->sources[get_class($this->selectType)] = $last;
+        $context->sources[] = new SourceType(get_class($this->selectType), $context->from, $last);
         return new Query($context);
     }
 

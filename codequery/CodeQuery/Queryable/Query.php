@@ -122,14 +122,13 @@ class Query
             return $q->select($callback);
         }
 
-        $selection = gettype($callback) == 'object'
-            ? $callback
-            : $this->context->invokeCallback($callback, $this);
+        $selection = is_callable($callback)
+            ? $this->context->invokeCallback($callback, $this)
+            : $callback;
 
         if (gettype($selection) != 'object') {
             throw new \InvalidArgumentException("Selection must return an object, got " . gettype($selection));
         }
-
         // convert object to array
         // make sure each property is a SqlExpression
         // and select the underlying expression
