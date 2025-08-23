@@ -117,6 +117,17 @@ class SqlContext
         throw new \InvalidArgumentException("Instance of " . get_class($search) . " is not part of the query");
     }
 
+    public function createSource(string|object $source): SourceType
+    {
+        if (is_string($source)) {
+            return $this->createSourceFromType($source);
+        } elseif (is_object($source)) {
+            return $this->createSourceFromInstance($source);
+        }
+        throw new \InvalidArgumentException("Source must be a string or an object, got " . gettype($source));
+    }
+
+
     public function build(string $tableClass): TableBuilder
     {
         $hit = $this->sources[$tableClass] ?? null;

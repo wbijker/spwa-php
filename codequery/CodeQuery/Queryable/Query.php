@@ -90,26 +90,23 @@ class Query
         return $this->orderBy($callback, self::ORDER_DESC);
     }
 
-    function innerJoin(string|SqlSource $source, callable $callback): self
+    function innerJoin(string|object $source, BoolColumn|callable $on): self
     {
         // innerJoin just after a select will create a subquery
         if (!empty($this->context->select)) {
             $q = $this->context->createSubQuery();
-            return $q->innerJoin($source, $callback);
+            return $q->innerJoin($source, $on);
         }
 
-        if ($source instanceof SqlSource) {
-            throw new \Exception("Not implemented yet: join with SqlSource");
-        }
+        $source = $this->context->createSource($source);
 
-        $builder = $this->context->build($source);
-        $instance = $builder->source->instance;
-        $this->context->sources[$source] = $instance;
+        $condition = is_callable($on)
+            ? $this->context->invokeCallback($on, $this)
+            : $on;
 
-        $condition = $this->context->invokeCallback($callback, $this);
         $this->context->joins[] = new SqlJoin(
             "inner",
-            $builder->source,
+            $source->source,
             self::toExpression($condition)
         );
         return $this;

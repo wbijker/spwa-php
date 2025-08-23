@@ -99,12 +99,13 @@ Scoped is just the grouping of sources for a query.
 
 $q = Database::scoped(fn(Product $p, Category $c, Query $q) => $q
     ->from($p)
+    ->innerJoin($c, $c->id->equals($p->category_id))
     ->select(new ProductAgg(
         categoryId: $p->category_id->add(100),
         count: $p->id->count()->multiply(2),
         row: WindowFunction::rowNumber($p->id),
         name: StringColumn::case()
-            ->when($p->category_id->equals(0), $p->category()->name)
+            ->when($p->category_id->equals(0), $c->name)
             ->when($p->category_id->equals(1), "Other")
             ->end()
     ))
