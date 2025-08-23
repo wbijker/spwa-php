@@ -26,17 +26,15 @@ abstract class Table
      */
     protected function innerJoin(string $source, callable $condition)
     {
-        $builder = $this->context->build($source);
-        $instance = $builder->source->instance;
-        $this->context->sources[$source] = $instance;
-
+        $source = $this->context->createSourceFromType($source);
         $on = $this->context->invokeCallback($condition);
+
         $this->context->joins[] = new SqlJoin(
             "inner",
-            $builder->source,
+            $source->source,
             Query::toExpression($on)
         );
-        return $instance;
+        return $source->instance;
     }
 
 }

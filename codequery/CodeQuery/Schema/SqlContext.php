@@ -140,28 +140,6 @@ class SqlContext
         throw new \InvalidArgumentException("Source must be a string or an object, got " . gettype($source));
     }
 
-
-    public function build(string $tableClass): TableBuilder
-    {
-        $hit = $this->sources[$tableClass] ?? null;
-        if ($hit) {
-            return $hit;
-        }
-
-        $table = new $tableClass($this);
-        if (!$table instanceof Table) {
-            throw new \InvalidArgumentException("Class $tableClass must be an instance of " . Table::class);
-        }
-        $builder = new TableBuilder($table);
-        // invoke the builder to build the table structure
-        $table->buildTable($builder);
-        $builder->source->setAlias($this->nextAlias());
-        $this->sources[$tableClass] = $builder->table;
-
-        return $builder;
-    }
-
-
     public function createSubQuery(): Query
     {
         $context = new SqlContext();
