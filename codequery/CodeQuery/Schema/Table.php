@@ -2,12 +2,9 @@
 
 namespace CodeQuery\Schema;
 
-use CodeQuery\Columns\BoolColumn;
-use CodeQuery\Expressions\SqlExpression;
 use CodeQuery\Queryable\Query;
 use CodeQuery\Queryable\SqlJoin;
 use CodeQuery\Sources\SqlSource;
-use function CodeQuery\Queryable\toExpression;
 
 abstract class Table
 {
@@ -41,6 +38,5 @@ abstract class Table
         );
         return $instance;
     }
-
 
 }

@@ -19,6 +19,11 @@ class Query
     {
     }
 
+    public function getContext(): SqlContext
+    {
+        return $this->context;
+    }
+
     static function toExpression(SqlExpression|Column $value): SqlExpression
     {
         if ($value instanceof Column)
@@ -29,10 +34,7 @@ class Query
 
     public function from(string|object $from): Query
     {
-        $source = is_string($from)
-            ? $this->context->createSourceFromType($from)
-            : $this->context->createSourceFromInstance($from);
-
+        $source = $this->context->createSource($from);
         $this->context->from = $source->source;
         return $this;
     }

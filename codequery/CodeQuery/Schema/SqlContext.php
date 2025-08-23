@@ -117,13 +117,26 @@ class SqlContext
         throw new \InvalidArgumentException("Instance of " . get_class($search) . " is not part of the query");
     }
 
+    private function createSourceFromQuery(Query $source): SourceType
+    {
+        $context = $source->getContext();
+        return new SourceType(get_class($context->selectType), $context->from, $context->selectType);
+    }
+
     public function createSource(string|object $source): SourceType
     {
-        if (is_string($source)) {
+        // String source = table class
+        if (is_string($source))
             return $this->createSourceFromType($source);
-        } elseif (is_object($source)) {
+
+        // Query instance = SubQuery / const / etc.
+        if ($source instanceof Query)
+            return $this->createSourceFromQuery($source);
+
+        // Object source = refer to scoped instance
+        if (is_object($source))
             return $this->createSourceFromInstance($source);
-        }
+
         throw new \InvalidArgumentException("Source must be a string or an object, got " . gettype($source));
     }
 
