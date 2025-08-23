@@ -10,10 +10,8 @@ use CodeQuery\Expressions\ConstExpression;
 use CodeQuery\Expressions\SqlExpression;
 use CodeQuery\Queryable\Query;
 use CodeQuery\Queryable\SqlJoin;
-use CodeQuery\Queryable\SqlSelect;
 use CodeQuery\Sources\QuerySource;
 use CodeQuery\Sources\SqlSource;
-use CodeQuery\Sources\TableSource;
 
 // created SQl context. Holding sources, select, where, group by, order by, joins
 // each block defined it's own context.
@@ -23,22 +21,32 @@ use CodeQuery\Sources\TableSource;
 class SqlContext
 {
     // combination of all sources used in this query
-    // dictionary<type, SqlSource>
+    // dictionary<String, SqlSource>
     // from + joins
+    /**
+     * @var array<SourceType> $sources
+     */
     public array $sources = [];
 
-//    private array $prefixes = [];
-//
-//    function alias(string $prefix): string
-//    {
-//        if (!isset($this->prefixes[$prefix])) {
-//            $this->prefixes[$prefix] = 1;
-//            return $prefix;
-//        }
-//
-//        $this->prefixes[$prefix]++;
-//        return $prefix . $this->prefixes[$prefix];
-//    }
+    private function sourceByType(string $type): ?SourceType
+    {
+        foreach ($this->sources as $sourceType) {
+            if ($sourceType->type === $type) {
+                return $sourceType;
+            }
+        }
+        return null;
+    }
+
+    private function sourceByInstance(object $instance): ?SourceType
+    {
+        foreach ($this->sources as $sourceType) {
+            if ($sourceType->instance === $instance) {
+                return $sourceType;
+            }
+        }
+        return null;
+    }
 
     /**
      * @var SqlExpression[] $select
@@ -73,6 +81,40 @@ class SqlContext
     public function nextAlias(): string
     {
         return "t" . $this->aliasCounter++;
+    }
+
+    public function createSourceFromType(string $search): SourceType
+    {
+        // search by type
+        $hit = $this->sourceByType($search);
+        if ($hit) {
+            return $hit;
+        }
+
+        // create table
+        $table = new $search($this);
+        if (!$table instanceof Table) {
+            throw new \InvalidArgumentException("Class $search is not part of the query not is it a table");
+        }
+        $builder = new TableBuilder($table);
+        // invoke the builder to build the table structure
+        $table->buildTable($builder);
+        $source = $builder->source;
+        $source->setAlias($this->nextAlias());
+
+        $sourceType = new SourceType($search, $source, $table);
+        $this->sources[] = $sourceType;
+        return $sourceType;
+    }
+
+    public function createSourceFromInstance(object $search): SourceType
+    {
+        $hit = $this->sourceByInstance($search);
+        if ($hit) {
+            return $hit;
+        }
+
+        throw new \InvalidArgumentException("Instance of " . get_class($search) . " is not part of the query");
     }
 
     public function build(string $tableClass): TableBuilder
@@ -122,16 +164,14 @@ class SqlContext
         $params = $reflection->getParameters();
 
         $filledParams = array_map(function ($param) use ($query) {
-            if ($param->getType()->getName() == Query::class) {
+            // Inject the query itself if asked for
+            $type = $param->getType()->getName();
+
+            if ($type == Query::class) {
                 return $query;
             }
-
-            $class = $param->getType()->getName();
-            $hit = $this->sources[$class] ?? null;
-            if ($hit == null) {
-                throw new \InvalidArgumentException("Source $class not part of the query.");
-            }
-            return $hit;
+            $source = $this->createSourceFromType($type);
+            return $source->instance;
         }, $params);
 
         // invoke the callback with the filled parameters

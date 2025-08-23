@@ -8,7 +8,9 @@ use App\Db\Product;
 use CodeQuery\Columns\IntColumn;
 use CodeQuery\Columns\StringColumn;
 use CodeQuery\Expressions\Frame;
+use CodeQuery\Queryable\Database;
 use CodeQuery\Queryable\Query;
+use CodeQuery\Queryable\WindowFunction;
 use CodeQuery\Queryable\WindowFunctions;
 use CodeQuery\Schema\SqlContext;
 use ReflectionFunction;
@@ -77,38 +79,80 @@ FROM
 
 // SqlDriver + sql generator;
 
-$query = Query::from(Product::class)
-    ->scoped(function (Query $q, Product $p) {
-        return $q
-            ->where($p->price->greaterThan(10))
-            ->orderByDesc($p->price)
-            ->orderBy($p->category_id)
-            ->select(new ProductAgg(
-                categoryId: $p->category_id->add(100),
-                count: $p->id->count()->multiply(2),
-                row: WindowFunctions::rowNumber($p->id),
-                name: StringColumn::case()
-                    ->when($p->category_id->equals(0), "Uncategorized")
-                    ->when($p->category_id->equals(1), "Food")
-                    ->end()
-            ));
-    });
+// scoped create all table sources
 
-//    ->where(fn(Product $p) => $p->price->greaterThan(0))
-//    ->select(fn(Product $p) => new ProductAgg(
+// Select category_id, max(id) from product groupby category_id order by id desc
+// join back to products to get name
+
+
+/*
+The from and join clauses is the only place where a new source can be introduced.
+
+$source = table | query | constant | function
+
+Query::from($source);
+->join($source);
+
+
+Scoped is just the grouping of sources for a query.
+*/
+
+$q = Database::scoped(fn(Product $p, Category $c, Query $q) => $q
+    ->from($p)
+    ->select(new ProductAgg(
+        categoryId: $p->category_id->add(100),
+        count: $p->id->count()->multiply(2),
+        row: WindowFunction::rowNumber($p->id),
+        name: StringColumn::case()
+            ->when($p->category_id->equals(0), $c->name)
+            ->when($p->category_id->equals(1), "Other")
+            ->end()
+    ))
+);
+
+echo $q->toSql();
+
+
+
+//Query::scoped(fn(Product $p) => Query::from($p)
+//    ->groupBy($p->category_id)
+//    ->orderByDesc($p->id)
+//    ->select(new AA(
+//            id: $p->id->max(),
+//            categoryId: $p->category_id,
+//        )
+//    ))
+//    ->scoped(fn(AA $a, Product $p) => Query::from($p)
+//        ->innerJoin($a, $a->id->equals($p->id))
+//        // laterJoin / crossLateralJoin
+//        ->select(new ProductSelector(
+//            id: $p->id,
+//            categoryId: $p->category_id,
+//            name: $p->name
+//        ))
+//    );
+//
+//// -> innerJoin(Newtable::class, fn(Newtable $n, Product $p) => $n->id->equals($p->id))
+//// -> lateralJoin(fn(Sources $s) => ...);
+//
+//$q = Query::scoped(fn(Product $p, Category $c) => Query::from($p)
+//    ->innerJoin($c, $c->id->equals($p->category_id))
+//    ->where($p->price->greaterThan(10))
+//    ->orderByDesc($p->price)
+//    ->orderBy($p->category_id)
+//    ->select(new ProductAgg(
 //        categoryId: $p->category_id->add(100),
 //        count: $p->id->count()->multiply(2),
-//        row: WindowFunctions::rowNumber($p->id, null, Frame::rows(null, null)),
-//        name: $p->category()->name
-//    ));
-
-
-/* @var ProductAggFlat[] $results */
-$results = $query->fetch(fn(ProductAgg $agg) => $agg->toFlat());
-
-print_r($results);
-
-
+//        row: WindowFunction::rowNumber($p->id),
+//        name: StringColumn::case()
+//            ->when($p->category_id->equals(0), $c->name)
+//            ->when($p->category_id->equals(1), "Other")
+//            ->end()
+//    ))
+//    ->scoped(fn(ProductAgg $p, Product $p) =>
+//        )
+//);
+//
 
 //App::run([
 //    new SpwMiddleware(fn() => new WelcomePage()),

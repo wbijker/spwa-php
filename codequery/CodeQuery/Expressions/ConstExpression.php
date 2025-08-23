@@ -13,7 +13,7 @@ class ConstExpression implements SqlExpression
     {
         return match (gettype($this->value)) {
             "string" => "'" . $this->value . "'",
-            "double" => (string)$this->value,
+            "double", "integer" => (string)$this->value,
             "boolean" => $this->value ? "1" : "0",
             default => "NULL",
         };

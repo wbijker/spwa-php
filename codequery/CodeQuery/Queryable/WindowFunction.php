@@ -9,7 +9,7 @@ use CodeQuery\Expressions\FunctionExpression;
 use CodeQuery\Expressions\OverExpression;
 use CodeQuery\Expressions\StarExpression;
 
-class WindowFunctions
+class WindowFunction
 {
     /*
      * $windows = WindowFunctions::rowNumber()

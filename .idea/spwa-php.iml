@@ -6,6 +6,7 @@
       <sourceFolder url="file://$MODULE_DIR$/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/spwa/src" isTestSource="false" packagePrefix="Spwa\" />
       <sourceFolder url="file://$MODULE_DIR$/www" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/www/App" isTestSource="false" packagePrefix="App\" />
       <excludeFolder url="file://$MODULE_DIR$/www/vendor/composer" />
       <excludeFolder url="file://$MODULE_DIR$/www/vendor/spwa/spwa" />
       <excludeFolder url="file://$MODULE_DIR$/www/vendor" />

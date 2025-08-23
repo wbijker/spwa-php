@@ -11,6 +11,7 @@ use CodeQuery\Expressions\SqlExpression;
 use CodeQuery\Schema\SqlContext;
 use CodeQuery\Sources\QuerySource;
 use CodeQuery\Sources\SqlSource;
+use CodeQuery\Sources\TableSource;
 
 class Query
 {
@@ -26,12 +27,14 @@ class Query
         return $value;
     }
 
-    static function from(string $className): self
+    public function from(string|object $from): Query
     {
-        $context = new SqlContext();
-        $builder = $context->build($className);
-        $context->from = $builder->source;
-        return new Query($context);
+        $source = is_string($from)
+            ? $this->context->createSourceFromType($from)
+            : $this->context->createSourceFromInstance($from);
+
+        $this->context->from = $source->source;
+        return $this;
     }
 
     public function scoped(callable $callable): Query
@@ -187,8 +190,6 @@ class Query
     {
         return $this->context->toSql();
     }
-
-
 
 
 }
