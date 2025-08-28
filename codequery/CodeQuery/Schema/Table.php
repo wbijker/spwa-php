@@ -2,12 +2,9 @@
 
 namespace CodeQuery\Schema;
 
-use CodeQuery\Columns\BoolColumn;
-use CodeQuery\Expressions\SqlExpression;
 use CodeQuery\Queryable\Query;
 use CodeQuery\Queryable\SqlJoin;
 use CodeQuery\Sources\SqlSource;
-use function CodeQuery\Queryable\toExpression;
 
 abstract class Table
 {
@@ -29,18 +26,15 @@ abstract class Table
      */
     protected function innerJoin(string $source, callable $condition)
     {
-        $builder = $this->context->build($source);
-        $instance = $builder->source->instance;
-        $this->context->sources[$source] = $instance;
-
+        $source = $this->context->createSourceFromType($source);
         $on = $this->context->invokeCallback($condition);
+
         $this->context->joins[] = new SqlJoin(
             "inner",
-            $builder->source,
+            $source->source,
             Query::toExpression($on)
         );
-        return $instance;
+        return $source->instance;
     }
-
 
 }

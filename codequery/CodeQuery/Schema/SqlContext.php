@@ -117,26 +117,28 @@ class SqlContext
         throw new \InvalidArgumentException("Instance of " . get_class($search) . " is not part of the query");
     }
 
-    public function build(string $tableClass): TableBuilder
+    private function createSourceFromQuery(Query $source): SourceType
     {
-        $hit = $this->sources[$tableClass] ?? null;
-        if ($hit) {
-            return $hit;
-        }
-
-        $table = new $tableClass($this);
-        if (!$table instanceof Table) {
-            throw new \InvalidArgumentException("Class $tableClass must be an instance of " . Table::class);
-        }
-        $builder = new TableBuilder($table);
-        // invoke the builder to build the table structure
-        $table->buildTable($builder);
-        $builder->source->setAlias($this->nextAlias());
-        $this->sources[$tableClass] = $builder->table;
-
-        return $builder;
+        $context = $source->getContext();
+        return new SourceType(get_class($context->selectType), $context->from, $context->selectType);
     }
 
+    public function createSource(string|object $source): SourceType
+    {
+        // String source = table class
+        if (is_string($source))
+            return $this->createSourceFromType($source);
+
+        // Query instance = SubQuery / const / etc.
+        if ($source instanceof Query)
+            return $this->createSourceFromQuery($source);
+
+        // Object source = refer to scoped instance
+        if (is_object($source))
+            return $this->createSourceFromInstance($source);
+
+        throw new \InvalidArgumentException("Source must be a string or an object, got " . gettype($source));
+    }
 
     public function createSubQuery(): Query
     {
