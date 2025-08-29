@@ -39,11 +39,6 @@ class StringColumn extends Column
         $this->value = (string)$val;
     }
 
-    static function case(): StringCaseColumn
-    {
-        return new StringCaseColumn();
-    }
-
     function length(): StringColumn
     {
         return new StringColumn(new FunctionExpression('LENGTH', [$this->exp]));
