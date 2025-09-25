@@ -2,122 +2,139 @@
 
 namespace App;
 
-use App\Components\WelcomePage;
-use App\Db\Category;
-use App\Db\Product;
-use CodeQuery\Columns\IntColumn;
-use CodeQuery\Columns\StringColumn;
-use CodeQuery\Expressions\Frame;
-use CodeQuery\Queryable\Database;
-use CodeQuery\Queryable\Query;
-use CodeQuery\Queryable\WindowFunction;
-use CodeQuery\Queryable\WindowFunctions;
-use CodeQuery\Schema\SqlContext;
-use ReflectionFunction;
-use Spwa\App;
-use Spwa\SpwMiddleware;
+use ReflectionClass;
+use Spwa\UI\SampleUI;
 
 require 'vendor/autoload.php';
 
-class ProductAgg
-{
-    public function __construct(
-        public IntColumn    $categoryId,
-        public IntColumn    $count,
-        public IntColumn    $row,
-        public StringColumn $name
-    )
-    {
-    }
-
-    public function toFlat(): ProductAggFlat
-    {
-        return new ProductAggFlat(
-            categoryId: $this->categoryId->value,
-            count: $this->count->value,
-            row: $this->row->value,
-            name: $this->name->value
-        );
-    }
-}
-
-class ProductAggFlat
-{
-    public function __construct(
-        public int    $categoryId,
-        public int    $count,
-        public int    $row,
-        public string $name
-    )
-    {
-    }
-
-}
-
-/*SELECT
-    t0.categoryId AS categoryId,
-    t0.count * 3 AS count,
-    t1.name AS name
-FROM
-(
-    SELECT
-            t0.category_id + 100 AS categoryId,
-            count(t0.id) * 2 AS count,
-            t0.name AS name
-        FROM
-            `product` t0
-        WHERE
-            t0.price > 0
-        GROUP BY
-            t0.category_id
-    ) t0
-    INNER JOIN `category` t1 ON t0.categoryId = t1.id*/
-
-// create database File containing all associated tables
-// migrations dumping an diffing the database schema
-// generate file containing the above;
-
-// SqlDriver + sql generator;
-
-// scoped create all table sources
-
-// Select category_id, max(id) from product groupby category_id order by id desc
-// join back to products to get name
 
 
-/*
-The from and join clauses is the only place where a new source can be introduced.
+$ref = new ReflectionClass(SampleUI::class);
 
-$source = table | query | constant | function
-
-Query::from($source);
-->join($source);
+// read and tokenize the file
 
 
-Scoped is just the grouping of sources for a query.
-*/
+echo token_name(262);
 
-$q = Database::scoped(fn(Product $p, Category $c, Query $q) => $q
-    ->from($p)
-    ->innerJoin($c, $c->id->equals($p->category_id))
-    ->select(new ProductAgg(
-        categoryId: $p->category_id->add(100),
-        count: $p->id->count()->multiply(2),
-        row: WindowFunction::rowNumber($p->id),
-        name: StringColumn::case()
-            ->when($p->category_id->equals(0), $c->name)
-            ->when($p->category_id->equals(1), "Other")
-            ->end()
-    ))
-    ->select(fn(ProductAgg $a) => new ProductAgg(
-        categoryId: $a->categoryId,
-        count: $a->count->multiply(3),
-        row: $a->row,
-        name: $a->name
-    ))
-);
+echo T_STRING;
 
-echo $q->toSql();
+$filePath = $ref->getFileName();
+$source = file_get_contents($filePath);
+$tokens = token_get_all($source);
+
+// map token ids to names,
+$tokenNames = array_map(fn($token) => is_array($token) ? [token_name($token[0]), $token[1]] : [$token, ""], $tokens);
+
+// UI\s*::\s*rows\s*(\s*)
+
+print_r($tokenNames); // outputs the array of PHP tokens
+
+//$el = SampleUI::build();
+//?>
+<!--<script src="https://cdn.tailwindcss.com"></script>-->
+<?php
+//
+//$el->render();
+
+//class ProductAgg
+//{
+//    public function __construct(
+//        public IntColumn    $categoryId,
+//        public IntColumn    $count,
+//        public IntColumn    $row,
+//        public StringColumn $name
+//    )
+//    {
+//    }
+//
+//    public function toFlat(): ProductAggFlat
+//    {
+//        return new ProductAggFlat(
+//            categoryId: $this->categoryId->value,
+//            count: $this->count->value,
+//            row: $this->row->value,
+//            name: $this->name->value
+//        );
+//    }
+//}
+//
+//class ProductAggFlat
+//{
+//    public function __construct(
+//        public int    $categoryId,
+//        public int    $count,
+//        public int    $row,
+//        public string $name
+//    )
+//    {
+//    }
+//
+//}
+//
+///*SELECT
+//    t0.categoryId AS categoryId,
+//    t0.count * 3 AS count,
+//    t1.name AS name
+//FROM
+//(
+//    SELECT
+//            t0.category_id + 100 AS categoryId,
+//            count(t0.id) * 2 AS count,
+//            t0.name AS name
+//        FROM
+//            `product` t0
+//        WHERE
+//            t0.price > 0
+//        GROUP BY
+//            t0.category_id
+//    ) t0
+//    INNER JOIN `category` t1 ON t0.categoryId = t1.id*/
+//
+//// create database File containing all associated tables
+//// migrations dumping an diffing the database schema
+//// generate file containing the above;
+//
+//// SqlDriver + sql generator;
+//
+//// scoped create all table sources
+//
+//// Select category_id, max(id) from product groupby category_id order by id desc
+//// join back to products to get name
+//
+//
+///*
+//The from and join clauses is the only place where a new source can be introduced.
+//
+//$source = table | query | constant | function
+//
+//Query::from($source);
+//->join($source);
+//
+//
+//Scoped is just the grouping of sources for a query.
+//*/
+//
+//$q = Database::scoped(fn(Product $p, Category $c, Query $q) => $q
+//    ->from($p)
+//    ->innerJoin($c, $c->id->equals($p->category_id))
+//    ->select(new ProductAgg(
+//        categoryId: $p->category_id->add(100),
+//        count: $p->id->count()->multiply(2),
+//        row: WindowFunction::rowNumber($p->id),
+//        name: StringColumn::case()
+//            ->when($p->category_id->equals(0), $c->name)
+//            ->when($p->category_id->equals(1), "Other")
+//            ->end()
+//    ))
+//    ->select(fn(ProductAgg $a) => new ProductAgg(
+//        categoryId: $a->categoryId,
+//        count: $a->count->multiply(3),
+//        row: $a->row,
+//        name: $a->name
+//    ))
+//);
+//
+//echo $q->toSql();
 
 
 

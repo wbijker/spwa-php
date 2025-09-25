@@ -2,7 +2,7 @@
 
 namespace Spwa\UI;
 
-class Style
+abstract class Style
 {
     function hover(): static
     {
@@ -18,6 +18,7 @@ class Style
     {
         return $this;
     }
+
 
 //    function md(): static
 //    {

@@ -5,19 +5,19 @@ namespace Spwa\UI;
 
 class UI
 {
-    static function rows(): Element
+    static function element(): Element
     {
         return new Element();
+    }
+
+    static function rows(): Element
+    {
+        return new FlexElement();
     }
 
     static function cols(): Element
     {
-        return new Element();
-    }
-
-    static function columns(): Element
-    {
-        return new Element();
+        return new FlexElement();
     }
 
     static function image(string $src, ?string $alt = null): Element
@@ -25,9 +25,9 @@ class UI
         return new Element();
     }
 
-    static function text(string $content): TextElement
+    static function text(string $text): TextElement
     {
-        return new TextElement();
+        return new TextElement($text);
     }
 }
 

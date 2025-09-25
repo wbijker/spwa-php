@@ -15,6 +15,11 @@ class Color extends Style
         return new Color();
     }
 
+    static function blue($opacity = 100): Color
+    {
+        return new Color();
+    }
+
     static function gray($shade): Color
     {
         return new Color();
