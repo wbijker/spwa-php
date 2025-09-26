@@ -4,30 +4,15 @@ namespace App;
 
 use ReflectionClass;
 use Spwa\UI\SampleUI;
+use Spwa\UI\StyleExtractor;
 
 require 'vendor/autoload.php';
 
 
 
 $ref = new ReflectionClass(SampleUI::class);
+StyleExtractor::extract($ref->getFileName());
 
-// read and tokenize the file
-
-
-echo token_name(262);
-
-echo T_STRING;
-
-$filePath = $ref->getFileName();
-$source = file_get_contents($filePath);
-$tokens = token_get_all($source);
-
-// map token ids to names,
-$tokenNames = array_map(fn($token) => is_array($token) ? [token_name($token[0]), $token[1]] : [$token, ""], $tokens);
-
-// UI\s*::\s*rows\s*(\s*)
-
-print_r($tokenNames); // outputs the array of PHP tokens
 
 //$el = SampleUI::build();
 //?>
