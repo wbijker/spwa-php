@@ -2,184 +2,149 @@
 
 namespace Spwa\UI;
 
-interface StyleResolver
+/**
+ * Basic block element (div).
+ *
+ * Usage:
+ *   UI::element()
+ *       ->background(Color::blue(500))
+ *       ->padding(Unit::md())
+ *       ->children(UI::text("Hello"))
+ */
+class Element extends BaseStyledElement
 {
-    function resolve(BaseElement $parent): array;
-}
+    /** @var BaseElement[] */
+    protected array $children = [];
 
-class StaticResolver implements StyleResolver
-{
+    public function __construct(
+        protected string $tag = 'div'
+    ) {
+    }
 
     /**
-     * @var string[]
+     * Set child elements.
      */
-    private array $classes = [];
-
-    public function __construct(string ...$classes)
+    public function children(BaseElement ...$children): static
     {
-        $this->classes = $classes;
+        $this->children = $children;
+        return $this;
     }
 
-    public function resolve(BaseElement $parent): array
+    /**
+     * Add child element(s).
+     */
+    public function child(BaseElement ...$children): static
     {
-        return $this->classes;
-    }
-}
-
-abstract class ParentResolver implements StyleResolver
-{
-    public function resolve(BaseElement $parent): array
-    {
-        if ($parent instanceof Element) {
-            return $this->resolveForElement($parent);
+        foreach ($children as $child) {
+            $this->children[] = $child;
         }
-        if ($parent instanceof FlexElement) {
-            return $this->resolveForFlex($parent);
-        }
-        if ($parent instanceof GridElement) {
-            return $this->resolveForGrid($parent);
-        }
-        if ($parent instanceof TableCellElement) {
-            return $this->resolveForTableCell($parent);
-        }
+        return $this;
     }
 
-    abstract function resolveForElement(BaseElement $parent): array;
-
-    abstract function resolveForFlex(BaseElement $parent): array;
-
-    abstract function resolveForGrid(BaseElement $parent): array;
-
-    abstract function resolveForTableCell(BaseElement $parent): array;
-}
-
-class Element extends BaseElement
-{
-    public function resolve(BaseElement $parent): array
+    // Display
+    public function block(): static
     {
-        return [];
+        $this->addClass('block');
+        return $this;
     }
 
-    public function __construct(private string $tag = "div")
+    public function inline(): static
     {
+        $this->addClass('inline');
+        return $this;
     }
 
-    protected array $childElements = [];
-    protected array $classes = [];
-
-    function render(): void
+    public function inlineBlock(): static
     {
-        echo "<" . $this->tag . " class=\"" . implode(" ", $this->classes) . "\">\n";
-        foreach ($this->childElements as $child) {
+        $this->addClass('inline-block');
+        return $this;
+    }
+
+    public function flex(): static
+    {
+        $this->addClass('flex');
+        return $this;
+    }
+
+    public function inlineFlex(): static
+    {
+        $this->addClass('inline-flex');
+        return $this;
+    }
+
+    public function grid(): static
+    {
+        $this->addClass('grid');
+        return $this;
+    }
+
+    // Self alignment (when inside flex/grid)
+    public function selfStart(): static
+    {
+        $this->addClass('self-start');
+        return $this;
+    }
+
+    public function selfCenter(): static
+    {
+        $this->addClass('self-center');
+        return $this;
+    }
+
+    public function selfEnd(): static
+    {
+        $this->addClass('self-end');
+        return $this;
+    }
+
+    public function selfStretch(): static
+    {
+        $this->addClass('self-stretch');
+        return $this;
+    }
+
+    public function selfAuto(): static
+    {
+        $this->addClass('self-auto');
+        return $this;
+    }
+
+    // Flex grow/shrink
+    public function grow(): static
+    {
+        $this->addClass('grow');
+        return $this;
+    }
+
+    public function growNone(): static
+    {
+        $this->addClass('grow-0');
+        return $this;
+    }
+
+    public function shrink(): static
+    {
+        $this->addClass('shrink');
+        return $this;
+    }
+
+    public function shrinkNone(): static
+    {
+        $this->addClass('shrink-0');
+        return $this;
+    }
+
+    public function render(): void
+    {
+        $classAttr = $this->buildClassAttribute();
+        $classHtml = $classAttr ? " class=\"{$classAttr}\"" : '';
+
+        echo "<{$this->tag}{$classHtml}>";
+
+        foreach ($this->children as $child) {
             $child->render();
         }
-        echo "</" . $this->tag . ">\n";
+
+        echo "</{$this->tag}>";
     }
-
-    function alignCenter(): static
-    {
-        // if width or max-width is set then mx-auto
-        // if parent is flex / grid then justify-center
-
-
-        // parent: flex, grid, element, table-cell
-        // new Props(flex: "mx-auto", grid: "mx-auto", element: $parent->add("flex"), "mx-auto", tableCell: "align-center");
-        // inline-block with text-center
-//        $this->attrs[] = new Align()
-
-//        $this->classes[] = "mx-auto";
-        return $this;
-    }
-
-    function alignRight(): static
-    {
-        return $this;
-    }
-
-    function alignLeft(): static
-    {
-        return $this;
-    }
-
-    function alignTop(): static
-    {
-        // if flex / grid
-        $this->classes[] = "self-start";
-        return $this;
-    }
-
-    function alignMiddle(): static
-    {
-        return $this;
-
-    }
-
-    function alignBottom(): static
-    {
-        return $this;
-
-    }
-
-    function maxWidth(Unit ...$units): static
-    {
-        return $this;
-    }
-
-    function padding(Unit ...$unit): static
-    {
-        return $this;
-    }
-
-    function radius(Unit ...$units): static
-    {
-        return $this;
-    }
-
-    function shadow(Unit ...$units): static
-    {
-        return $this;
-    }
-
-    function background(Color ...$color): static
-    {
-        // $color[0]->
-        return $this;
-    }
-
-    function outline(Unit ...$units): static
-    {
-        return $this;
-    }
-
-    function outlineColor(Color ...$color): static
-    {
-        return $this;
-    }
-
-    function size(Unit ...$units): static
-    {
-        return $this;
-    }
-
-    function shrink(Unit ...$units): static
-    {
-        return $this;
-    }
-
-    function children(array $children): static
-    {
-        // set parent for each child
-        // then run the resolver method
-
-        $this->childElements = $children;
-        return $this;
-    }
-
-    public function extendScreen(): static
-    {
-        $this->classes[] = "w-screen";
-        $this->classes[] = "h-screen";
-        return $this;
-    }
-
 }

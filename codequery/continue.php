@@ -34,23 +34,25 @@ $products = Query::values([
 
 // $pfr->columns() == $pfr->data->property('Columns')
 
-$expand = Query::scoped(fn(PlayFieldRevisions $pfr) => Query::from($pfr)
-    ->lateralJoin($pfr->columns()->arrayElements()) // return JsonColumn
-    ->where($pfr->columns()->typeof()->equals("array"))
-    ->select(fn(JsonColumn $json) => new ColumnExpand(
-        playFieldRevisionId: $pfr->id,
-        unit: $json->proprety('Unit')->toInt(),
-        productId: $json->property('ProdudctId')->toInt()
-    ));
+$expand = Query::scoped(fn(PlayFieldRevisions $pfr) => 
+    Query::from($pfr)
+        ->lateralJoin($pfr->columns()->arrayElements()) // return JsonColumn
+        ->where($pfr->columns()->typeof()->equals("array"))
+        ->select(fn(JsonColumn $json) => new ColumnExpand(
+            playFieldRevisionId: $pfr->id,
+            unit: $json->proprety('Unit')->toInt(),
+            productId: $json->property('ProdudctId')->toInt()
+        ));
 
-$query = Query::scoped([$expand, $products], fn(Product $p, ProductUnit $unit, ColumnExpand $c) => Query::from($expand)
-    ->innerJoin($p, $p->id->equals($c->productId))
-    ->innerJoin($unit, $u->unit->equals($c->productUnit))
-    ->where(case::bool()
-    ->when($unit->form->equals('Solid'), $p->solid)
-    ->when($unit->form->equals('Liquid'), $p->liquid)
-    ->else(false)
-    ));
+$query = Query::scoped([$expand, $products], fn(Product $p, ProductUnit $unit, ColumnExpand $c) => 
+    Query::from($expand)
+        ->innerJoin($p, $p->id->equals($c->productId))
+        ->innerJoin($unit, $u->unit->equals($c->productUnit))
+        ->where(case::bool()
+            ->when($unit->form->equals('Solid'), $p->solid)
+            ->when($unit->form->equals('Liquid'), $p->liquid)
+            ->else(false))
+        );
 
 /*
 Select q.*,
