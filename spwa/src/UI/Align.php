@@ -3,22 +3,13 @@
 namespace Spwa\UI;
 
 /**
- * Unified alignment class for both horizontal and vertical alignment.
+ * Alignment value - pure value class.
+ * Context (justify/items) is determined by usage in layout components.
  *
  * Usage:
- *   Align::left()      // justify-start / items-start
- *   Align::center()    // justify-center / items-center
- *   Align::right()     // justify-end / items-end
- *   Align::top()       // justify-start / items-start
- *   Align::middle()    // justify-center / items-center
- *   Align::bottom()    // justify-end / items-end
- *   Align::between()   // justify-between
- *   Align::around()    // justify-around
- *   Align::evenly()    // justify-evenly
- *   Align::stretch()   // items-stretch
- *   Align::baseline()  // items-baseline
- *
- * With responsive/pseudo:
+ *   Align::left()
+ *   Align::center()
+ *   Align::middle()
  *   Align::center()->md()
  *   Align::middle()->hover()
  */
@@ -35,19 +26,11 @@ class Align extends Property
     }
 
     /**
-     * Build class with justify context (for main axis).
+     * Build class with context (justify, items, etc).
      */
-    public function asJustify(): string
+    public function withContext(string $context): string
     {
-        return $this->prefix() . 'justify-' . $this->value->value;
-    }
-
-    /**
-     * Build class with items context (for cross axis).
-     */
-    public function asItems(): string
-    {
-        return $this->prefix() . 'items-' . $this->value->value;
+        return $this->prefix() . $context . '-' . $this->value->value;
     }
 
     // ============================================================

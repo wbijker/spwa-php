@@ -148,7 +148,7 @@ class Inlined extends Container
     public function align(Align ...$values): static
     {
         foreach ($values as $value) {
-            $this->classes[] = $value->asJustify();
+            $this->classes[] = $value->withContext('justify');
         }
         return $this;
     }
@@ -159,7 +159,7 @@ class Inlined extends Container
     public function alignVertical(Align ...$values): static
     {
         foreach ($values as $value) {
-            $this->classes[] = $value->asItems();
+            $this->classes[] = $value->withContext('items');
         }
         return $this;
     }
