@@ -9,10 +9,11 @@ require 'vendor/autoload.php';
 
 // Build and render the UI Showcase
 $ui = Showcase::build();
-$html = $ui->render();
+$node = $ui->render();
+$html = $node->toHtml();
 
 // Generate compressed styles with JS runtime
-$generator = StyleGenerator::from($ui->collectStyles());
+$generator = StyleGenerator::from($node->collectStyles());
 ?>
 <!DOCTYPE html>
 <html lang="en">

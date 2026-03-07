@@ -17,6 +17,11 @@ class Node
     /** @var array<string, array<string, string>> */
     protected array $styles = [];
 
+    protected string|int|null $key = null;
+
+    /** @var array<string, callable> */
+    protected array $events = [];
+
     public function __construct(
         protected string $tag,
     ) {
@@ -89,6 +94,41 @@ class Node
     {
         $this->styles = array_merge($this->styles, $styles);
         return $this;
+    }
+
+    /**
+     * Set a unique key for this node.
+     */
+    public function key(string|int $key): static
+    {
+        $this->key = $key;
+        return $this;
+    }
+
+    /**
+     * Get the node key.
+     */
+    public function getKey(): string|int|null
+    {
+        return $this->key;
+    }
+
+    /**
+     * Add an event listener.
+     */
+    public function on(string $event, callable $callback): static
+    {
+        $this->events[$event] = $callback;
+        return $this;
+    }
+
+    /**
+     * Get all event listeners.
+     * @return array<string, callable>
+     */
+    public function getEvents(): array
+    {
+        return $this->events;
     }
 
     /**

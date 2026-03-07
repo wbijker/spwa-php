@@ -22,14 +22,36 @@ namespace Spwa\UI;
  */
 class Table extends UIElement
 {
+    protected ?string $caption = null;
+    protected ?TableColgroup $colgroup = null;
     protected ?TableRow $headRow = null;
     /** @var TableRow[] */
     protected array $bodyRows = [];
+    /** @var TableRow[] */
+    protected array $footRows = [];
 
     public function __construct()
     {
         $this->addStyle('w-full', ['width' => '100%']);
         $this->addStyle('border-collapse', ['border-collapse' => 'collapse']);
+    }
+
+    /**
+     * Set table caption.
+     */
+    public function caption(string $caption): static
+    {
+        $this->caption = $caption;
+        return $this;
+    }
+
+    /**
+     * Set column group.
+     */
+    public function colgroup(TableColgroup $colgroup): static
+    {
+        $this->colgroup = $colgroup;
+        return $this;
     }
 
     /**
@@ -47,6 +69,15 @@ class Table extends UIElement
     public function body(TableRow ...$rows): static
     {
         $this->bodyRows = $rows;
+        return $this;
+    }
+
+    /**
+     * Set table footer rows.
+     */
+    public function foot(TableRow ...$rows): static
+    {
+        $this->footRows = $rows;
         return $this;
     }
 
@@ -74,9 +105,33 @@ class Table extends UIElement
         return new TableRow(...$cells);
     }
 
+    /**
+     * Create a column group.
+     */
+    public static function createColgroup(TableCol ...$cols): TableColgroup
+    {
+        return new TableColgroup(...$cols);
+    }
+
+    /**
+     * Create a column definition.
+     */
+    public static function col(): TableCol
+    {
+        return new TableCol();
+    }
+
     public function render(): Node
     {
         $node = $this->node('table');
+
+        if ($this->caption !== null) {
+            $node->children(Node::el('caption')->children($this->caption));
+        }
+
+        if ($this->colgroup !== null) {
+            $node->children($this->colgroup->toNode());
+        }
 
         if ($this->headRow !== null) {
             $thead = Node::el('thead')->children($this->headRow->render());
@@ -91,122 +146,12 @@ class Table extends UIElement
             $node->children($tbody);
         }
 
-        return $node;
-    }
-}
-
-/**
- * Table row element.
- */
-class TableRow extends UIElement
-{
-    /** @var (TableCell|TableHeading)[] */
-    protected array $cells = [];
-
-    public function __construct(TableCell|TableHeading ...$cells)
-    {
-        $this->cells = $cells;
-    }
-
-    /**
-     * Add cells to the row.
-     */
-    public function cells(TableCell|TableHeading ...$cells): static
-    {
-        $this->cells = array_merge($this->cells, $cells);
-        return $this;
-    }
-
-    public function render(): Node
-    {
-        $node = $this->node('tr');
-
-        foreach ($this->cells as $cell) {
-            $node->children($cell->render());
-        }
-
-        return $node;
-    }
-}
-
-/**
- * Table heading cell (th).
- */
-class TableHeading extends UIElement
-{
-    protected ?UIElement $child = null;
-    protected ?string $textContent = null;
-
-    public function __construct()
-    {
-        $this->addStyle('px-4', ['padding-left' => '1rem', 'padding-right' => '1rem']);
-        $this->addStyle('py-3', ['padding-top' => '0.75rem', 'padding-bottom' => '0.75rem']);
-        $this->addStyle('text-left', ['text-align' => 'left']);
-        $this->addStyle('font-semibold', ['font-weight' => '600']);
-    }
-
-    /**
-     * Set cell content (UIElement or string).
-     */
-    public function content(UIElement|string $content): static
-    {
-        if ($content instanceof UIElement) {
-            $this->child = $content;
-        } else {
-            $this->textContent = $content;
-        }
-        return $this;
-    }
-
-    public function render(): Node
-    {
-        $node = $this->node('th');
-
-        if ($this->child !== null) {
-            $node->children($this->child->render());
-        } elseif ($this->textContent !== null) {
-            $node->children($this->textContent);
-        }
-
-        return $node;
-    }
-}
-
-/**
- * Table data cell (td).
- */
-class TableCell extends UIElement
-{
-    protected ?UIElement $child = null;
-    protected ?string $textContent = null;
-
-    public function __construct()
-    {
-        $this->addStyle('px-4', ['padding-left' => '1rem', 'padding-right' => '1rem']);
-        $this->addStyle('py-3', ['padding-top' => '0.75rem', 'padding-bottom' => '0.75rem']);
-    }
-
-    /**
-     * Set cell content (UIElement or string).
-     */
-    public function content(UIElement|string $content): static
-    {
-        if ($content instanceof UIElement) {
-            $this->child = $content;
-        } else {
-            $this->textContent = $content;
-        }
-        return $this;
-    }
-
-    public function render(): Node
-    {
-        $node = $this->node('td');
-
-        if ($this->child !== null) {
-            $node->children($this->child->render());
-        } elseif ($this->textContent !== null) {
-            $node->children($this->textContent);
+        if (!empty($this->footRows)) {
+            $tfoot = Node::el('tfoot');
+            foreach ($this->footRows as $row) {
+                $tfoot->children($row->render());
+            }
+            $node->children($tfoot);
         }
 
         return $node;
