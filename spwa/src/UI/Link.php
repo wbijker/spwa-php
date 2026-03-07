@@ -14,10 +14,11 @@ class Link extends UIElement
 {
     protected bool $newTab = false;
 
-    public function __construct(
-        protected string $label,
-        protected string $href
-    ) {
+    public function __construct(string $label, string $href)
+    {
+        parent::__construct('a');
+        $this->content($label);
+        $this->attr('href', $href);
     }
 
     /**
@@ -56,17 +57,15 @@ class Link extends UIElement
         return $this;
     }
 
-    public function render(): Node
+    /**
+     * Render to HTML string.
+     */
+    public function toHtml(): string
     {
-        $node = $this->node('a')
-            ->attr('href', $this->href)
-            ->children($this->label);
-
         if ($this->newTab) {
-            $node->attr('target', '_blank')
-                ->attr('rel', 'noopener noreferrer');
+            $this->attr('target', '_blank');
+            $this->attr('rel', 'noopener noreferrer');
         }
-
-        return $node;
+        return parent::toHtml();
     }
 }

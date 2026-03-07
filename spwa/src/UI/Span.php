@@ -7,34 +7,11 @@ namespace Spwa\UI;
  */
 class Span extends UIElement
 {
-    /** @var (UIElement|string)[] */
-    protected array $children = [];
-
-    public function __construct(string|UIElement|null $content = null)
+    public function __construct(Node|string|null $content = null)
     {
+        parent::__construct('span');
         if ($content !== null) {
-            $this->children[] = $content;
+            $this->content($content);
         }
-    }
-
-    public function content(UIElement|string ...$children): static
-    {
-        $this->children = array_merge($this->children, $children);
-        return $this;
-    }
-
-    public function render(): Node
-    {
-        $node = $this->node('span');
-
-        foreach ($this->children as $child) {
-            if ($child instanceof UIElement) {
-                $node->children($child->render());
-            } else {
-                $node->children($child);
-            }
-        }
-
-        return $node;
     }
 }

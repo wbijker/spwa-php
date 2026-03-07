@@ -7,8 +7,8 @@ namespace Spwa\UI;
  */
 class Hr extends UIElement
 {
-    public function render(): Node
+    public function __construct()
     {
-        return $this->node('hr');
+        parent::__construct('hr');
     }
 }

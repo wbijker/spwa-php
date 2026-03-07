@@ -14,27 +14,32 @@ namespace Spwa\UI;
  */
 class Textarea extends UIElement
 {
-    protected ?string $name = null;
-    protected ?string $value = null;
-    protected ?string $placeholder = null;
-    protected ?string $id = null;
-    protected ?int $rows = null;
-    protected ?int $cols = null;
-    protected bool $required = false;
-    protected bool $disabled = false;
-    protected bool $readonly = false;
-    protected bool $autofocus = false;
-    protected ?int $minLength = null;
-    protected ?int $maxLength = null;
-    protected ?string $wrap = null;
-    protected ?string $autocomplete = null;
+    protected ?string $inputName = null;
+    protected ?string $inputValue = null;
+    protected ?string $inputPlaceholder = null;
+    protected ?string $inputId = null;
+    protected ?int $inputRows = null;
+    protected ?int $inputCols = null;
+    protected bool $isRequired = false;
+    protected bool $isDisabled = false;
+    protected bool $isReadonly = false;
+    protected bool $isAutofocus = false;
+    protected ?int $inputMinLength = null;
+    protected ?int $inputMaxLength = null;
+    protected ?string $inputWrap = null;
+    protected ?string $inputAutocomplete = null;
+
+    public function __construct()
+    {
+        parent::__construct('textarea');
+    }
 
     /**
      * Set name attribute.
      */
     public function name(string $name): static
     {
-        $this->name = $name;
+        $this->inputName = $name;
         return $this;
     }
 
@@ -43,7 +48,7 @@ class Textarea extends UIElement
      */
     public function value(string $value): static
     {
-        $this->value = $value;
+        $this->inputValue = $value;
         return $this;
     }
 
@@ -52,7 +57,7 @@ class Textarea extends UIElement
      */
     public function placeholder(string $placeholder): static
     {
-        $this->placeholder = $placeholder;
+        $this->inputPlaceholder = $placeholder;
         return $this;
     }
 
@@ -61,7 +66,7 @@ class Textarea extends UIElement
      */
     public function id(string $id): static
     {
-        $this->id = $id;
+        $this->inputId = $id;
         return $this;
     }
 
@@ -70,7 +75,7 @@ class Textarea extends UIElement
      */
     public function rows(int $rows): static
     {
-        $this->rows = $rows;
+        $this->inputRows = $rows;
         return $this;
     }
 
@@ -79,7 +84,7 @@ class Textarea extends UIElement
      */
     public function cols(int $cols): static
     {
-        $this->cols = $cols;
+        $this->inputCols = $cols;
         return $this;
     }
 
@@ -88,7 +93,7 @@ class Textarea extends UIElement
      */
     public function required(bool $required = true): static
     {
-        $this->required = $required;
+        $this->isRequired = $required;
         return $this;
     }
 
@@ -97,7 +102,7 @@ class Textarea extends UIElement
      */
     public function disabled(bool $disabled = true): static
     {
-        $this->disabled = $disabled;
+        $this->isDisabled = $disabled;
         return $this;
     }
 
@@ -106,7 +111,7 @@ class Textarea extends UIElement
      */
     public function readonly(bool $readonly = true): static
     {
-        $this->readonly = $readonly;
+        $this->isReadonly = $readonly;
         return $this;
     }
 
@@ -115,7 +120,7 @@ class Textarea extends UIElement
      */
     public function autofocus(bool $autofocus = true): static
     {
-        $this->autofocus = $autofocus;
+        $this->isAutofocus = $autofocus;
         return $this;
     }
 
@@ -124,7 +129,7 @@ class Textarea extends UIElement
      */
     public function minLength(int $length): static
     {
-        $this->minLength = $length;
+        $this->inputMinLength = $length;
         return $this;
     }
 
@@ -133,7 +138,7 @@ class Textarea extends UIElement
      */
     public function maxLength(int $length): static
     {
-        $this->maxLength = $length;
+        $this->inputMaxLength = $length;
         return $this;
     }
 
@@ -142,7 +147,7 @@ class Textarea extends UIElement
      */
     public function wrap(string $wrap): static
     {
-        $this->wrap = $wrap;
+        $this->inputWrap = $wrap;
         return $this;
     }
 
@@ -151,7 +156,7 @@ class Textarea extends UIElement
      */
     public function autocomplete(string $value): static
     {
-        $this->autocomplete = $value;
+        $this->inputAutocomplete = $value;
         return $this;
     }
 
@@ -182,66 +187,67 @@ class Textarea extends UIElement
         return $this;
     }
 
-    public function render(): Node
+    /**
+     * Render to HTML string.
+     */
+    public function toHtml(): string
     {
-        $node = $this->node('textarea');
-
-        if ($this->name !== null) {
-            $node->attr('name', $this->name);
+        if ($this->inputName !== null) {
+            $this->attr('name', $this->inputName);
         }
 
-        if ($this->placeholder !== null) {
-            $node->attr('placeholder', $this->placeholder);
+        if ($this->inputPlaceholder !== null) {
+            $this->attr('placeholder', $this->inputPlaceholder);
         }
 
-        if ($this->id !== null) {
-            $node->attr('id', $this->id);
+        if ($this->inputId !== null) {
+            $this->attr('id', $this->inputId);
         }
 
-        if ($this->rows !== null) {
-            $node->attr('rows', (string)$this->rows);
+        if ($this->inputRows !== null) {
+            $this->attr('rows', (string)$this->inputRows);
         }
 
-        if ($this->cols !== null) {
-            $node->attr('cols', (string)$this->cols);
+        if ($this->inputCols !== null) {
+            $this->attr('cols', (string)$this->inputCols);
         }
 
-        if ($this->required) {
-            $node->attr('required', 'required');
+        if ($this->isRequired) {
+            $this->attr('required', 'required');
         }
 
-        if ($this->disabled) {
-            $node->attr('disabled', 'disabled');
+        if ($this->isDisabled) {
+            $this->attr('disabled', 'disabled');
         }
 
-        if ($this->readonly) {
-            $node->attr('readonly', 'readonly');
+        if ($this->isReadonly) {
+            $this->attr('readonly', 'readonly');
         }
 
-        if ($this->autofocus) {
-            $node->attr('autofocus', 'autofocus');
+        if ($this->isAutofocus) {
+            $this->attr('autofocus', 'autofocus');
         }
 
-        if ($this->minLength !== null) {
-            $node->attr('minlength', (string)$this->minLength);
+        if ($this->inputMinLength !== null) {
+            $this->attr('minlength', (string)$this->inputMinLength);
         }
 
-        if ($this->maxLength !== null) {
-            $node->attr('maxlength', (string)$this->maxLength);
+        if ($this->inputMaxLength !== null) {
+            $this->attr('maxlength', (string)$this->inputMaxLength);
         }
 
-        if ($this->wrap !== null) {
-            $node->attr('wrap', $this->wrap);
+        if ($this->inputWrap !== null) {
+            $this->attr('wrap', $this->inputWrap);
         }
 
-        if ($this->autocomplete !== null) {
-            $node->attr('autocomplete', $this->autocomplete);
+        if ($this->inputAutocomplete !== null) {
+            $this->attr('autocomplete', $this->inputAutocomplete);
         }
 
-        if ($this->value !== null) {
-            $node->children($this->value);
+        if ($this->inputValue !== null) {
+            $this->content($this->inputValue);
         }
 
-        return $node;
+        return parent::toHtml();
     }
 }

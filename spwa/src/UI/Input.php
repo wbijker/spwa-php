@@ -14,30 +14,35 @@ namespace Spwa\UI;
  */
 class Input extends UIElement
 {
-    protected string $type = 'text';
-    protected ?string $name = null;
-    protected ?string $value = null;
-    protected ?string $placeholder = null;
-    protected ?string $id = null;
-    protected bool $required = false;
-    protected bool $disabled = false;
-    protected bool $readonly = false;
-    protected bool $autofocus = false;
-    protected ?string $autocomplete = null;
-    protected ?int $minLength = null;
-    protected ?int $maxLength = null;
-    protected ?string $pattern = null;
-    protected ?string $min = null;
-    protected ?string $max = null;
-    protected ?string $step = null;
-    protected bool $checked = false;
+    protected string $inputType = 'text';
+    protected ?string $inputName = null;
+    protected ?string $inputValue = null;
+    protected ?string $inputPlaceholder = null;
+    protected ?string $inputId = null;
+    protected bool $isRequired = false;
+    protected bool $isDisabled = false;
+    protected bool $isReadonly = false;
+    protected bool $isAutofocus = false;
+    protected ?string $inputAutocomplete = null;
+    protected ?int $inputMinLength = null;
+    protected ?int $inputMaxLength = null;
+    protected ?string $inputPattern = null;
+    protected ?string $inputMin = null;
+    protected ?string $inputMax = null;
+    protected ?string $inputStep = null;
+    protected bool $isChecked = false;
+
+    public function __construct()
+    {
+        parent::__construct('input');
+    }
 
     /**
      * Set input type.
      */
     public function type(string $type): static
     {
-        $this->type = $type;
+        $this->inputType = $type;
         return $this;
     }
 
@@ -46,7 +51,7 @@ class Input extends UIElement
      */
     public function name(string $name): static
     {
-        $this->name = $name;
+        $this->inputName = $name;
         return $this;
     }
 
@@ -55,7 +60,7 @@ class Input extends UIElement
      */
     public function value(string $value): static
     {
-        $this->value = $value;
+        $this->inputValue = $value;
         return $this;
     }
 
@@ -64,7 +69,7 @@ class Input extends UIElement
      */
     public function placeholder(string $placeholder): static
     {
-        $this->placeholder = $placeholder;
+        $this->inputPlaceholder = $placeholder;
         return $this;
     }
 
@@ -73,7 +78,7 @@ class Input extends UIElement
      */
     public function id(string $id): static
     {
-        $this->id = $id;
+        $this->inputId = $id;
         return $this;
     }
 
@@ -82,7 +87,7 @@ class Input extends UIElement
      */
     public function required(bool $required = true): static
     {
-        $this->required = $required;
+        $this->isRequired = $required;
         return $this;
     }
 
@@ -91,7 +96,7 @@ class Input extends UIElement
      */
     public function disabled(bool $disabled = true): static
     {
-        $this->disabled = $disabled;
+        $this->isDisabled = $disabled;
         return $this;
     }
 
@@ -100,7 +105,7 @@ class Input extends UIElement
      */
     public function readonly(bool $readonly = true): static
     {
-        $this->readonly = $readonly;
+        $this->isReadonly = $readonly;
         return $this;
     }
 
@@ -109,7 +114,7 @@ class Input extends UIElement
      */
     public function autofocus(bool $autofocus = true): static
     {
-        $this->autofocus = $autofocus;
+        $this->isAutofocus = $autofocus;
         return $this;
     }
 
@@ -118,7 +123,7 @@ class Input extends UIElement
      */
     public function autocomplete(string $value): static
     {
-        $this->autocomplete = $value;
+        $this->inputAutocomplete = $value;
         return $this;
     }
 
@@ -127,7 +132,7 @@ class Input extends UIElement
      */
     public function minLength(int $length): static
     {
-        $this->minLength = $length;
+        $this->inputMinLength = $length;
         return $this;
     }
 
@@ -136,7 +141,7 @@ class Input extends UIElement
      */
     public function maxLength(int $length): static
     {
-        $this->maxLength = $length;
+        $this->inputMaxLength = $length;
         return $this;
     }
 
@@ -145,7 +150,7 @@ class Input extends UIElement
      */
     public function pattern(string $pattern): static
     {
-        $this->pattern = $pattern;
+        $this->inputPattern = $pattern;
         return $this;
     }
 
@@ -154,7 +159,7 @@ class Input extends UIElement
      */
     public function min(string $value): static
     {
-        $this->min = $value;
+        $this->inputMin = $value;
         return $this;
     }
 
@@ -163,7 +168,7 @@ class Input extends UIElement
      */
     public function max(string $value): static
     {
-        $this->max = $value;
+        $this->inputMax = $value;
         return $this;
     }
 
@@ -172,7 +177,7 @@ class Input extends UIElement
      */
     public function step(string $value): static
     {
-        $this->step = $value;
+        $this->inputStep = $value;
         return $this;
     }
 
@@ -181,7 +186,7 @@ class Input extends UIElement
      */
     public function checked(bool $checked = true): static
     {
-        $this->checked = $checked;
+        $this->isChecked = $checked;
         return $this;
     }
 
@@ -254,12 +259,12 @@ class Input extends UIElement
         return $this->type('file');
     }
 
-    public function hidden(): static
+    public function hiddenInput(): static
     {
         return $this->type('hidden');
     }
 
-    public function color(): static
+    public function colorInput(): static
     {
         return $this->type('color');
     }
@@ -269,74 +274,77 @@ class Input extends UIElement
         return $this->type('range');
     }
 
-    public function render(): Node
+    /**
+     * Render to HTML string.
+     */
+    public function toHtml(): string
     {
-        $node = $this->node('input')->attr('type', $this->type);
+        $this->attr('type', $this->inputType);
 
-        if ($this->name !== null) {
-            $node->attr('name', $this->name);
+        if ($this->inputName !== null) {
+            $this->attr('name', $this->inputName);
         }
 
-        if ($this->value !== null) {
-            $node->attr('value', $this->value);
+        if ($this->inputValue !== null) {
+            $this->attr('value', $this->inputValue);
         }
 
-        if ($this->placeholder !== null) {
-            $node->attr('placeholder', $this->placeholder);
+        if ($this->inputPlaceholder !== null) {
+            $this->attr('placeholder', $this->inputPlaceholder);
         }
 
-        if ($this->id !== null) {
-            $node->attr('id', $this->id);
+        if ($this->inputId !== null) {
+            $this->attr('id', $this->inputId);
         }
 
-        if ($this->required) {
-            $node->attr('required', 'required');
+        if ($this->isRequired) {
+            $this->attr('required', 'required');
         }
 
-        if ($this->disabled) {
-            $node->attr('disabled', 'disabled');
+        if ($this->isDisabled) {
+            $this->attr('disabled', 'disabled');
         }
 
-        if ($this->readonly) {
-            $node->attr('readonly', 'readonly');
+        if ($this->isReadonly) {
+            $this->attr('readonly', 'readonly');
         }
 
-        if ($this->autofocus) {
-            $node->attr('autofocus', 'autofocus');
+        if ($this->isAutofocus) {
+            $this->attr('autofocus', 'autofocus');
         }
 
-        if ($this->autocomplete !== null) {
-            $node->attr('autocomplete', $this->autocomplete);
+        if ($this->inputAutocomplete !== null) {
+            $this->attr('autocomplete', $this->inputAutocomplete);
         }
 
-        if ($this->minLength !== null) {
-            $node->attr('minlength', (string)$this->minLength);
+        if ($this->inputMinLength !== null) {
+            $this->attr('minlength', (string)$this->inputMinLength);
         }
 
-        if ($this->maxLength !== null) {
-            $node->attr('maxlength', (string)$this->maxLength);
+        if ($this->inputMaxLength !== null) {
+            $this->attr('maxlength', (string)$this->inputMaxLength);
         }
 
-        if ($this->pattern !== null) {
-            $node->attr('pattern', $this->pattern);
+        if ($this->inputPattern !== null) {
+            $this->attr('pattern', $this->inputPattern);
         }
 
-        if ($this->min !== null) {
-            $node->attr('min', $this->min);
+        if ($this->inputMin !== null) {
+            $this->attr('min', $this->inputMin);
         }
 
-        if ($this->max !== null) {
-            $node->attr('max', $this->max);
+        if ($this->inputMax !== null) {
+            $this->attr('max', $this->inputMax);
         }
 
-        if ($this->step !== null) {
-            $node->attr('step', $this->step);
+        if ($this->inputStep !== null) {
+            $this->attr('step', $this->inputStep);
         }
 
-        if ($this->checked && in_array($this->type, ['checkbox', 'radio'])) {
-            $node->attr('checked', 'checked');
+        if ($this->isChecked && in_array($this->inputType, ['checkbox', 'radio'])) {
+            $this->attr('checked', 'checked');
         }
 
-        return $node;
+        return parent::toHtml();
     }
 }

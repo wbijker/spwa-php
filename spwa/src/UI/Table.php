@@ -8,22 +8,22 @@ namespace Spwa\UI;
  * Usage:
  *   UI::table()
  *       ->head(
- *           UI::row(
- *               Table::heading()->content(UI::text("Column1")),
- *               Table::heading()->content(UI::text("Column2")),
+ *           Table::row(
+ *               Table::heading()->content("Column1"),
+ *               Table::heading()->content("Column2"),
  *           )
  *       )
  *       ->body(
- *           UI::row([
+ *           Table::row(
  *               Table::cell()->content("Row 1, Cell 1"),
  *               Table::cell()->content("Row 1, Cell 2"),
- *           ]),
+ *           ),
  *       )
  */
 class Table extends UIElement
 {
-    protected ?string $caption = null;
-    protected ?TableColgroup $colgroup = null;
+    protected ?string $tableCaption = null;
+    protected ?TableColgroup $tableColgroup = null;
     protected ?TableRow $headRow = null;
     /** @var TableRow[] */
     protected array $bodyRows = [];
@@ -32,6 +32,7 @@ class Table extends UIElement
 
     public function __construct()
     {
+        parent::__construct('table');
         $this->addStyle('w-full', ['width' => '100%']);
         $this->addStyle('border-collapse', ['border-collapse' => 'collapse']);
     }
@@ -41,7 +42,7 @@ class Table extends UIElement
      */
     public function caption(string $caption): static
     {
-        $this->caption = $caption;
+        $this->tableCaption = $caption;
         return $this;
     }
 
@@ -50,7 +51,7 @@ class Table extends UIElement
      */
     public function colgroup(TableColgroup $colgroup): static
     {
-        $this->colgroup = $colgroup;
+        $this->tableColgroup = $colgroup;
         return $this;
     }
 
@@ -121,39 +122,40 @@ class Table extends UIElement
         return new TableCol();
     }
 
-    public function render(): Node
+    /**
+     * Render to HTML string.
+     */
+    public function toHtml(): string
     {
-        $node = $this->node('table');
-
-        if ($this->caption !== null) {
-            $node->children(Node::el('caption')->children($this->caption));
+        if ($this->tableCaption !== null) {
+            $this->content(Node::el('caption')->content($this->tableCaption));
         }
 
-        if ($this->colgroup !== null) {
-            $node->children($this->colgroup->toNode());
+        if ($this->tableColgroup !== null) {
+            $this->content($this->tableColgroup->toNode());
         }
 
         if ($this->headRow !== null) {
-            $thead = Node::el('thead')->children($this->headRow->render());
-            $node->children($thead);
+            $thead = Node::el('thead')->content($this->headRow);
+            $this->content($thead);
         }
 
         if (!empty($this->bodyRows)) {
             $tbody = Node::el('tbody');
             foreach ($this->bodyRows as $row) {
-                $tbody->children($row->render());
+                $tbody->content($row);
             }
-            $node->children($tbody);
+            $this->content($tbody);
         }
 
         if (!empty($this->footRows)) {
             $tfoot = Node::el('tfoot');
             foreach ($this->footRows as $row) {
-                $tfoot->children($row->render());
+                $tfoot->content($row);
             }
-            $node->children($tfoot);
+            $this->content($tfoot);
         }
 
-        return $node;
+        return parent::toHtml();
     }
 }

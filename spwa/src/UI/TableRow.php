@@ -3,16 +3,16 @@
 namespace Spwa\UI;
 
 /**
- * Table row element.
+ * Table row (tr).
  */
 class TableRow extends UIElement
 {
-    /** @var (TableCell|TableHeading)[] */
-    protected array $cells = [];
-
     public function __construct(TableCell|TableHeading ...$cells)
     {
-        $this->cells = $cells;
+        parent::__construct('tr');
+        foreach ($cells as $cell) {
+            $this->content($cell);
+        }
     }
 
     /**
@@ -20,18 +20,9 @@ class TableRow extends UIElement
      */
     public function cells(TableCell|TableHeading ...$cells): static
     {
-        $this->cells = array_merge($this->cells, $cells);
-        return $this;
-    }
-
-    public function render(): Node
-    {
-        $node = $this->node('tr');
-
-        foreach ($this->cells as $cell) {
-            $node->children($cell->render());
+        foreach ($cells as $cell) {
+            $this->content($cell);
         }
-
-        return $node;
+        return $this;
     }
 }

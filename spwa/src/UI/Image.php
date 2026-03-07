@@ -12,10 +12,11 @@ namespace Spwa\UI;
  */
 class Image extends UIElement
 {
-    public function __construct(
-        protected string $src,
-        protected string $alt = ''
-    ) {
+    public function __construct(string $src, string $alt = '')
+    {
+        parent::__construct('img');
+        $this->attr('src', $src);
+        $this->attr('alt', $alt);
     }
 
     // ============================================================
@@ -101,12 +102,5 @@ class Image extends UIElement
         $this->addStyle('max-w-full', ['max-width' => '100%']);
         $this->addStyle('h-auto', ['height' => 'auto']);
         return $this;
-    }
-
-    public function render(): Node
-    {
-        return $this->node('img')
-            ->attr('src', $this->src)
-            ->attr('alt', $this->alt);
     }
 }

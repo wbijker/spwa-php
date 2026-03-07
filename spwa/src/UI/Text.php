@@ -13,11 +13,10 @@ namespace Spwa\UI;
  */
 class Text extends UIElement
 {
-    protected string $tag = 'span';
-
-    public function __construct(
-        protected string $content
-    ) {
+    public function __construct(string $content)
+    {
+        parent::__construct('span');
+        $this->content($content);
     }
 
     // ============================================================
@@ -289,10 +288,5 @@ class Text extends UIElement
     {
         $this->addStyle('font-mono', ['font-family' => 'ui-monospace, monospace']);
         return $this;
-    }
-
-    public function render(): Node
-    {
-        return $this->node($this->tag)->children($this->content);
     }
 }

@@ -14,9 +14,10 @@ class Button extends UIElement
 {
     protected ?string $type = 'button';
 
-    public function __construct(
-        protected string $label
-    ) {
+    public function __construct(string $label)
+    {
+        parent::__construct('button');
+        $this->content($label);
         $this->addStyle('cursor-pointer', ['cursor' => 'pointer']);
     }
 
@@ -126,14 +127,14 @@ class Button extends UIElement
         return $this;
     }
 
-    public function render(): Node
+    /**
+     * Render to HTML string.
+     */
+    public function toHtml(): string
     {
-        $node = $this->node('button')->children($this->label);
-
         if ($this->type) {
-            $node->attr('type', $this->type);
+            $this->attr('type', $this->type);
         }
-
-        return $node;
+        return parent::toHtml();
     }
 }

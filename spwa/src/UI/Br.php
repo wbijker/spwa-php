@@ -7,8 +7,8 @@ namespace Spwa\UI;
  */
 class Br extends UIElement
 {
-    public function render(): Node
+    public function __construct()
     {
-        return $this->node('br');
+        parent::__construct('br');
     }
 }

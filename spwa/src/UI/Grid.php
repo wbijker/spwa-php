@@ -10,10 +10,11 @@ namespace Spwa\UI;
  *       ->gap(Unit::base())
  *       ->content(...)
  */
-class Grid extends Container
+class Grid extends UIElement
 {
     public function __construct(int $columns = 1)
     {
+        parent::__construct('div');
         $this->addStyle('grid', ['display' => 'grid']);
         $this->addStyle('grid-cols-' . $columns, ['grid-template-columns' => 'repeat(' . $columns . ', minmax(0, 1fr))']);
     }

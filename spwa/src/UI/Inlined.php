@@ -17,10 +17,11 @@ namespace Spwa\UI;
  *           UI::badge("Tag 3")
  *       )
  */
-class Inlined extends Container
+class Inlined extends UIElement
 {
     public function __construct()
     {
+        parent::__construct('div');
         $this->addStyle('flex', ['display' => 'flex']);
         $this->addStyle('flex-wrap', ['flex-wrap' => 'wrap']);
     }

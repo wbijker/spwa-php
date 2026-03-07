@@ -5,14 +5,10 @@ namespace Spwa\UI;
 /**
  * Semantic section element.
  */
-class Section extends Container
+class Section extends UIElement
 {
-    public function render(): Node
+    public function __construct()
     {
-        $node = $this->node('section');
-        foreach ($this->children as $child) {
-            $node->children($child->render());
-        }
-        return $node;
+        parent::__construct('section');
     }
 }

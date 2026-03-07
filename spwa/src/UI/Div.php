@@ -5,16 +5,10 @@ namespace Spwa\UI;
 /**
  * Generic div element.
  */
-class Div extends Container
+class Div extends UIElement
 {
-    public function render(): Node
+    public function __construct()
     {
-        $node = $this->node('div');
-
-        foreach ($this->children as $child) {
-            $node->children($child->render());
-        }
-
-        return $node;
+        parent::__construct('div');
     }
 }

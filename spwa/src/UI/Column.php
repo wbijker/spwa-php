@@ -16,10 +16,11 @@ namespace Spwa\UI;
  *           UI::text("Subtitle")
  *       )
  */
-class Column extends Container
+class Column extends UIElement
 {
     public function __construct()
     {
+        parent::__construct('div');
         $this->addStyle('flex', ['display' => 'flex']);
         $this->addStyle('flex-col', ['flex-direction' => 'column']);
     }

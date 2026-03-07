@@ -13,10 +13,11 @@ namespace Spwa\UI;
  *       ->alignMiddle()
  *       ->content(...)
  */
-class Row extends Container
+class Row extends UIElement
 {
     public function __construct()
     {
+        parent::__construct('div');
         $this->addStyle('flex', ['display' => 'flex']);
         $this->addStyle('flex-row', ['flex-direction' => 'row']);
     }
