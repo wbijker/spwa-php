@@ -9,6 +9,7 @@ use Spwa\UI\FontSize;
 use Spwa\UI\FontWeight;
 use Spwa\UI\GridColumns;
 use Spwa\UI\Shadow;
+use Spwa\UI\Table;
 use Spwa\UI\UI;
 use Spwa\UI\UIElement;
 use Spwa\UI\Unit;
@@ -30,6 +31,7 @@ class Showcase
                 self::typography(),
                 self::buttons(),
                 self::cards(),
+                self::tables(),
                 self::layoutShowcase(),
                 self::interactiveStates(),
                 self::responsiveDemo(),
@@ -254,6 +256,9 @@ class Showcase
                                     ->fontSize(FontSize::Small)
                             ),
 
+                        
+
+
                         // Card with image
                         UI::column()
                             ->background(Color::white())
@@ -288,6 +293,82 @@ class Showcase
                                     ->color(Color::gray(600))
                                     ->fontSize(FontSize::Small),
                                 UI::badge("NEW")
+                            )
+                    )
+            );
+    }
+
+    private static function tables(): UIElement
+    {
+        return UI::column()
+            ->gap(Unit::medium())
+            ->content(
+                self::sectionTitle("Tables"),
+                UI::container()
+                    ->background(Color::white())
+                    ->rounded(Unit::roundedLg())
+                    ->shadow(Shadow::Small)
+                    ->overflow()
+                    ->content(
+                        UI::table()
+                            ->head(
+                                Table::row(
+                                    Table::heading()->content(UI::text("Name")),
+                                    Table::heading()->content(UI::text("Email")),
+                                    Table::heading()->content(UI::text("Role")),
+                                    Table::heading()->content(UI::text("Status"))
+                                )
+                                ->background(Color::gray(50))
+                            )
+                            ->body(
+                                Table::row(
+                                    Table::cell()->content("John Doe"),
+                                    Table::cell()->content("john@example.com"),
+                                    Table::cell()->content("Admin"),
+                                    Table::cell()->content(
+                                        UI::text("Active")
+                                            ->fontSize(FontSize::ExtraSmall)
+                                            ->padding(Unit::xs())
+                                            ->paddingHorizontal(Unit::small())
+                                            ->roundedFull()
+                                            ->background(Color::green(100))
+                                            ->color(Color::green(800))
+                                    )
+                                )
+                                ->borderColor(Color::gray(200))
+                                ->bordered(),
+                                Table::row(
+                                    Table::cell()->content("Jane Smith"),
+                                    Table::cell()->content("jane@example.com"),
+                                    Table::cell()->content("Editor"),
+                                    Table::cell()->content(
+                                        UI::text("Active")
+                                            ->fontSize(FontSize::ExtraSmall)
+                                            ->padding(Unit::xs())
+                                            ->paddingHorizontal(Unit::small())
+                                            ->roundedFull()
+                                            ->background(Color::green(100))
+                                            ->color(Color::green(800))
+                                    )
+                                )
+                                ->borderColor(Color::gray(200))
+                                ->bordered(),
+                                Table::row(
+                                    Table::cell()->content("Bob Wilson"),
+                                    Table::cell()->content("bob@example.com"),
+                                    Table::cell()->content("Viewer"),
+                                    Table::cell()->content(
+                                        UI::text("Inactive")
+                                            ->fontSize(FontSize::ExtraSmall)
+                                            ->padding(Unit::xs())
+                                            ->paddingHorizontal(Unit::small())
+                                            ->roundedFull()
+                                            ->background(Color::gray(100))
+                                            ->color(Color::gray(600))
+                                    )
+                                )
+                                ->borderColor(Color::gray(200))
+                                ->bordered()
                             )
                     )
             );

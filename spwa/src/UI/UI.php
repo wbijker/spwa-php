@@ -119,6 +119,22 @@ class UI
         return new Link($label, $href);
     }
 
+    /**
+     * Create a table.
+     */
+    public static function table(): Table
+    {
+        return new Table();
+    }
+
+    /**
+     * Create a table row.
+     */
+    public static function tableRow(TableCell|TableHeading ...$cells): TableRow
+    {
+        return new TableRow(...$cells);
+    }
+
     // ============================================================
     // Utility Components
     // ============================================================
