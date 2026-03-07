@@ -4,6 +4,7 @@ namespace Spwa\UI\Examples;
 
 use Spwa\UI\Align;
 use Spwa\UI\Color;
+use Spwa\UI\Cursor;
 use Spwa\UI\Direction;
 use Spwa\UI\FontSize;
 use Spwa\UI\FontWeight;
@@ -256,7 +257,7 @@ class Showcase
                                     ->fontSize(FontSize::Small)
                             ),
 
-                        
+
 
 
                         // Card with image
@@ -462,11 +463,14 @@ class Showcase
                             ->alignCenter()
                             ->content(
                                 UI::container()
-                                    ->size(Unit::value(20))
+                                    ->cursor(Cursor::Pointer)
                                     ->background(Color::blue(400), Color::blue(600)->hover())
+                                    ->size(Unit::value(20))
                                     ->rounded(Unit::roundedLg())
                                     ->shadow(Shadow::Small),
-                                UI::text("Hover me")->fontSize(FontSize::Small)->color(Color::gray(600))
+                                UI::text("Hover me")
+                                    ->fontSize(FontSize::Small)
+                                    ->color(Color::gray(600))
                             ),
 
                         // Active state

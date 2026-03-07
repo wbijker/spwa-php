@@ -446,21 +446,30 @@ abstract class UIElement
     // ============================================================
 
     /**
-     * Set pointer cursor.
+     * Set cursor style.
      */
-    public function clickable(): static
+    public function cursor(Cursor ...$cursors): static
     {
-        $this->addStyle('cursor-pointer', ['cursor' => 'pointer']);
+        foreach ($cursors as $cursor) {
+            $this->addStyle($cursor->toClass(), ['cursor' => $cursor->getCssValue()]);
+        }
         return $this;
     }
 
     /**
-     * Set not-allowed cursor.
+     * Set pointer cursor (shorthand).
+     */
+    public function clickable(): static
+    {
+        return $this->cursor(Cursor::Pointer);
+    }
+
+    /**
+     * Set not-allowed cursor (shorthand).
      */
     public function notAllowed(): static
     {
-        $this->addStyle('cursor-not-allowed', ['cursor' => 'not-allowed']);
-        return $this;
+        return $this->cursor(Cursor::NotAllowed);
     }
 
     // ============================================================
