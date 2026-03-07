@@ -220,4 +220,125 @@ abstract class Property
     {
         return $this->toClass();
     }
+
+    // ============================================================
+    // CSS Selector Generation
+    // ============================================================
+
+    /**
+     * Get the CSS selector for this property.
+     * Handles pseudo-classes and pseudo-elements.
+     */
+    public function getCssSelector(string $className): string
+    {
+        $selector = '.' . self::escapeClassName($className);
+
+        foreach ($this->pseudos as $pseudo) {
+            $selector .= self::getPseudoSelector($pseudo);
+        }
+
+        return $selector;
+    }
+
+    /**
+     * Get CSS pseudo selector string.
+     */
+    private static function getPseudoSelector(Pseudo $pseudo): string
+    {
+        return match ($pseudo) {
+            Pseudo::Hover => ':hover',
+            Pseudo::Active => ':active',
+            Pseudo::Focus => ':focus',
+            Pseudo::FocusVisible => ':focus-visible',
+            Pseudo::FocusWithin => ':focus-within',
+            Pseudo::Visited => ':visited',
+            Pseudo::Disabled => ':disabled',
+            Pseudo::Enabled => ':enabled',
+            Pseudo::Checked => ':checked',
+            Pseudo::Required => ':required',
+            Pseudo::Valid => ':valid',
+            Pseudo::Invalid => ':invalid',
+            Pseudo::Placeholder => '::placeholder',
+            Pseudo::FirstChild => ':first-child',
+            Pseudo::LastChild => ':last-child',
+            Pseudo::OnlyChild => ':only-child',
+            Pseudo::Odd => ':nth-child(odd)',
+            Pseudo::Even => ':nth-child(even)',
+            Pseudo::Empty => ':empty',
+        };
+    }
+
+    /**
+     * Get the media query wrapper if breakpoint is set.
+     */
+    public function getMediaQuery(): ?string
+    {
+        if ($this->breakpoint === null && $this->colorScheme === null) {
+            return null;
+        }
+
+        $conditions = [];
+
+        if ($this->breakpoint !== null) {
+            $conditions[] = match ($this->breakpoint) {
+                Breakpoint::Small => '(min-width: 640px)',
+                Breakpoint::Medium => '(min-width: 768px)',
+                Breakpoint::Large => '(min-width: 1024px)',
+                Breakpoint::ExtraLarge => '(min-width: 1280px)',
+                Breakpoint::TwoXL => '(min-width: 1536px)',
+            };
+        }
+
+        if ($this->colorScheme !== null) {
+            $conditions[] = match ($this->colorScheme) {
+                ColorScheme::Dark => '(prefers-color-scheme: dark)',
+                ColorScheme::Light => '(prefers-color-scheme: light)',
+            };
+        }
+
+        return '@media ' . implode(' and ', $conditions);
+    }
+
+    /**
+     * Check if this property has modifiers (breakpoint, color scheme, or pseudos).
+     */
+    public function hasModifiers(): bool
+    {
+        return $this->breakpoint !== null
+            || $this->colorScheme !== null
+            || !empty($this->pseudos);
+    }
+
+    /**
+     * Get breakpoint if set.
+     */
+    public function getBreakpoint(): ?Breakpoint
+    {
+        return $this->breakpoint;
+    }
+
+    /**
+     * Get color scheme if set.
+     */
+    public function getColorScheme(): ?ColorScheme
+    {
+        return $this->colorScheme;
+    }
+
+    /**
+     * Get pseudo classes.
+     * @return Pseudo[]
+     */
+    public function getPseudos(): array
+    {
+        return $this->pseudos;
+    }
+
+    /**
+     * Escape class name for CSS selector.
+     */
+    public static function escapeClassName(string $class): string
+    {
+        return preg_replace('/([.:\[\]\/])/', '\\\\$1', $class);
+    }
 }

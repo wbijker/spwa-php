@@ -1,0 +1,493 @@
+<?php
+
+namespace Spwa\UI\Examples;
+
+use Spwa\UI\Align;
+use Spwa\UI\Color;
+use Spwa\UI\Direction;
+use Spwa\UI\FontSize;
+use Spwa\UI\FontWeight;
+use Spwa\UI\GridColumns;
+use Spwa\UI\Shadow;
+use Spwa\UI\UI;
+use Spwa\UI\UIElement;
+use Spwa\UI\Unit;
+
+/**
+ * Complete showcase of all UI elements, properties, and pseudo classes.
+ */
+class Showcase
+{
+    public static function build(): UIElement
+    {
+        return UI::column()
+            ->gap(Unit::extraLarge())
+            ->padding(Unit::large())
+            ->background(Color::gray(50))
+            ->content(
+                self::header(),
+                self::colorPalette(),
+                self::typography(),
+                self::buttons(),
+                self::cards(),
+                self::layoutShowcase(),
+                self::interactiveStates(),
+                self::responsiveDemo(),
+                self::footer()
+            );
+    }
+
+    private static function header(): UIElement
+    {
+        return UI::column()
+            ->alignCenter()
+            ->gap(Unit::medium())
+            ->padding(Unit::extraLarge())
+            ->background(Color::indigo(600))
+            ->rounded(Unit::roundedXl())
+            ->content(
+                UI::text("SPWA UI Showcase")
+                    ->fontSize(FontSize::FourXL)
+                    ->weight(FontWeight::Bold)
+                    ->color(Color::white()),
+                UI::text("A complete demonstration of all UI elements and features")
+                    ->fontSize(FontSize::Large)
+                    ->color(Color::indigo(200))
+            );
+    }
+
+    private static function sectionTitle(string $title): UIElement
+    {
+        return UI::text($title)
+            ->fontSize(FontSize::TwoXL)
+            ->weight(FontWeight::SemiBold)
+            ->color(Color::gray(800))
+            ->paddingVertical(Unit::medium());
+    }
+
+    private static function colorPalette(): UIElement
+    {
+        $colors = [
+            'Red' => [Color::red(100), Color::red(300), Color::red(500), Color::red(700), Color::red(900)],
+            'Orange' => [Color::orange(100), Color::orange(300), Color::orange(500), Color::orange(700), Color::orange(900)],
+            'Yellow' => [Color::yellow(100), Color::yellow(300), Color::yellow(500), Color::yellow(700), Color::yellow(900)],
+            'Green' => [Color::green(100), Color::green(300), Color::green(500), Color::green(700), Color::green(900)],
+            'Blue' => [Color::blue(100), Color::blue(300), Color::blue(500), Color::blue(700), Color::blue(900)],
+            'Indigo' => [Color::indigo(100), Color::indigo(300), Color::indigo(500), Color::indigo(700), Color::indigo(900)],
+            'Purple' => [Color::purple(100), Color::purple(300), Color::purple(500), Color::purple(700), Color::purple(900)],
+            'Pink' => [Color::pink(100), Color::pink(300), Color::pink(500), Color::pink(700), Color::pink(900)],
+        ];
+
+        $rows = [];
+        foreach ($colors as $name => $shades) {
+            $swatches = [];
+            foreach ($shades as $color) {
+                $swatches[] = UI::container()
+                    ->size(Unit::value(12))
+                    ->rounded(Unit::rounded())
+                    ->background($color);
+            }
+            $rows[] = UI::row()
+                ->gap(Unit::small())
+                ->alignMiddle()
+                ->content(
+                    UI::text($name)
+                        ->fontSize(FontSize::Small)
+                        ->weight(FontWeight::Medium)
+                        ->color(Color::gray(600))
+                        ->width(Unit::value(20)),
+                    ...$swatches
+                );
+        }
+
+        return UI::column()
+            ->gap(Unit::medium())
+            ->content(
+                self::sectionTitle("Color Palette"),
+                UI::column()->gap(Unit::small())->content(...$rows)
+            );
+    }
+
+    private static function typography(): UIElement
+    {
+        return UI::column()
+            ->gap(Unit::medium())
+            ->content(
+                self::sectionTitle("Typography"),
+                UI::column()
+                    ->gap(Unit::small())
+                    ->padding(Unit::large())
+                    ->background(Color::white())
+                    ->rounded(Unit::roundedLg())
+                    ->shadow(Shadow::Small)
+                    ->content(
+                        UI::text("Heading 1 - Extra Large")->fontSize(FontSize::FourXL)->weight(FontWeight::Bold),
+                        UI::text("Heading 2 - Large")->fontSize(FontSize::ThreeXL)->weight(FontWeight::SemiBold),
+                        UI::text("Heading 3 - Medium")->fontSize(FontSize::TwoXL)->weight(FontWeight::Medium),
+                        UI::text("Body text - Base size with normal weight. Lorem ipsum dolor sit amet, consectetur adipiscing elit.")->fontSize(FontSize::Base),
+                        UI::text("Small text - Used for captions and labels")->fontSize(FontSize::Small)->color(Color::gray(500)),
+                        UI::text("Extra small - Fine print")->fontSize(FontSize::ExtraSmall)->color(Color::gray(400)),
+                        UI::row()->gap(Unit::medium())->content(
+                            UI::text("Light")->weight(FontWeight::Light),
+                            UI::text("Normal")->weight(FontWeight::Normal),
+                            UI::text("Medium")->weight(FontWeight::Medium),
+                            UI::text("Semibold")->weight(FontWeight::SemiBold),
+                            UI::text("Bold")->weight(FontWeight::Bold),
+                            UI::text("Black")->weight(FontWeight::Black)
+                        )
+                    )
+            );
+    }
+
+    private static function buttons(): UIElement
+    {
+        return UI::column()
+            ->gap(Unit::medium())
+            ->content(
+                self::sectionTitle("Buttons & Interactive Elements"),
+                UI::row()
+                    ->gap(Unit::medium())
+                    ->wrap()
+                    ->content(
+                        // Primary button with hover
+                        UI::button("Primary")
+                            ->background(Color::blue(500), Color::blue(600)->hover())
+                            ->color(Color::white())
+                            ->padding(Unit::small())
+                            ->paddingHorizontal(Unit::large())
+                            ->rounded(Unit::rounded())
+                            ->shadow(Shadow::Small),
+
+                        // Secondary button
+                        UI::button("Secondary")
+                            ->background(Color::gray(200), Color::gray(300)->hover())
+                            ->color(Color::gray(800))
+                            ->padding(Unit::small())
+                            ->paddingHorizontal(Unit::large())
+                            ->rounded(Unit::rounded()),
+
+                        // Success button
+                        UI::button("Success")
+                            ->background(Color::green(500), Color::green(600)->hover())
+                            ->color(Color::white())
+                            ->padding(Unit::small())
+                            ->paddingHorizontal(Unit::large())
+                            ->rounded(Unit::rounded()),
+
+                        // Danger button
+                        UI::button("Danger")
+                            ->background(Color::red(500), Color::red(600)->hover())
+                            ->color(Color::white())
+                            ->padding(Unit::small())
+                            ->paddingHorizontal(Unit::large())
+                            ->rounded(Unit::rounded()),
+
+                        // Outline button
+                        UI::button("Outline")
+                            ->background(Color::transparent(), Color::indigo(50)->hover())
+                            ->color(Color::indigo(600))
+                            ->padding(Unit::small())
+                            ->paddingHorizontal(Unit::large())
+                            ->rounded(Unit::rounded()),
+
+                        // Pill button
+                        UI::button("Pill Button")
+                            ->background(Color::purple(500), Color::purple(600)->hover())
+                            ->color(Color::white())
+                            ->padding(Unit::small())
+                            ->paddingHorizontal(Unit::extraLarge())
+                            ->roundedFull()
+                    ),
+                UI::row()
+                    ->gap(Unit::medium())
+                    ->content(
+                        UI::link("Regular Link", "#")
+                            ->color(Color::blue(600))
+                            ->underline(),
+                        UI::link("Hover Underline", "#")
+                            ->color(Color::blue(600))
+                            ->noUnderline()
+                            ->hoverUnderline()
+                    )
+            );
+    }
+
+    private static function cards(): UIElement
+    {
+        return UI::column()
+            ->gap(Unit::medium())
+            ->content(
+                self::sectionTitle("Cards & Containers"),
+                UI::grid(3)
+                    ->gap(Unit::large())
+                    ->content(
+                        // Simple card
+                        UI::column()
+                            ->gap(Unit::medium())
+                            ->padding(Unit::large())
+                            ->background(Color::white())
+                            ->rounded(Unit::roundedLg())
+                            ->shadow(Shadow::Medium)
+                            ->content(
+                                UI::text("Simple Card")->weight(FontWeight::SemiBold)->fontSize(FontSize::Large),
+                                UI::text("A basic card with padding, rounded corners, and shadow.")
+                                    ->color(Color::gray(600))
+                                    ->fontSize(FontSize::Small)
+                            ),
+
+                        // Card with image
+                        UI::column()
+                            ->background(Color::white())
+                            ->rounded(Unit::roundedLg())
+                            ->shadow(Shadow::Medium)
+                            ->overflow()
+                            ->content(
+                                UI::container()
+                                    ->height(Unit::value(32))
+                                    ->background(Color::gradient()),
+                                UI::column()
+                                    ->gap(Unit::small())
+                                    ->padding(Unit::large())
+                                    ->content(
+                                        UI::text("Featured")->weight(FontWeight::SemiBold)->fontSize(FontSize::Large),
+                                        UI::text("Card with gradient header area.")
+                                            ->color(Color::gray(600))
+                                            ->fontSize(FontSize::Small)
+                                    )
+                            ),
+
+                        // Elevated card
+                        UI::column()
+                            ->gap(Unit::medium())
+                            ->padding(Unit::large())
+                            ->background(Color::white())
+                            ->rounded(Unit::roundedXl())
+                            ->shadow(Shadow::ExtraLarge)
+                            ->content(
+                                UI::text("Elevated")->weight(FontWeight::SemiBold)->fontSize(FontSize::Large),
+                                UI::text("Extra large shadow for depth.")
+                                    ->color(Color::gray(600))
+                                    ->fontSize(FontSize::Small),
+                                UI::badge("NEW")
+                            )
+                    )
+            );
+    }
+
+    private static function layoutShowcase(): UIElement
+    {
+        return UI::column()
+            ->gap(Unit::medium())
+            ->content(
+                self::sectionTitle("Layout Components"),
+
+                // Row layout
+                UI::text("Row Layout")->weight(FontWeight::Medium)->color(Color::gray(700)),
+                UI::row()
+                    ->gap(Unit::medium())
+                    ->padding(Unit::medium())
+                    ->background(Color::white())
+                    ->rounded(Unit::rounded())
+                    ->content(
+                        UI::container()->size(Unit::value(16))->background(Color::blue(400))->rounded(Unit::rounded()),
+                        UI::container()->size(Unit::value(16))->background(Color::blue(500))->rounded(Unit::rounded()),
+                        UI::container()->size(Unit::value(16))->background(Color::blue(600))->rounded(Unit::rounded())
+                    ),
+
+                // Column layout
+                UI::text("Column Layout")->weight(FontWeight::Medium)->color(Color::gray(700)),
+                UI::column()
+                    ->gap(Unit::small())
+                    ->padding(Unit::medium())
+                    ->background(Color::white())
+                    ->rounded(Unit::rounded())
+                    ->content(
+                        UI::container()->height(Unit::value(8))->extendHorizontal()->background(Color::green(400))->rounded(Unit::rounded()),
+                        UI::container()->height(Unit::value(8))->extendHorizontal()->background(Color::green(500))->rounded(Unit::rounded()),
+                        UI::container()->height(Unit::value(8))->extendHorizontal()->background(Color::green(600))->rounded(Unit::rounded())
+                    ),
+
+                // Grid layout
+                UI::text("Grid Layout")->weight(FontWeight::Medium)->color(Color::gray(700)),
+                UI::grid(4)
+                    ->gap(Unit::small())
+                    ->padding(Unit::medium())
+                    ->background(Color::white())
+                    ->rounded(Unit::rounded())
+                    ->content(
+                        UI::container()->height(Unit::value(12))->background(Color::purple(300))->rounded(Unit::rounded()),
+                        UI::container()->height(Unit::value(12))->background(Color::purple(400))->rounded(Unit::rounded()),
+                        UI::container()->height(Unit::value(12))->background(Color::purple(500))->rounded(Unit::rounded()),
+                        UI::container()->height(Unit::value(12))->background(Color::purple(600))->rounded(Unit::rounded()),
+                        UI::container()->height(Unit::value(12))->background(Color::purple(400))->rounded(Unit::rounded()),
+                        UI::container()->height(Unit::value(12))->background(Color::purple(500))->rounded(Unit::rounded()),
+                        UI::container()->height(Unit::value(12))->background(Color::purple(600))->rounded(Unit::rounded()),
+                        UI::container()->height(Unit::value(12))->background(Color::purple(700))->rounded(Unit::rounded())
+                    ),
+
+                // Inlined layout
+                UI::text("Inlined (Wrapping) Layout")->weight(FontWeight::Medium)->color(Color::gray(700)),
+                UI::inlined()
+                    ->spacing(Unit::small())
+                    ->padding(Unit::medium())
+                    ->background(Color::white())
+                    ->rounded(Unit::rounded())
+                    ->content(
+                        UI::badge("PHP"),
+                        UI::badge("JavaScript"),
+                        UI::badge("TypeScript"),
+                        UI::badge("HTML"),
+                        UI::badge("CSS"),
+                        UI::badge("React"),
+                        UI::badge("Vue"),
+                        UI::badge("Laravel"),
+                        UI::badge("Tailwind")
+                    )
+            );
+    }
+
+    private static function interactiveStates(): UIElement
+    {
+        return UI::column()
+            ->gap(Unit::medium())
+            ->content(
+                self::sectionTitle("Pseudo Classes & Interactive States"),
+                UI::row()
+                    ->gap(Unit::large())
+                    ->wrap()
+                    ->content(
+                        // Hover state
+                        UI::column()
+                            ->gap(Unit::small())
+                            ->alignCenter()
+                            ->content(
+                                UI::container()
+                                    ->size(Unit::value(20))
+                                    ->background(Color::blue(400), Color::blue(600)->hover())
+                                    ->rounded(Unit::roundedLg())
+                                    ->shadow(Shadow::Small),
+                                UI::text("Hover me")->fontSize(FontSize::Small)->color(Color::gray(600))
+                            ),
+
+                        // Active state
+                        UI::column()
+                            ->gap(Unit::small())
+                            ->alignCenter()
+                            ->content(
+                                UI::container()
+                                    ->size(Unit::value(20))
+                                    ->background(Color::green(400), Color::green(700)->active())
+                                    ->rounded(Unit::roundedLg())
+                                    ->shadow(Shadow::Small),
+                                UI::text("Click me")->fontSize(FontSize::Small)->color(Color::gray(600))
+                            ),
+
+                        // Focus state
+                        UI::column()
+                            ->gap(Unit::small())
+                            ->alignCenter()
+                            ->content(
+                                UI::button("Focus")
+                                    ->background(Color::purple(400), Color::purple(600)->focus())
+                                    ->color(Color::white())
+                                    ->padding(Unit::medium())
+                                    ->paddingHorizontal(Unit::large())
+                                    ->rounded(Unit::rounded()),
+                                UI::text("Tab to focus")->fontSize(FontSize::Small)->color(Color::gray(600))
+                            ),
+
+                        // Combined states
+                        UI::column()
+                            ->gap(Unit::small())
+                            ->alignCenter()
+                            ->content(
+                                UI::button("Multi-state")
+                                    ->background(
+                                        Color::orange(400),
+                                        Color::orange(500)->hover(),
+                                        Color::orange(700)->active()
+                                    )
+                                    ->color(Color::white())
+                                    ->padding(Unit::medium())
+                                    ->paddingHorizontal(Unit::large())
+                                    ->rounded(Unit::rounded()),
+                                UI::text("Hover + Active")->fontSize(FontSize::Small)->color(Color::gray(600))
+                            )
+                    ),
+
+                // Dark mode demo
+                UI::text("Dark Mode Support")->weight(FontWeight::Medium)->color(Color::gray(700))->paddingTop(Unit::medium()),
+                UI::row()
+                    ->gap(Unit::medium())
+                    ->padding(Unit::large())
+                    ->background(Color::white(), Color::gray(800)->dark())
+                    ->rounded(Unit::roundedLg())
+                    ->content(
+                        UI::text("This text adapts to dark mode")
+                            ->color(Color::gray(800), Color::gray(100)->dark()),
+                        UI::container()
+                            ->size(Unit::value(8))
+                            ->background(Color::blue(500), Color::blue(400)->dark())
+                            ->roundedFull()
+                    )
+            );
+    }
+
+    private static function responsiveDemo(): UIElement
+    {
+        return UI::column()
+            ->gap(Unit::medium())
+            ->content(
+                self::sectionTitle("Responsive Design"),
+                UI::text("Resize your browser to see changes")->fontSize(FontSize::Small)->color(Color::gray(500)),
+                UI::column()
+                    ->direction(Direction::row()->md())
+                    ->gap(Unit::medium(), Unit::large()->md())
+                    ->padding(Unit::medium(), Unit::large()->lg())
+                    ->background(Color::white())
+                    ->rounded(Unit::roundedLg())
+                    ->shadow(Shadow::Small)
+                    ->content(
+                        UI::container()
+                            ->extendHorizontal()
+                            ->height(Unit::value(24))
+                            ->background(Color::cyan(400))
+                            ->rounded(Unit::rounded()),
+                        UI::container()
+                            ->extendHorizontal()
+                            ->height(Unit::value(24))
+                            ->background(Color::cyan(500))
+                            ->rounded(Unit::rounded()),
+                        UI::container()
+                            ->extendHorizontal()
+                            ->height(Unit::value(24))
+                            ->background(Color::cyan(600))
+                            ->rounded(Unit::rounded())
+                    ),
+                UI::grid(1)
+                    ->columns(1, GridColumns::count(2)->md(), GridColumns::count(4)->lg())
+                    ->gap(Unit::medium())
+                    ->content(
+                        UI::container()->height(Unit::value(16))->background(Color::teal(400))->rounded(Unit::rounded()),
+                        UI::container()->height(Unit::value(16))->background(Color::teal(500))->rounded(Unit::rounded()),
+                        UI::container()->height(Unit::value(16))->background(Color::teal(600))->rounded(Unit::rounded()),
+                        UI::container()->height(Unit::value(16))->background(Color::teal(700))->rounded(Unit::rounded())
+                    )
+            );
+    }
+
+    private static function footer(): UIElement
+    {
+        return UI::row()
+            ->alignCenter()
+            ->alignMiddle()
+            ->padding(Unit::large())
+            ->background(Color::gray(800))
+            ->rounded(Unit::roundedLg())
+            ->content(
+                UI::text("Built with SPWA UI Framework")
+                    ->color(Color::gray(400))
+                    ->fontSize(FontSize::Small)
+            );
+    }
+}

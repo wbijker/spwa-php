@@ -414,11 +414,30 @@ abstract class UIElement
     }
 
     /**
+     * Hide overflow (alias).
+     */
+    public function overflow(): static
+    {
+        return $this->clipContent();
+    }
+
+    /**
      * Allow scrolling.
      */
     public function scrollable(): static
     {
         $this->addStyle('overflow-auto', ['overflow' => 'auto']);
+        return $this;
+    }
+
+    /**
+     * Set padding on top only.
+     */
+    public function paddingTop(Unit ...$values): static
+    {
+        foreach ($values as $value) {
+            $this->addStyle($value->withContext('pt'), ['padding-top' => $value->getCssValue()]);
+        }
         return $this;
     }
 

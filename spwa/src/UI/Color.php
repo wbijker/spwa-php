@@ -70,6 +70,7 @@ class Color extends Property
             'inherit' => 'inherit',
             'white' => '#ffffff',
             'black' => '#000000',
+            'gradient' => 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
             // Slate
             'slate-50' => '#f8fafc', 'slate-100' => '#f1f5f9', 'slate-200' => '#e2e8f0', 'slate-300' => '#cbd5e1', 'slate-400' => '#94a3b8', 'slate-500' => '#64748b', 'slate-600' => '#475569', 'slate-700' => '#334155', 'slate-800' => '#1e293b', 'slate-900' => '#0f172a', 'slate-950' => '#020617',
             // Gray
@@ -261,5 +262,13 @@ class Color extends Property
     public static function rose(int $shade = 500): static
     {
         return new static('rose', $shade);
+    }
+
+    /**
+     * Gradient background (placeholder for demo).
+     */
+    public static function gradient(): static
+    {
+        return new static('gradient');
     }
 }

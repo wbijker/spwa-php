@@ -2,39 +2,30 @@
 
 namespace App;
 
-use Spwa\UI\Examples\SampleUI;
+use Spwa\UI\Examples\Showcase;
+use Spwa\UI\StyleGenerator;
 
 require 'vendor/autoload.php';
 
-// Build and render the UI
-$ui = SampleUI::build();
+// Build and render the UI Showcase
+$ui = Showcase::build();
 $html = $ui->render();
 
-// Collect styles from the element tree
-$styles = $ui->collectStyles();
-$stylesJson = json_encode($styles, JSON_PRETTY_PRINT);
+// Generate compressed styles with JS runtime
+$generator = StyleGenerator::from($ui->collectStyles());
 ?>
-<style id="spwa-styles"></style>
-<script>
-var styles = <?= $stylesJson ?>;
-console.log(styles);
-
-// Generate CSS from collected styles and inject into stylesheet
-function generateCSS(styles) {
-    let css = '';
-    for (const [className, properties] of Object.entries(styles)) {
-        css += '.' + className + ' {\n';
-        for (const [prop, value] of Object.entries(properties)) {
-            css += '  ' + prop + ': ' + value + ';\n';
-        }
-        css += '}\n';
-    }
-    return css;
-}
-
-document.getElementById('spwa-styles').textContent = generateCSS(styles);
-</script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPWA UI Showcase</title>
+    <?= $generator->toScriptTag() ?>
+</head>
+<body style="margin: 0; font-family: system-ui, -apple-system, sans-serif;">
 <?= $html ?>
+</body>
+</html>
     <!--<script src="https://cdn.tailwindcss.com"></script>-->
 <?php
 //

@@ -168,7 +168,7 @@ class UI
     public static function badge(string $text): Text
     {
         return (new Text($text))
-            ->size(FontSize::ExtraSmall)
+            ->fontSize(FontSize::ExtraSmall)
             ->weight(FontWeight::Medium)
             ->padding(Unit::xs())
             ->paddingHorizontal(Unit::small())
@@ -183,7 +183,7 @@ class UI
     public static function pill(string $text): Text
     {
         return (new Text($text))
-            ->size(FontSize::Small)
+            ->fontSize(FontSize::Small)
             ->padding(Unit::small())
             ->paddingHorizontal(Unit::medium())
             ->roundedFull()
