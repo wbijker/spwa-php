@@ -551,7 +551,7 @@ abstract class UIElement
     /**
      * Create a node with this element's classes and styles applied.
      */
-    protected function node(string $tag): Node
+    protected function node(string $tag): TagNode
     {
         $node = Node::el($tag);
 
