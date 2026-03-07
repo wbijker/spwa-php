@@ -291,11 +291,8 @@ class Text extends UIElement
         return $this;
     }
 
-    public function render(): string
+    public function render(): Node
     {
-        $classAttr = $this->classAttribute();
-        $classHtml = $classAttr ? " class=\"{$classAttr}\"" : '';
-
-        return "<{$this->tag}{$classHtml}>" . htmlspecialchars($this->content) . "</{$this->tag}>";
+        return $this->node($this->tag)->children($this->content);
     }
 }

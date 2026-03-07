@@ -136,6 +136,46 @@ class UI
     }
 
     // ============================================================
+    // Form Components
+    // ============================================================
+
+    /**
+     * Create an input element.
+     */
+    public static function input(): Input
+    {
+        return new Input();
+    }
+
+    /**
+     * Create a textarea element.
+     */
+    public static function textarea(): Textarea
+    {
+        return new Textarea();
+    }
+
+    // ============================================================
+    // HTML Elements
+    // ============================================================
+
+    /**
+     * Create an anchor element (link with child content).
+     */
+    public static function a(?string $href = null): Anchor
+    {
+        return new Anchor($href);
+    }
+
+    /**
+     * Create an SVG element.
+     */
+    public static function svg(): Svg
+    {
+        return new Svg();
+    }
+
+    // ============================================================
     // Utility Components
     // ============================================================
 

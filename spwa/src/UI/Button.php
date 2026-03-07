@@ -126,12 +126,14 @@ class Button extends UIElement
         return $this;
     }
 
-    public function render(): string
+    public function render(): Node
     {
-        $classAttr = $this->classAttribute();
-        $classHtml = $classAttr ? " class=\"{$classAttr}\"" : '';
-        $typeAttr = $this->type ? " type=\"{$this->type}\"" : '';
+        $node = $this->node('button')->children($this->label);
 
-        return "<button{$typeAttr}{$classHtml}>" . htmlspecialchars($this->label) . "</button>";
+        if ($this->type) {
+            $node->attr('type', $this->type);
+        }
+
+        return $node;
     }
 }

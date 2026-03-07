@@ -40,48 +40,25 @@ class Layers extends UIElement
         return $this;
     }
 
-    public function render(): string
+    public function render(): Node
     {
-        $classAttr = $this->classAttribute();
-        $classHtml = $classAttr ? " class=\"{$classAttr}\"" : '';
-
-        $html = "<div{$classHtml}>";
+        $node = $this->node('div');
 
         if ($this->primary !== null) {
-            $html .= $this->primary->render();
+            $node->children($this->primary->render());
         }
 
         foreach ($this->layers as $layer) {
             // Wrap each layer in absolute positioning
-            $layerClasses = array_merge(['absolute', 'inset-0'], $layer->getClasses());
-            $layerClassStr = implode(' ', $layerClasses);
-            $html .= "<div class=\"{$layerClassStr}\">";
-            $html .= $layer->render();
-            $html .= "</div>";
+            $wrapper = Node::el('div')
+                ->class('absolute', 'inset-0')
+                ->style('absolute', ['position' => 'absolute'])
+                ->style('inset-0', ['top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0'])
+                ->children($layer->render());
+
+            $node->children($wrapper);
         }
 
-        $html .= "</div>";
-
-        return $html;
-    }
-
-    public function collectStyles(): array
-    {
-        $styles = parent::collectStyles();
-
-        // Add layer positioning styles
-        $styles['absolute'] = ['position' => 'absolute'];
-        $styles['inset-0'] = ['top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0'];
-
-        // Collect styles from children
-        if ($this->primary !== null) {
-            $styles = array_merge($styles, $this->primary->collectStyles());
-        }
-
-        foreach ($this->layers as $layer) {
-            $styles = array_merge($styles, $layer->collectStyles());
-        }
-
-        return $styles;
+        return $node;
     }
 }

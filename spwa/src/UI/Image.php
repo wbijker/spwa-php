@@ -103,12 +103,10 @@ class Image extends UIElement
         return $this;
     }
 
-    public function render(): string
+    public function render(): Node
     {
-        $classAttr = $this->classAttribute();
-        $classHtml = $classAttr ? " class=\"{$classAttr}\"" : '';
-        $altAttr = htmlspecialchars($this->alt);
-
-        return "<img src=\"{$this->src}\" alt=\"{$altAttr}\"{$classHtml} />";
+        return $this->node('img')
+            ->attr('src', $this->src)
+            ->attr('alt', $this->alt);
     }
 }

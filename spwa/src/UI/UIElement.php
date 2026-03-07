@@ -544,9 +544,43 @@ abstract class UIElement
     // ============================================================
 
     /**
-     * Render the element to HTML.
+     * Render the element to a Node.
      */
-    abstract public function render(): string;
+    abstract public function render(): Node;
+
+    /**
+     * Create a node with this element's classes and styles applied.
+     */
+    protected function node(string $tag): Node
+    {
+        $node = Node::el($tag);
+
+        if (!empty($this->classes)) {
+            $node->class(...$this->classes);
+        }
+
+        if (!empty($this->styles)) {
+            $node->styles($this->styles);
+        }
+
+        return $node;
+    }
+
+    /**
+     * Render to HTML string.
+     */
+    public function toHtml(): string
+    {
+        return $this->render()->toHtml();
+    }
+
+    /**
+     * Convert to string.
+     */
+    public function __toString(): string
+    {
+        return $this->toHtml();
+    }
 
     /**
      * Collect styles from this element and all children.
@@ -554,6 +588,6 @@ abstract class UIElement
      */
     public function collectStyles(): array
     {
-        return $this->styles;
+        return $this->render()->collectStyles();
     }
 }

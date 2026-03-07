@@ -74,45 +74,24 @@ class Table extends UIElement
         return new TableRow(...$cells);
     }
 
-    public function render(): string
+    public function render(): Node
     {
-        $classAttr = $this->classAttribute();
-        $classHtml = $classAttr ? " class=\"{$classAttr}\"" : '';
-
-        $html = "<table{$classHtml}>";
+        $node = $this->node('table');
 
         if ($this->headRow !== null) {
-            $html .= '<thead>';
-            $html .= $this->headRow->render();
-            $html .= '</thead>';
+            $thead = Node::el('thead')->children($this->headRow->render());
+            $node->children($thead);
         }
 
         if (!empty($this->bodyRows)) {
-            $html .= '<tbody>';
+            $tbody = Node::el('tbody');
             foreach ($this->bodyRows as $row) {
-                $html .= $row->render();
+                $tbody->children($row->render());
             }
-            $html .= '</tbody>';
+            $node->children($tbody);
         }
 
-        $html .= '</table>';
-
-        return $html;
-    }
-
-    public function collectStyles(): array
-    {
-        $styles = parent::collectStyles();
-
-        if ($this->headRow !== null) {
-            $styles = array_merge($styles, $this->headRow->collectStyles());
-        }
-
-        foreach ($this->bodyRows as $row) {
-            $styles = array_merge($styles, $row->collectStyles());
-        }
-
-        return $styles;
+        return $node;
     }
 }
 
@@ -138,29 +117,15 @@ class TableRow extends UIElement
         return $this;
     }
 
-    public function render(): string
+    public function render(): Node
     {
-        $classAttr = $this->classAttribute();
-        $classHtml = $classAttr ? " class=\"{$classAttr}\"" : '';
-
-        $html = "<tr{$classHtml}>";
-        foreach ($this->cells as $cell) {
-            $html .= $cell->render();
-        }
-        $html .= '</tr>';
-
-        return $html;
-    }
-
-    public function collectStyles(): array
-    {
-        $styles = parent::collectStyles();
+        $node = $this->node('tr');
 
         foreach ($this->cells as $cell) {
-            $styles = array_merge($styles, $cell->collectStyles());
+            $node->children($cell->render());
         }
 
-        return $styles;
+        return $node;
     }
 }
 
@@ -193,30 +158,17 @@ class TableHeading extends UIElement
         return $this;
     }
 
-    public function render(): string
+    public function render(): Node
     {
-        $classAttr = $this->classAttribute();
-        $classHtml = $classAttr ? " class=\"{$classAttr}\"" : '';
+        $node = $this->node('th');
 
-        $innerHtml = '';
         if ($this->child !== null) {
-            $innerHtml = $this->child->render();
+            $node->children($this->child->render());
         } elseif ($this->textContent !== null) {
-            $innerHtml = htmlspecialchars($this->textContent);
+            $node->children($this->textContent);
         }
 
-        return "<th{$classHtml}>{$innerHtml}</th>";
-    }
-
-    public function collectStyles(): array
-    {
-        $styles = parent::collectStyles();
-
-        if ($this->child !== null) {
-            $styles = array_merge($styles, $this->child->collectStyles());
-        }
-
-        return $styles;
+        return $node;
     }
 }
 
@@ -247,29 +199,16 @@ class TableCell extends UIElement
         return $this;
     }
 
-    public function render(): string
+    public function render(): Node
     {
-        $classAttr = $this->classAttribute();
-        $classHtml = $classAttr ? " class=\"{$classAttr}\"" : '';
+        $node = $this->node('td');
 
-        $innerHtml = '';
         if ($this->child !== null) {
-            $innerHtml = $this->child->render();
+            $node->children($this->child->render());
         } elseif ($this->textContent !== null) {
-            $innerHtml = htmlspecialchars($this->textContent);
+            $node->children($this->textContent);
         }
 
-        return "<td{$classHtml}>{$innerHtml}</td>";
-    }
-
-    public function collectStyles(): array
-    {
-        $styles = parent::collectStyles();
-
-        if ($this->child !== null) {
-            $styles = array_merge($styles, $this->child->collectStyles());
-        }
-
-        return $styles;
+        return $node;
     }
 }

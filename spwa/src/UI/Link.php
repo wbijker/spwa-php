@@ -56,12 +56,17 @@ class Link extends UIElement
         return $this;
     }
 
-    public function render(): string
+    public function render(): Node
     {
-        $classAttr = $this->classAttribute();
-        $classHtml = $classAttr ? " class=\"{$classAttr}\"" : '';
-        $targetAttr = $this->newTab ? ' target="_blank" rel="noopener noreferrer"' : '';
+        $node = $this->node('a')
+            ->attr('href', $this->href)
+            ->children($this->label);
 
-        return "<a href=\"{$this->href}\"{$targetAttr}{$classHtml}>" . htmlspecialchars($this->label) . "</a>";
+        if ($this->newTab) {
+            $node->attr('target', '_blank')
+                ->attr('rel', 'noopener noreferrer');
+        }
+
+        return $node;
     }
 }
