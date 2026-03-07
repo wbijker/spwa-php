@@ -2,21 +2,20 @@
 
 namespace App;
 
-use ReflectionClass;
-use Spwa\UI\SampleUI;
-use Spwa\UI\StyleExtractor;
+use Spwa\UI\Examples\AlbumCard;
 
 require 'vendor/autoload.php';
 
+echo AlbumCard::build()->render();
 
-
-$ref = new ReflectionClass(SampleUI::class);
-StyleExtractor::extract($ref->getFileName());
+//$ref = new ReflectionClass(SampleUI::class);
+//StyleExtractor::extract($ref->getFileName());
 
 
 //$el = SampleUI::build();
-//?>
-<!--<script src="https://cdn.tailwindcss.com"></script>-->
+//
+?>
+    <!--<script src="https://cdn.tailwindcss.com"></script>-->
 <?php
 //
 //$el->render();
@@ -120,7 +119,6 @@ StyleExtractor::extract($ref->getFileName());
 //);
 //
 //echo $q->toSql();
-
 
 
 //Query::scoped(fn(Product $p) => Query::from($p)

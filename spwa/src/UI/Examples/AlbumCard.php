@@ -29,14 +29,14 @@ class AlbumCard
             ->alignCenter()                              // items-center
             ->alignHorizontal(Align::left()->md())       // md:items-start
             ->gap(Unit::large(), Unit::extraLarge()->md()) // gap-6, md:gap-8
-            ->padding(Unit::size(7))                     // p-7
+            ->padding(Unit::value(7))                     // p-7
             ->direction(Direction::row()->md())          // md:flex-row
             ->rounded(Unit::roundedXl())                 // rounded-2xl
             ->content(
                 // Album cover
                 UI::container()->content(
                     UI::image("/img/cover.png", "Album cover")
-                        ->size(Unit::size(48))       // size-48
+                        ->size(Unit::value(48))       // size-48
                         ->shadow(Shadow::ExtraLarge) // shadow-xl
                         ->rounded(Unit::rounded())   // rounded-md
                 ),
@@ -48,7 +48,7 @@ class AlbumCard
                     ->content(
                         // Title
                         UI::text("Class Warfare")
-                            ->size(FontSize::TwoXL)
+                            ->size(Unit::value(1))
                             ->medium(),
 
                         // Artist
@@ -58,7 +58,7 @@ class AlbumCard
 
                         // Track info
                         UI::row()
-                            ->gap(Unit::small())
+                        ->gap(Unit::small())
                             ->content(
                                 UI::text("No. 4")
                                     ->medium()

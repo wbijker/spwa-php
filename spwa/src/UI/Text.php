@@ -58,11 +58,11 @@ class Text extends UIElement
     /**
      * Set font size.
      */
-    public function size(FontSize $size): static
-    {
-        $this->classes[] = $size->toClass();
-        return $this;
-    }
+//    public function size(FontSize $size): static
+//    {
+//        $this->classes[] = $size->toClass();
+//        return $this;
+//    }
 
     // ============================================================
     // Font weight

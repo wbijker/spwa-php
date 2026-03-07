@@ -60,6 +60,11 @@ class Unit extends Property
         return new static('0');
     }
 
+    public static function value(int $value): static
+    {
+        return new static($value);
+    }
+
     /**
      * Scale 1 (0.25rem).
      */
@@ -103,10 +108,10 @@ class Unit extends Property
     /**
      * Scale 12 (3rem).
      */
-    public static function xxl(): static
-    {
-        return new static('12');
-    }
+//    public static function xxl(): static
+//    {
+//        return new static('12');
+//    }
 
     /**
      * Scale 16 (4rem).
