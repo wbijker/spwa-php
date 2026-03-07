@@ -115,6 +115,14 @@ class Color extends Property
             'pink-50' => '#fdf2f8', 'pink-100' => '#fce7f3', 'pink-200' => '#fbcfe8', 'pink-300' => '#f9a8d4', 'pink-400' => '#f472b6', 'pink-500' => '#ec4899', 'pink-600' => '#db2777', 'pink-700' => '#be185d', 'pink-800' => '#9d174d', 'pink-900' => '#831843', 'pink-950' => '#500724',
             // Rose
             'rose-50' => '#fff1f2', 'rose-100' => '#ffe4e6', 'rose-200' => '#fecdd3', 'rose-300' => '#fda4af', 'rose-400' => '#fb7185', 'rose-500' => '#f43f5e', 'rose-600' => '#e11d48', 'rose-700' => '#be123c', 'rose-800' => '#9f1239', 'rose-900' => '#881337', 'rose-950' => '#4c0519',
+            // Taupe (warm gray-brown)
+            'taupe-50' => '#faf9f7', 'taupe-100' => '#f5f3f0', 'taupe-200' => '#e8e4de', 'taupe-300' => '#d5cfc5', 'taupe-400' => '#b8af9f', 'taupe-500' => '#9a8f7d', 'taupe-600' => '#7d7264', 'taupe-700' => '#665c50', 'taupe-800' => '#544b42', 'taupe-900' => '#473f38', 'taupe-950' => '#26221e',
+            // Mauve (dusty purple-pink)
+            'mauve-50' => '#fdf4f8', 'mauve-100' => '#fce8f1', 'mauve-200' => '#fad0e3', 'mauve-300' => '#f6a9cb', 'mauve-400' => '#ef75a8', 'mauve-500' => '#e54a87', 'mauve-600' => '#d32a66', 'mauve-700' => '#b31d4e', 'mauve-800' => '#951b43', 'mauve-900' => '#7d1b3c', 'mauve-950' => '#4c0920',
+            // Mist (soft blue-gray)
+            'mist-50' => '#f6f8fa', 'mist-100' => '#eef2f6', 'mist-200' => '#dde5ed', 'mist-300' => '#c4d1df', 'mist-400' => '#a5b7cc', 'mist-500' => '#8a9db6', 'mist-600' => '#7485a0', 'mist-700' => '#626f87', 'mist-800' => '#535c6f', 'mist-900' => '#474e5c', 'mist-950' => '#2d3139',
+            // Olive (earthy green)
+            'olive-50' => '#f7f8f3', 'olive-100' => '#eef0e4', 'olive-200' => '#dce1c9', 'olive-300' => '#c3cca4', 'olive-400' => '#a6b37b', 'olive-500' => '#8a9a5b', 'olive-600' => '#6d7b46', 'olive-700' => '#556139', 'olive-800' => '#464f31', 'olive-900' => '#3c432c', 'olive-950' => '#1f2316',
         ];
 
         $key = $this->base();
@@ -262,6 +270,30 @@ class Color extends Property
     public static function rose(int $shade = 500): static
     {
         return new static('rose', $shade);
+    }
+
+    // ============================================================
+    // Custom colors (non-Tailwind)
+    // ============================================================
+
+    public static function taupe(int $shade = 500): static
+    {
+        return new static('taupe', $shade);
+    }
+
+    public static function mauve(int $shade = 500): static
+    {
+        return new static('mauve', $shade);
+    }
+
+    public static function mist(int $shade = 500): static
+    {
+        return new static('mist', $shade);
+    }
+
+    public static function olive(int $shade = 500): static
+    {
+        return new static('olive', $shade);
     }
 
     /**

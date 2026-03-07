@@ -67,15 +67,34 @@ class Showcase
 
     private static function colorPalette(): UIElement
     {
+        $shades = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900];
         $colors = [
-            'Red' => [Color::red(100), Color::red(300), Color::red(500), Color::red(700), Color::red(900)],
-            'Orange' => [Color::orange(100), Color::orange(300), Color::orange(500), Color::orange(700), Color::orange(900)],
-            'Yellow' => [Color::yellow(100), Color::yellow(300), Color::yellow(500), Color::yellow(700), Color::yellow(900)],
-            'Green' => [Color::green(100), Color::green(300), Color::green(500), Color::green(700), Color::green(900)],
-            'Blue' => [Color::blue(100), Color::blue(300), Color::blue(500), Color::blue(700), Color::blue(900)],
-            'Indigo' => [Color::indigo(100), Color::indigo(300), Color::indigo(500), Color::indigo(700), Color::indigo(900)],
-            'Purple' => [Color::purple(100), Color::purple(300), Color::purple(500), Color::purple(700), Color::purple(900)],
-            'Pink' => [Color::pink(100), Color::pink(300), Color::pink(500), Color::pink(700), Color::pink(900)],
+            'Red' => array_map(fn($s) => Color::red($s), $shades),
+            'Orange' => array_map(fn($s) => Color::orange($s), $shades),
+            'Amber' => array_map(fn($s) => Color::amber($s), $shades),
+            'Yellow' => array_map(fn($s) => Color::yellow($s), $shades),
+            'Lime' => array_map(fn($s) => Color::lime($s), $shades),
+            'Green' => array_map(fn($s) => Color::green($s), $shades),
+            'Emerald' => array_map(fn($s) => Color::emerald($s), $shades),
+            'Teal' => array_map(fn($s) => Color::teal($s), $shades),
+            'Cyan' => array_map(fn($s) => Color::cyan($s), $shades),
+            'Sky' => array_map(fn($s) => Color::sky($s), $shades),
+            'Blue' => array_map(fn($s) => Color::blue($s), $shades),
+            'Indigo' => array_map(fn($s) => Color::indigo($s), $shades),
+            'Violet' => array_map(fn($s) => Color::violet($s), $shades),
+            'Purple' => array_map(fn($s) => Color::purple($s), $shades),
+            'Fuchsia' => array_map(fn($s) => Color::fuchsia($s), $shades),
+            'Pink' => array_map(fn($s) => Color::pink($s), $shades),
+            'Rose' => array_map(fn($s) => Color::rose($s), $shades),
+            'Slate' => array_map(fn($s) => Color::slate($s), $shades),
+            'Gray' => array_map(fn($s) => Color::gray($s), $shades),
+            'Zinc' => array_map(fn($s) => Color::zinc($s), $shades),
+            'Neutral' => array_map(fn($s) => Color::neutral($s), $shades),
+            'Stone' => array_map(fn($s) => Color::stone($s), $shades),
+            'Taupe' => array_map(fn($s) => Color::taupe($s), $shades),
+            'Mauve' => array_map(fn($s) => Color::mauve($s), $shades),
+            'Mist' => array_map(fn($s) => Color::mist($s), $shades),
+            'Olive' => array_map(fn($s) => Color::olive($s), $shades),
         ];
 
         $rows = [];
