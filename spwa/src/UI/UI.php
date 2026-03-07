@@ -208,4 +208,18 @@ class UI
     {
         return (new Row())->center();
     }
+
+    // ============================================================
+    // Style Output
+    // ============================================================
+
+    /**
+     * Generate CSS from collected styles.
+     *
+     * @param array<string, array<string, string>> $styles
+     */
+    public static function printStyles(array $styles): string
+    {
+        return StyleGenerator::from($styles)->toCSS();
+    }
 }
