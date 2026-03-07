@@ -403,7 +403,8 @@ class StyleGenerator
       for (var p in props) {
         var prop = typeof p === 'number' || /^\d+$/.test(p) ? P[p] : p;
         var val = props[p];
-        var value = typeof val === 'number' || /^\d+$/.test(val) ? V[val] : val;
+        var isIndex = typeof val === 'number' || /^\d+$/.test(val);
+        var value = isIndex && V[val] !== undefined ? V[val] : val;
         rules.push(prop + ':' + value);
       }
       var rule = selector + '{' + rules.join(';') + '}';
