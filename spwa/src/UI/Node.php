@@ -9,6 +9,9 @@ abstract class Node
 {
     protected string|int|null $key = null;
 
+    /** @var int[] Path to this node in the tree */
+    protected array $path = [];
+
     /**
      * Create an element node.
      */
@@ -40,6 +43,38 @@ abstract class Node
     public function getKey(): string|int|null
     {
         return $this->key;
+    }
+
+    /**
+     * Get the path to this node.
+     * @return int[]
+     */
+    public function getPath(): array
+    {
+        return $this->path;
+    }
+
+    /**
+     * Assign paths to this node and all descendants.
+     * Call this on the root node to assign paths to the entire tree.
+     *
+     * @param int[] $parentPath The path of the parent node
+     * @return static
+     */
+    public function assignPaths(array $parentPath = []): static
+    {
+        $this->path = $parentPath;
+        $this->assignChildPaths();
+        return $this;
+    }
+
+    /**
+     * Assign paths to child nodes.
+     * Override in subclasses that have children.
+     */
+    protected function assignChildPaths(): void
+    {
+        // Base implementation does nothing (TextNode has no children)
     }
 
     /**

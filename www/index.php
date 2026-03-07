@@ -9,6 +9,7 @@ require 'vendor/autoload.php';
 
 // Build and render the UI Showcase
 $ui = Showcase::build();
+$ui->assignPaths();
 $html = $ui->toHtml();
 
 // Generate compressed styles with JS runtime

@@ -131,6 +131,20 @@ class TagNode extends Node
     }
 
     /**
+     * Assign paths to child nodes.
+     */
+    protected function assignChildPaths(): void
+    {
+        $index = 0;
+        foreach ($this->children as $child) {
+            if ($child instanceof Node) {
+                $child->assignPaths([...$this->path, $index]);
+            }
+            $index++;
+        }
+    }
+
+    /**
      * Collect all styles from this node and descendants.
      * @return array<string, array<string, string>>
      */
@@ -160,6 +174,10 @@ class TagNode extends Node
 
         // Build attributes
         $attrHtml = '';
+
+        // Add data-path attribute
+        $attrHtml .= ' data-path="' . implode(',', $this->path) . '"';
+
         if (!empty($allClasses)) {
             $attrHtml .= ' class="' . htmlspecialchars(implode(' ', array_unique($allClasses))) . '"';
         }
