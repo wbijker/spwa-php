@@ -17,7 +17,7 @@ class Button extends UIElement
     public function __construct(
         protected string $label
     ) {
-        $this->classes[] = 'cursor-pointer';
+        $this->addStyle('cursor-pointer', ['cursor' => 'pointer']);
     }
 
     /**
@@ -88,8 +88,8 @@ class Button extends UIElement
     public function outline(): static
     {
         $this->background(Color::transparent(), Color::gray(100)->hover());
-        $this->classes[] = 'border';
-        $this->classes[] = 'border-current';
+        $this->addStyle('border', ['border-width' => '1px', 'border-style' => 'solid']);
+        $this->addStyle('border-current', ['border-color' => 'currentColor']);
         return $this;
     }
 
@@ -111,8 +111,8 @@ class Button extends UIElement
      */
     public function disabled(): static
     {
-        $this->classes[] = 'opacity-50';
-        $this->classes[] = 'cursor-not-allowed';
+        $this->addStyle('opacity-50', ['opacity' => '0.5']);
+        $this->addStyle('cursor-not-allowed', ['cursor' => 'not-allowed']);
         return $this;
     }
 
@@ -121,8 +121,8 @@ class Button extends UIElement
      */
     public function loading(): static
     {
-        $this->classes[] = 'opacity-75';
-        $this->classes[] = 'cursor-wait';
+        $this->addStyle('opacity-75', ['opacity' => '0.75']);
+        $this->addStyle('cursor-wait', ['cursor' => 'wait']);
         return $this;
     }
 

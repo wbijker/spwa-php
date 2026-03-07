@@ -52,19 +52,6 @@ class Text extends UIElement
     }
 
     // ============================================================
-    // Font size
-    // ============================================================
-
-    /**
-     * Set font size.
-     */
-//    public function size(FontSize $size): static
-//    {
-//        $this->classes[] = $size->toClass();
-//        return $this;
-//    }
-
-    // ============================================================
     // Font weight
     // ============================================================
 
@@ -73,7 +60,7 @@ class Text extends UIElement
      */
     public function weight(FontWeight $weight): static
     {
-        $this->classes[] = $weight->toClass();
+        $this->addStyle($weight->toClass(), ['font-weight' => $weight->getCssValue()]);
         return $this;
     }
 
@@ -118,7 +105,7 @@ class Text extends UIElement
      */
     public function underline(): static
     {
-        $this->classes[] = 'underline';
+        $this->addStyle('underline', ['text-decoration' => 'underline']);
         return $this;
     }
 
@@ -127,7 +114,7 @@ class Text extends UIElement
      */
     public function strikethrough(): static
     {
-        $this->classes[] = 'line-through';
+        $this->addStyle('line-through', ['text-decoration' => 'line-through']);
         return $this;
     }
 
@@ -136,7 +123,7 @@ class Text extends UIElement
      */
     public function italic(): static
     {
-        $this->classes[] = 'italic';
+        $this->addStyle('italic', ['font-style' => 'italic']);
         return $this;
     }
 
@@ -149,7 +136,7 @@ class Text extends UIElement
      */
     public function uppercase(): static
     {
-        $this->classes[] = 'uppercase';
+        $this->addStyle('uppercase', ['text-transform' => 'uppercase']);
         return $this;
     }
 
@@ -158,7 +145,7 @@ class Text extends UIElement
      */
     public function lowercase(): static
     {
-        $this->classes[] = 'lowercase';
+        $this->addStyle('lowercase', ['text-transform' => 'lowercase']);
         return $this;
     }
 
@@ -167,7 +154,7 @@ class Text extends UIElement
      */
     public function capitalize(): static
     {
-        $this->classes[] = 'capitalize';
+        $this->addStyle('capitalize', ['text-transform' => 'capitalize']);
         return $this;
     }
 
@@ -180,7 +167,7 @@ class Text extends UIElement
      */
     public function left(): static
     {
-        $this->classes[] = 'text-left';
+        $this->addStyle('text-left', ['text-align' => 'left']);
         return $this;
     }
 
@@ -189,7 +176,7 @@ class Text extends UIElement
      */
     public function center(): static
     {
-        $this->classes[] = 'text-center';
+        $this->addStyle('text-center', ['text-align' => 'center']);
         return $this;
     }
 
@@ -198,7 +185,7 @@ class Text extends UIElement
      */
     public function right(): static
     {
-        $this->classes[] = 'text-right';
+        $this->addStyle('text-right', ['text-align' => 'right']);
         return $this;
     }
 
@@ -207,7 +194,7 @@ class Text extends UIElement
      */
     public function justify(): static
     {
-        $this->classes[] = 'text-justify';
+        $this->addStyle('text-justify', ['text-align' => 'justify']);
         return $this;
     }
 
@@ -220,7 +207,7 @@ class Text extends UIElement
      */
     public function truncate(): static
     {
-        $this->classes[] = 'truncate';
+        $this->addStyle('truncate', ['overflow' => 'hidden', 'text-overflow' => 'ellipsis', 'white-space' => 'nowrap']);
         return $this;
     }
 
@@ -229,7 +216,12 @@ class Text extends UIElement
      */
     public function lines(int $count): static
     {
-        $this->classes[] = 'line-clamp-' . $count;
+        $this->addStyle('line-clamp-' . $count, [
+            'display' => '-webkit-box',
+            '-webkit-line-clamp' => (string)$count,
+            '-webkit-box-orient' => 'vertical',
+            'overflow' => 'hidden',
+        ]);
         return $this;
     }
 
@@ -242,7 +234,7 @@ class Text extends UIElement
      */
     public function preserveWhitespace(): static
     {
-        $this->classes[] = 'whitespace-pre';
+        $this->addStyle('whitespace-pre', ['white-space' => 'pre']);
         return $this;
     }
 
@@ -251,7 +243,7 @@ class Text extends UIElement
      */
     public function nowrap(): static
     {
-        $this->classes[] = 'whitespace-nowrap';
+        $this->addStyle('whitespace-nowrap', ['white-space' => 'nowrap']);
         return $this;
     }
 
@@ -264,7 +256,7 @@ class Text extends UIElement
      */
     public function sans(): static
     {
-        $this->classes[] = 'font-sans';
+        $this->addStyle('font-sans', ['font-family' => 'ui-sans-serif, system-ui, sans-serif']);
         return $this;
     }
 
@@ -273,7 +265,7 @@ class Text extends UIElement
      */
     public function serif(): static
     {
-        $this->classes[] = 'font-serif';
+        $this->addStyle('font-serif', ['font-family' => 'ui-serif, Georgia, serif']);
         return $this;
     }
 
@@ -282,7 +274,7 @@ class Text extends UIElement
      */
     public function mono(): static
     {
-        $this->classes[] = 'font-mono';
+        $this->addStyle('font-mono', ['font-family' => 'ui-monospace, monospace']);
         return $this;
     }
 

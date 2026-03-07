@@ -26,6 +26,19 @@ class Direction extends Property
         };
     }
 
+    /**
+     * Get the CSS value for this direction.
+     */
+    public function getCssValue(): string
+    {
+        return match ($this->value) {
+            DirectionValue::Row => 'row',
+            DirectionValue::RowReverse => 'row-reverse',
+            DirectionValue::Column => 'column',
+            DirectionValue::ColumnReverse => 'column-reverse',
+        };
+    }
+
     public static function row(): static
     {
         return new static(DirectionValue::Row);

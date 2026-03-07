@@ -34,7 +34,7 @@ class Link extends UIElement
      */
     public function underline(): static
     {
-        $this->classes[] = 'underline';
+        $this->addStyle('underline', ['text-decoration' => 'underline']);
         return $this;
     }
 
@@ -43,7 +43,7 @@ class Link extends UIElement
      */
     public function hoverUnderline(): static
     {
-        $this->classes[] = 'hover:underline';
+        $this->addStyle('hover:underline', ['text-decoration' => 'underline']);
         return $this;
     }
 
@@ -52,7 +52,7 @@ class Link extends UIElement
      */
     public function noUnderline(): static
     {
-        $this->classes[] = 'no-underline';
+        $this->addStyle('no-underline', ['text-decoration' => 'none']);
         return $this;
     }
 

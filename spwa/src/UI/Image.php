@@ -27,7 +27,7 @@ class Image extends UIElement
      */
     public function cover(): static
     {
-        $this->classes[] = 'object-cover';
+        $this->addStyle('object-cover', ['object-fit' => 'cover']);
         return $this;
     }
 
@@ -36,7 +36,7 @@ class Image extends UIElement
      */
     public function contain(): static
     {
-        $this->classes[] = 'object-contain';
+        $this->addStyle('object-contain', ['object-fit' => 'contain']);
         return $this;
     }
 
@@ -45,7 +45,7 @@ class Image extends UIElement
      */
     public function fill(): static
     {
-        $this->classes[] = 'object-fill';
+        $this->addStyle('object-fill', ['object-fit' => 'fill']);
         return $this;
     }
 
@@ -54,7 +54,7 @@ class Image extends UIElement
      */
     public function original(): static
     {
-        $this->classes[] = 'object-none';
+        $this->addStyle('object-none', ['object-fit' => 'none']);
         return $this;
     }
 
@@ -67,7 +67,7 @@ class Image extends UIElement
      */
     public function positionCenter(): static
     {
-        $this->classes[] = 'object-center';
+        $this->addStyle('object-center', ['object-position' => 'center']);
         return $this;
     }
 
@@ -76,7 +76,7 @@ class Image extends UIElement
      */
     public function positionTop(): static
     {
-        $this->classes[] = 'object-top';
+        $this->addStyle('object-top', ['object-position' => 'top']);
         return $this;
     }
 
@@ -85,7 +85,7 @@ class Image extends UIElement
      */
     public function positionBottom(): static
     {
-        $this->classes[] = 'object-bottom';
+        $this->addStyle('object-bottom', ['object-position' => 'bottom']);
         return $this;
     }
 
@@ -98,8 +98,8 @@ class Image extends UIElement
      */
     public function responsive(): static
     {
-        $this->classes[] = 'max-w-full';
-        $this->classes[] = 'h-auto';
+        $this->addStyle('max-w-full', ['max-width' => '100%']);
+        $this->addStyle('h-auto', ['height' => 'auto']);
         return $this;
     }
 

@@ -19,7 +19,7 @@ class Layers extends UIElement
 
     public function __construct()
     {
-        $this->classes[] = 'relative';
+        $this->addStyle('relative', ['position' => 'relative']);
     }
 
     /**
@@ -63,5 +63,25 @@ class Layers extends UIElement
         $html .= "</div>";
 
         return $html;
+    }
+
+    public function collectStyles(): array
+    {
+        $styles = parent::collectStyles();
+
+        // Add layer positioning styles
+        $styles['absolute'] = ['position' => 'absolute'];
+        $styles['inset-0'] = ['top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0'];
+
+        // Collect styles from children
+        if ($this->primary !== null) {
+            $styles = array_merge($styles, $this->primary->collectStyles());
+        }
+
+        foreach ($this->layers as $layer) {
+            $styles = array_merge($styles, $layer->collectStyles());
+        }
+
+        return $styles;
     }
 }

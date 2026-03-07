@@ -17,8 +17,8 @@ class Row extends Container
 {
     public function __construct()
     {
-        $this->classes[] = 'flex';
-        $this->classes[] = 'flex-row';
+        $this->addStyle('flex', ['display' => 'flex']);
+        $this->addStyle('flex-row', ['flex-direction' => 'row']);
     }
 
     /**
@@ -27,7 +27,7 @@ class Row extends Container
     public function gap(Unit ...$values): static
     {
         foreach ($values as $value) {
-            $this->classes[] = $value->withContext('gap');
+            $this->addStyle($value->withContext('gap'), ['gap' => $value->getCssValue()]);
         }
         return $this;
     }
@@ -41,7 +41,7 @@ class Row extends Container
      */
     public function alignLeft(): static
     {
-        $this->classes[] = 'justify-start';
+        $this->addStyle('justify-start', ['justify-content' => 'flex-start']);
         return $this;
     }
 
@@ -50,7 +50,7 @@ class Row extends Container
      */
     public function alignCenter(): static
     {
-        $this->classes[] = 'justify-center';
+        $this->addStyle('justify-center', ['justify-content' => 'center']);
         return $this;
     }
 
@@ -59,7 +59,7 @@ class Row extends Container
      */
     public function alignRight(): static
     {
-        $this->classes[] = 'justify-end';
+        $this->addStyle('justify-end', ['justify-content' => 'flex-end']);
         return $this;
     }
 
@@ -68,7 +68,7 @@ class Row extends Container
      */
     public function alignBetween(): static
     {
-        $this->classes[] = 'justify-between';
+        $this->addStyle('justify-between', ['justify-content' => 'space-between']);
         return $this;
     }
 
@@ -77,7 +77,7 @@ class Row extends Container
      */
     public function alignAround(): static
     {
-        $this->classes[] = 'justify-around';
+        $this->addStyle('justify-around', ['justify-content' => 'space-around']);
         return $this;
     }
 
@@ -86,7 +86,7 @@ class Row extends Container
      */
     public function alignEvenly(): static
     {
-        $this->classes[] = 'justify-evenly';
+        $this->addStyle('justify-evenly', ['justify-content' => 'space-evenly']);
         return $this;
     }
 
@@ -99,7 +99,7 @@ class Row extends Container
      */
     public function alignTop(): static
     {
-        $this->classes[] = 'items-start';
+        $this->addStyle('items-start', ['align-items' => 'flex-start']);
         return $this;
     }
 
@@ -108,7 +108,7 @@ class Row extends Container
      */
     public function alignMiddle(): static
     {
-        $this->classes[] = 'items-center';
+        $this->addStyle('items-center', ['align-items' => 'center']);
         return $this;
     }
 
@@ -117,7 +117,7 @@ class Row extends Container
      */
     public function alignBottom(): static
     {
-        $this->classes[] = 'items-end';
+        $this->addStyle('items-end', ['align-items' => 'flex-end']);
         return $this;
     }
 
@@ -126,7 +126,7 @@ class Row extends Container
      */
     public function alignBaseline(): static
     {
-        $this->classes[] = 'items-baseline';
+        $this->addStyle('items-baseline', ['align-items' => 'baseline']);
         return $this;
     }
 
@@ -135,7 +135,7 @@ class Row extends Container
      */
     public function alignStretch(): static
     {
-        $this->classes[] = 'items-stretch';
+        $this->addStyle('items-stretch', ['align-items' => 'stretch']);
         return $this;
     }
 
@@ -149,7 +149,7 @@ class Row extends Container
     public function align(Align ...$values): static
     {
         foreach ($values as $value) {
-            $this->classes[] = $value->withContext('justify');
+            $this->addStyle($value->withContext('justify'), ['justify-content' => $value->getCssValue()]);
         }
         return $this;
     }
@@ -160,7 +160,7 @@ class Row extends Container
     public function alignVertical(Align ...$values): static
     {
         foreach ($values as $value) {
-            $this->classes[] = $value->withContext('items');
+            $this->addStyle($value->withContext('items'), ['align-items' => $value->getCssValue()]);
         }
         return $this;
     }
@@ -174,8 +174,8 @@ class Row extends Container
      */
     public function center(): static
     {
-        $this->classes[] = 'justify-center';
-        $this->classes[] = 'items-center';
+        $this->addStyle('justify-center', ['justify-content' => 'center']);
+        $this->addStyle('items-center', ['align-items' => 'center']);
         return $this;
     }
 
@@ -188,7 +188,7 @@ class Row extends Container
      */
     public function wrap(): static
     {
-        $this->classes[] = 'flex-wrap';
+        $this->addStyle('flex-wrap', ['flex-wrap' => 'wrap']);
         return $this;
     }
 
@@ -197,7 +197,7 @@ class Row extends Container
      */
     public function nowrap(): static
     {
-        $this->classes[] = 'flex-nowrap';
+        $this->addStyle('flex-nowrap', ['flex-wrap' => 'nowrap']);
         return $this;
     }
 
@@ -211,7 +211,7 @@ class Row extends Container
     public function direction(Direction ...$values): static
     {
         foreach ($values as $value) {
-            $this->classes[] = $value->toClass();
+            $this->addStyle($value->toClass(), ['flex-direction' => $value->getCssValue()]);
         }
         return $this;
     }

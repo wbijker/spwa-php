@@ -21,8 +21,8 @@ class Inlined extends Container
 {
     public function __construct()
     {
-        $this->classes[] = 'flex';
-        $this->classes[] = 'flex-wrap';
+        $this->addStyle('flex', ['display' => 'flex']);
+        $this->addStyle('flex-wrap', ['flex-wrap' => 'wrap']);
     }
 
     /**
@@ -31,7 +31,7 @@ class Inlined extends Container
     public function spacing(Unit ...$values): static
     {
         foreach ($values as $value) {
-            $this->classes[] = $value->withContext('gap');
+            $this->addStyle($value->withContext('gap'), ['gap' => $value->getCssValue()]);
         }
         return $this;
     }
@@ -42,7 +42,7 @@ class Inlined extends Container
     public function spacingHorizontal(Unit ...$values): static
     {
         foreach ($values as $value) {
-            $this->classes[] = $value->withContext('gap-x');
+            $this->addStyle($value->withContext('gap-x'), ['column-gap' => $value->getCssValue()]);
         }
         return $this;
     }
@@ -53,7 +53,7 @@ class Inlined extends Container
     public function spacingVertical(Unit ...$values): static
     {
         foreach ($values as $value) {
-            $this->classes[] = $value->withContext('gap-y');
+            $this->addStyle($value->withContext('gap-y'), ['row-gap' => $value->getCssValue()]);
         }
         return $this;
     }
@@ -67,7 +67,7 @@ class Inlined extends Container
      */
     public function alignLeft(): static
     {
-        $this->classes[] = 'justify-start';
+        $this->addStyle('justify-start', ['justify-content' => 'flex-start']);
         return $this;
     }
 
@@ -76,7 +76,7 @@ class Inlined extends Container
      */
     public function alignCenter(): static
     {
-        $this->classes[] = 'justify-center';
+        $this->addStyle('justify-center', ['justify-content' => 'center']);
         return $this;
     }
 
@@ -85,7 +85,7 @@ class Inlined extends Container
      */
     public function alignRight(): static
     {
-        $this->classes[] = 'justify-end';
+        $this->addStyle('justify-end', ['justify-content' => 'flex-end']);
         return $this;
     }
 
@@ -94,7 +94,7 @@ class Inlined extends Container
      */
     public function alignBetween(): static
     {
-        $this->classes[] = 'justify-between';
+        $this->addStyle('justify-between', ['justify-content' => 'space-between']);
         return $this;
     }
 
@@ -107,7 +107,7 @@ class Inlined extends Container
      */
     public function alignTop(): static
     {
-        $this->classes[] = 'items-start';
+        $this->addStyle('items-start', ['align-items' => 'flex-start']);
         return $this;
     }
 
@@ -116,7 +116,7 @@ class Inlined extends Container
      */
     public function alignMiddle(): static
     {
-        $this->classes[] = 'items-center';
+        $this->addStyle('items-center', ['align-items' => 'center']);
         return $this;
     }
 
@@ -125,7 +125,7 @@ class Inlined extends Container
      */
     public function alignBottom(): static
     {
-        $this->classes[] = 'items-end';
+        $this->addStyle('items-end', ['align-items' => 'flex-end']);
         return $this;
     }
 
@@ -134,7 +134,7 @@ class Inlined extends Container
      */
     public function alignBaseline(): static
     {
-        $this->classes[] = 'items-baseline';
+        $this->addStyle('items-baseline', ['align-items' => 'baseline']);
         return $this;
     }
 
@@ -148,7 +148,7 @@ class Inlined extends Container
     public function align(Align ...$values): static
     {
         foreach ($values as $value) {
-            $this->classes[] = $value->withContext('justify');
+            $this->addStyle($value->withContext('justify'), ['justify-content' => $value->getCssValue()]);
         }
         return $this;
     }
@@ -159,7 +159,7 @@ class Inlined extends Container
     public function alignVertical(Align ...$values): static
     {
         foreach ($values as $value) {
-            $this->classes[] = $value->withContext('items');
+            $this->addStyle($value->withContext('items'), ['align-items' => $value->getCssValue()]);
         }
         return $this;
     }
@@ -173,8 +173,8 @@ class Inlined extends Container
      */
     public function center(): static
     {
-        $this->classes[] = 'justify-center';
-        $this->classes[] = 'items-center';
+        $this->addStyle('justify-center', ['justify-content' => 'center']);
+        $this->addStyle('items-center', ['align-items' => 'center']);
         return $this;
     }
 }

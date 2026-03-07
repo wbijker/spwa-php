@@ -21,4 +21,19 @@ enum FontWeight: string
     {
         return 'font-' . $this->value;
     }
+
+    public function getCssValue(): string
+    {
+        return match ($this) {
+            self::Thin => '100',
+            self::ExtraLight => '200',
+            self::Light => '300',
+            self::Normal => '400',
+            self::Medium => '500',
+            self::SemiBold => '600',
+            self::Bold => '700',
+            self::ExtraBold => '800',
+            self::Black => '900',
+        };
+    }
 }

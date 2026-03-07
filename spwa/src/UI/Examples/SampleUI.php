@@ -21,7 +21,7 @@ use Spwa\UI\Unit;
  * - Responsive gap spacing
  * - Dark mode support for text colors
  */
-class AlbumCard
+class SampleUI
 {
     public static function build(): UIElement
     {
@@ -35,10 +35,10 @@ class AlbumCard
             ->content(
                 // Album cover
                 UI::container()->content(
-                    UI::image("/img/cover.png", "Album cover")
-                        ->size(Unit::value(48))       // size-48
-                        ->shadow(Shadow::ExtraLarge) // shadow-xl
-                        ->rounded(Unit::rounded())   // rounded-md
+                    UI::image("/assets/images/logo.png", "logo")
+//                        ->size(Unit::value(48))       // size-48
+//                        ->shadow(Shadow::ExtraLarge) // shadow-xl
+//                        ->rounded(Unit::rounded())   // rounded-md
                 ),
 
                 // Album info
@@ -47,12 +47,11 @@ class AlbumCard
                     ->alignHorizontal(Align::left()->md())   // md:items-start
                     ->content(
                         // Title
-                        UI::text("Class Warfare")
-                            ->size(Unit::value(1))
+                        UI::text("BrickPHP")
                             ->medium(),
 
                         // Artist
-                        UI::text("The Anti-Patterns")
+                        UI::text("Spwa Team")
                             ->medium()
                             ->color(Color::sky(500)),
 

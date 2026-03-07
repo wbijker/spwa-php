@@ -2,19 +2,39 @@
 
 namespace App;
 
-use Spwa\UI\Examples\AlbumCard;
+use Spwa\UI\Examples\SampleUI;
 
 require 'vendor/autoload.php';
 
-echo AlbumCard::build()->render();
+// Build and render the UI
+$ui = SampleUI::build();
+$html = $ui->render();
 
-//$ref = new ReflectionClass(SampleUI::class);
-//StyleExtractor::extract($ref->getFileName());
-
-
-//$el = SampleUI::build();
-//
+// Collect styles from the element tree
+$styles = $ui->collectStyles();
+$stylesJson = json_encode($styles, JSON_PRETTY_PRINT);
 ?>
+<style id="spwa-styles"></style>
+<script>
+var styles = <?= $stylesJson ?>;
+console.log(styles);
+
+// Generate CSS from collected styles and inject into stylesheet
+function generateCSS(styles) {
+    let css = '';
+    for (const [className, properties] of Object.entries(styles)) {
+        css += '.' + className + ' {\n';
+        for (const [prop, value] of Object.entries(properties)) {
+            css += '  ' + prop + ': ' + value + ';\n';
+        }
+        css += '}\n';
+    }
+    return css;
+}
+
+document.getElementById('spwa-styles').textContent = generateCSS(styles);
+</script>
+<?= $html ?>
     <!--<script src="https://cdn.tailwindcss.com"></script>-->
 <?php
 //

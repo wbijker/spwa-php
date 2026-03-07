@@ -33,6 +33,23 @@ class Align extends Property
         return $this->prefix() . $context . '-' . $this->value->value;
     }
 
+    /**
+     * Get the CSS value for this alignment.
+     */
+    public function getCssValue(): string
+    {
+        return match ($this->value) {
+            AlignValue::Start => 'flex-start',
+            AlignValue::Center => 'center',
+            AlignValue::End => 'flex-end',
+            AlignValue::Between => 'space-between',
+            AlignValue::Around => 'space-around',
+            AlignValue::Evenly => 'space-evenly',
+            AlignValue::Stretch => 'stretch',
+            AlignValue::Baseline => 'baseline',
+        };
+    }
+
     // ============================================================
     // Horizontal alignment (semantic names)
     // ============================================================

@@ -8,15 +8,21 @@ namespace Spwa\UI;
  */
 abstract class UIElement
 {
-    /** @var string[] Collected classes */
+    /** @var string[] Collected class names */
     protected array $classes = [];
 
+    /** @var array<string, array<string, string>> Collected styles: className => [property => value] */
+    protected array $styles = [];
+
     /**
-     * Add a Property value to the element.
+     * Add a class with its CSS properties.
      */
-    protected function apply(Property $property): void
+    protected function addStyle(string $class, array $css): void
     {
-        $this->classes[] = $property->toClass();
+        $this->classes[] = $class;
+        if (!empty($css)) {
+            $this->styles[$class] = $css;
+        }
     }
 
     /**
@@ -26,6 +32,15 @@ abstract class UIElement
     public function getClasses(): array
     {
         return $this->classes;
+    }
+
+    /**
+     * Get all collected styles.
+     * @return array<string, array<string, string>>
+     */
+    public function getStyles(): array
+    {
+        return $this->styles;
     }
 
     /**
@@ -46,7 +61,8 @@ abstract class UIElement
     public function background(Color ...$colors): static
     {
         foreach ($colors as $color) {
-            $this->classes[] = $color->withContext('bg');
+            $class = $color->withContext('bg');
+            $this->addStyle($class, ['background-color' => $color->getValue()]);
         }
         return $this;
     }
@@ -61,7 +77,8 @@ abstract class UIElement
     public function color(Color ...$colors): static
     {
         foreach ($colors as $color) {
-            $this->classes[] = $color->withContext('text');
+            $class = $color->withContext('text');
+            $this->addStyle($class, ['color' => $color->getValue()]);
         }
         return $this;
     }
@@ -75,7 +92,8 @@ abstract class UIElement
      */
     public function bordered(int $width = 1): static
     {
-        $this->classes[] = $width === 1 ? 'border' : 'border-' . $width;
+        $class = $width === 1 ? 'border' : 'border-' . $width;
+        $this->addStyle($class, ['border-width' => $width . 'px', 'border-style' => 'solid']);
         return $this;
     }
 
@@ -85,7 +103,8 @@ abstract class UIElement
     public function borderColor(Color ...$colors): static
     {
         foreach ($colors as $color) {
-            $this->classes[] = $color->withContext('border');
+            $class = $color->withContext('border');
+            $this->addStyle($class, ['border-color' => $color->getValue()]);
         }
         return $this;
     }
@@ -95,7 +114,7 @@ abstract class UIElement
      */
     public function dashed(): static
     {
-        $this->classes[] = 'border-dashed';
+        $this->addStyle('border-dashed', ['border-style' => 'dashed']);
         return $this;
     }
 
@@ -104,7 +123,7 @@ abstract class UIElement
      */
     public function dotted(): static
     {
-        $this->classes[] = 'border-dotted';
+        $this->addStyle('border-dotted', ['border-style' => 'dotted']);
         return $this;
     }
 
@@ -118,7 +137,8 @@ abstract class UIElement
     public function width(Unit ...$values): static
     {
         foreach ($values as $value) {
-            $this->classes[] = $value->withContext('w');
+            $class = $value->withContext('w');
+            $this->addStyle($class, ['width' => $value->getCssValue()]);
         }
         return $this;
     }
@@ -129,7 +149,8 @@ abstract class UIElement
     public function height(Unit ...$values): static
     {
         foreach ($values as $value) {
-            $this->classes[] = $value->withContext('h');
+            $class = $value->withContext('h');
+            $this->addStyle($class, ['height' => $value->getCssValue()]);
         }
         return $this;
     }
@@ -140,8 +161,9 @@ abstract class UIElement
     public function size(Unit ...$values): static
     {
         foreach ($values as $value) {
-            $this->classes[] = $value->withContext('w');
-            $this->classes[] = $value->withContext('h');
+            $css = $value->getCssValue();
+            $this->addStyle($value->withContext('w'), ['width' => $css]);
+            $this->addStyle($value->withContext('h'), ['height' => $css]);
         }
         return $this;
     }
@@ -152,7 +174,7 @@ abstract class UIElement
     public function minWidth(Unit ...$values): static
     {
         foreach ($values as $value) {
-            $this->classes[] = $value->withContext('min-w');
+            $this->addStyle($value->withContext('min-w'), ['min-width' => $value->getCssValue()]);
         }
         return $this;
     }
@@ -163,7 +185,7 @@ abstract class UIElement
     public function maxWidth(Unit ...$values): static
     {
         foreach ($values as $value) {
-            $this->classes[] = $value->withContext('max-w');
+            $this->addStyle($value->withContext('max-w'), ['max-width' => $value->getCssValue()]);
         }
         return $this;
     }
@@ -174,7 +196,7 @@ abstract class UIElement
     public function minHeight(Unit ...$values): static
     {
         foreach ($values as $value) {
-            $this->classes[] = $value->withContext('min-h');
+            $this->addStyle($value->withContext('min-h'), ['min-height' => $value->getCssValue()]);
         }
         return $this;
     }
@@ -185,7 +207,7 @@ abstract class UIElement
     public function maxHeight(Unit ...$values): static
     {
         foreach ($values as $value) {
-            $this->classes[] = $value->withContext('max-h');
+            $this->addStyle($value->withContext('max-h'), ['max-height' => $value->getCssValue()]);
         }
         return $this;
     }
@@ -195,8 +217,8 @@ abstract class UIElement
      */
     public function extend(): static
     {
-        $this->classes[] = 'w-full';
-        $this->classes[] = 'h-full';
+        $this->addStyle('w-full', ['width' => '100%']);
+        $this->addStyle('h-full', ['height' => '100%']);
         return $this;
     }
 
@@ -205,7 +227,7 @@ abstract class UIElement
      */
     public function extendHorizontal(): static
     {
-        $this->classes[] = 'w-full';
+        $this->addStyle('w-full', ['width' => '100%']);
         return $this;
     }
 
@@ -214,7 +236,7 @@ abstract class UIElement
      */
     public function extendVertical(): static
     {
-        $this->classes[] = 'h-full';
+        $this->addStyle('h-full', ['height' => '100%']);
         return $this;
     }
 
@@ -223,8 +245,8 @@ abstract class UIElement
      */
     public function shrink(): static
     {
-        $this->classes[] = 'w-fit';
-        $this->classes[] = 'h-fit';
+        $this->addStyle('w-fit', ['width' => 'fit-content']);
+        $this->addStyle('h-fit', ['height' => 'fit-content']);
         return $this;
     }
 
@@ -238,7 +260,7 @@ abstract class UIElement
     public function padding(Unit ...$values): static
     {
         foreach ($values as $value) {
-            $this->classes[] = $value->withContext('p');
+            $this->addStyle($value->withContext('p'), ['padding' => $value->getCssValue()]);
         }
         return $this;
     }
@@ -249,7 +271,8 @@ abstract class UIElement
     public function paddingHorizontal(Unit ...$values): static
     {
         foreach ($values as $value) {
-            $this->classes[] = $value->withContext('px');
+            $css = $value->getCssValue();
+            $this->addStyle($value->withContext('px'), ['padding-left' => $css, 'padding-right' => $css]);
         }
         return $this;
     }
@@ -260,7 +283,8 @@ abstract class UIElement
     public function paddingVertical(Unit ...$values): static
     {
         foreach ($values as $value) {
-            $this->classes[] = $value->withContext('py');
+            $css = $value->getCssValue();
+            $this->addStyle($value->withContext('py'), ['padding-top' => $css, 'padding-bottom' => $css]);
         }
         return $this;
     }
@@ -271,7 +295,7 @@ abstract class UIElement
     public function margin(Unit ...$values): static
     {
         foreach ($values as $value) {
-            $this->classes[] = $value->withContext('m');
+            $this->addStyle($value->withContext('m'), ['margin' => $value->getCssValue()]);
         }
         return $this;
     }
@@ -282,7 +306,8 @@ abstract class UIElement
     public function marginHorizontal(Unit ...$values): static
     {
         foreach ($values as $value) {
-            $this->classes[] = $value->withContext('mx');
+            $css = $value->getCssValue();
+            $this->addStyle($value->withContext('mx'), ['margin-left' => $css, 'margin-right' => $css]);
         }
         return $this;
     }
@@ -293,7 +318,8 @@ abstract class UIElement
     public function marginVertical(Unit ...$values): static
     {
         foreach ($values as $value) {
-            $this->classes[] = $value->withContext('my');
+            $css = $value->getCssValue();
+            $this->addStyle($value->withContext('my'), ['margin-top' => $css, 'margin-bottom' => $css]);
         }
         return $this;
     }
@@ -308,10 +334,10 @@ abstract class UIElement
     public function rounded(Unit ...$values): static
     {
         if (empty($values)) {
-            $this->classes[] = 'rounded';
+            $this->addStyle('rounded', ['border-radius' => '0.25rem']);
         } else {
             foreach ($values as $value) {
-                $this->classes[] = $value->withContext('rounded');
+                $this->addStyle($value->withContext('rounded'), ['border-radius' => $value->getCssValue()]);
             }
         }
         return $this;
@@ -322,7 +348,7 @@ abstract class UIElement
      */
     public function roundedFull(): static
     {
-        $this->classes[] = 'rounded-full';
+        $this->addStyle('rounded-full', ['border-radius' => '9999px']);
         return $this;
     }
 
@@ -335,7 +361,7 @@ abstract class UIElement
      */
     public function shadow(Shadow $size = Shadow::Medium): static
     {
-        $this->classes[] = $size->toClass();
+        $this->addStyle($size->toClass(), ['box-shadow' => $size->getCssValue()]);
         return $this;
     }
 
@@ -348,7 +374,7 @@ abstract class UIElement
      */
     public function opacity(int $value): static
     {
-        $this->classes[] = 'opacity-' . $value;
+        $this->addStyle('opacity-' . $value, ['opacity' => (string)($value / 100)]);
         return $this;
     }
 
@@ -361,7 +387,7 @@ abstract class UIElement
      */
     public function hidden(): static
     {
-        $this->classes[] = 'hidden';
+        $this->addStyle('hidden', ['display' => 'none']);
         return $this;
     }
 
@@ -370,7 +396,7 @@ abstract class UIElement
      */
     public function visible(): static
     {
-        $this->classes[] = 'visible';
+        $this->addStyle('visible', ['visibility' => 'visible']);
         return $this;
     }
 
@@ -383,7 +409,7 @@ abstract class UIElement
      */
     public function clipContent(): static
     {
-        $this->classes[] = 'overflow-hidden';
+        $this->addStyle('overflow-hidden', ['overflow' => 'hidden']);
         return $this;
     }
 
@@ -392,7 +418,7 @@ abstract class UIElement
      */
     public function scrollable(): static
     {
-        $this->classes[] = 'overflow-auto';
+        $this->addStyle('overflow-auto', ['overflow' => 'auto']);
         return $this;
     }
 
@@ -405,7 +431,7 @@ abstract class UIElement
      */
     public function clickable(): static
     {
-        $this->classes[] = 'cursor-pointer';
+        $this->addStyle('cursor-pointer', ['cursor' => 'pointer']);
         return $this;
     }
 
@@ -414,7 +440,7 @@ abstract class UIElement
      */
     public function notAllowed(): static
     {
-        $this->classes[] = 'cursor-not-allowed';
+        $this->addStyle('cursor-not-allowed', ['cursor' => 'not-allowed']);
         return $this;
     }
 
@@ -427,8 +453,8 @@ abstract class UIElement
      */
     public function animated(int $durationMs = 200): static
     {
-        $this->classes[] = 'transition';
-        $this->classes[] = 'duration-' . $durationMs;
+        $this->addStyle('transition', ['transition-property' => 'all', 'transition-timing-function' => 'cubic-bezier(0.4, 0, 0.2, 1)']);
+        $this->addStyle('duration-' . $durationMs, ['transition-duration' => $durationMs . 'ms']);
         return $this;
     }
 
@@ -441,7 +467,7 @@ abstract class UIElement
      */
     public function rotate(int $degrees): static
     {
-        $this->classes[] = 'rotate-' . $degrees;
+        $this->addStyle('rotate-' . $degrees, ['transform' => 'rotate(' . $degrees . 'deg)']);
         return $this;
     }
 
@@ -450,7 +476,7 @@ abstract class UIElement
      */
     public function scale(int $percent): static
     {
-        $this->classes[] = 'scale-' . $percent;
+        $this->addStyle('scale-' . $percent, ['transform' => 'scale(' . ($percent / 100) . ')']);
         return $this;
     }
 
@@ -459,7 +485,7 @@ abstract class UIElement
      */
     public function flipHorizontal(): static
     {
-        $this->classes[] = '-scale-x-100';
+        $this->addStyle('-scale-x-100', ['transform' => 'scaleX(-1)']);
         return $this;
     }
 
@@ -468,7 +494,7 @@ abstract class UIElement
      */
     public function flipVertical(): static
     {
-        $this->classes[] = '-scale-y-100';
+        $this->addStyle('-scale-y-100', ['transform' => 'scaleY(-1)']);
         return $this;
     }
 
@@ -481,7 +507,7 @@ abstract class UIElement
      */
     public function layer(int $index): static
     {
-        $this->classes[] = 'z-' . $index;
+        $this->addStyle('z-' . $index, ['z-index' => (string)$index]);
         return $this;
     }
 
@@ -493,4 +519,13 @@ abstract class UIElement
      * Render the element to HTML.
      */
     abstract public function render(): string;
+
+    /**
+     * Collect styles from this element and all children.
+     * @return array<string, array<string, string>>
+     */
+    public function collectStyles(): array
+    {
+        return $this->styles;
+    }
 }
