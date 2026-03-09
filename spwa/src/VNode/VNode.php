@@ -2,6 +2,7 @@
 
 namespace Spwa\VNode;
 
+use Spwa\State\StateManager;
 use Spwa\UI\DomNode;
 
 /**
@@ -17,9 +18,19 @@ abstract class VNode
 
     /**
      * Render this virtual node to a DOM node.
+     * @param StateManager $state The state manager
      * @param VNode|null $parent The parent VNode
      */
-    abstract public function render(?VNode $parent = null): DomNode;
+    abstract public function render(StateManager $state, ?VNode $parent = null): DomNode;
+
+    /**
+     * Compare this node with another node and generate patches.
+     * @param VNode $parent The parent VNode
+     * @param StateManager $manager The state manager
+     * @param VNode $other The other VNode to compare with
+     * @param Patcher $patcher The patcher to record operations
+     */
+    abstract public function compare(VNode $parent, StateManager $manager, VNode $other, Patcher $patcher): void;
 
     /**
      * Get the path to this node.
@@ -37,4 +48,10 @@ abstract class VNode
     {
         return $this->parent;
     }
+
+    /**
+     * Finalize this node, saving any state.
+     * @param StateManager $state The state manager
+     */
+    abstract public function finalize(StateManager $state): void;
 }

@@ -29,7 +29,9 @@ class Showcase extends Component
             ->padding(Unit::large())
             ->background(Color::gray(50))
             ->content(
+                new Counter(),
                 self::header(),
+                new Counter(),
                 self::colorPalette(),
                 self::typography(),
                 self::buttons(),

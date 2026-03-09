@@ -186,6 +186,12 @@ class TagDomNode extends DomNode
             $attrHtml .= ' ' . $name . '="' . htmlspecialchars($value) . '"';
         }
 
+        // Add event listeners
+        $pathStr = implode(',', $this->path);
+        foreach ($this->events as $event => $callback) {
+            $attrHtml .= ' on' . $event . "=\"handleEvent('" . $event . "', '" . $pathStr . "')\"";
+        }
+
         // Self-closing tags
         $selfClosing = ['img', 'br', 'hr', 'input', 'meta', 'link', 'area', 'base', 'col', 'embed', 'source', 'track', 'wbr'];
         if (in_array($this->tag, $selfClosing) && empty($this->children)) {
@@ -691,5 +697,42 @@ class TagDomNode extends DomNode
     {
         $this->addStyle('z-' . $index, ['z-index' => (string)$index]);
         return $this;
+    }
+
+    /**
+     * Find a node by its path.
+     * @param int[] $targetPath
+     * @return DomNode|null
+     */
+    public function findByPath(array $targetPath): ?DomNode
+    {
+        if ($this->path === $targetPath) {
+            return $this;
+        }
+
+        foreach ($this->children as $child) {
+            if ($child instanceof DomNode) {
+                $found = $child->findByPath($targetPath);
+                if ($found !== null) {
+                    return $found;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Execute an event handler if it exists.
+     * @param string $event
+     * @return bool Whether the event was handled
+     */
+    public function executeEvent(string $event): bool
+    {
+        if (isset($this->events[$event])) {
+            ($this->events[$event])();
+            return true;
+        }
+        return false;
     }
 }

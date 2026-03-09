@@ -95,4 +95,27 @@ abstract class DomNode
     {
         return $this->toHtml();
     }
+
+    /**
+     * Find a node by its path.
+     * @param int[] $targetPath
+     * @return DomNode|null
+     */
+    public function findByPath(array $targetPath): ?DomNode
+    {
+        if ($this->path === $targetPath) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * Execute an event handler if it exists.
+     * @param string $event
+     * @return bool Whether the event was handled
+     */
+    public function executeEvent(string $event): bool
+    {
+        return false;
+    }
 }

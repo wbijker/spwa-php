@@ -2,6 +2,7 @@
 
 namespace Spwa\VNode;
 
+use Spwa\State\StateManager;
 use Spwa\UI\DomNode;
 
 /**
@@ -16,16 +17,82 @@ abstract class Component extends VNode
     abstract protected function build(): VNode;
 
     /**
+     * Get the component's state as a keyed array.
+     * Override this method to define stateful properties.
+     * @return array<string, mixed>
+     */
+    protected function getState(): array
+    {
+        return [];
+    }
+
+    /**
+     * Set the component's state from a keyed array.
+     * Override this method to restore stateful properties.
+     * @param array<string, mixed> $state
+     */
+    protected function setState(array $state): void
+    {
+        // Default: do nothing
+    }
+
+    /**
      * Render this component to a DOM node.
+     * @param StateManager $state The state manager
      * @param VNode|null $parent The parent VNode
      */
-    public function render(?VNode $parent = null): DomNode
+    public function render(StateManager $state, ?VNode $parent = null): DomNode
     {
         $this->parent = $parent;
         $this->path = $parent?->getPath() ?? [];
 
+        // Restore state from state manager
+        $pathKey = implode('.', $this->path);
+        $savedState = $state->getState($pathKey);
+        if (!empty($savedState)) {
+            $this->setState($savedState);
+        }
+
         $child = $this->build();
 
-        return $child->render($this);
+        return $child->render($state, $this);
+    }
+
+    /**
+     * Compare this component with another node and generate patches.
+     * @param VNode $parent The parent VNode
+     * @param StateManager $manager The state manager
+     * @param VNode $other The other VNode to compare with
+     * @param Patcher $patcher The patcher to record operations
+     */
+    public function compare(VNode $parent, StateManager $manager, VNode $other, Patcher $patcher): void
+    {
+        $this->parent = $parent;
+        $this->path = $parent->getPath();
+
+        // If the other node is not the same component type, replace entirely
+        if (get_class($this) !== get_class($other)) {
+            $patcher->replaceNode($this->path, $this->render($manager, $parent));
+            return;
+        }
+
+        // Build both components and compare their children
+        $thisChild = $this->build();
+        $otherChild = $other->build();
+
+        $thisChild->compare($this, $manager, $otherChild, $patcher);
+    }
+
+    /**
+     * Finalize this component, saving its state.
+     * @param StateManager $state The state manager
+     */
+    public function finalize(StateManager $state): void
+    {
+        $pathKey = implode('.', $this->path);
+        $currentState = $this->getState();
+        if (!empty($currentState)) {
+            $state->saveState($pathKey, $currentState);
+        }
     }
 }

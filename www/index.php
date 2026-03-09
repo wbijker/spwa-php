@@ -2,14 +2,42 @@
 
 namespace App;
 
+use Spwa\Js\Console;
+use Spwa\Js\JsRuntime;
+use Spwa\State\SessionStateManager;
 use Spwa\UI\Examples\Showcase;
 use Spwa\UI\StyleGenerator;
 
 require 'vendor/autoload.php';
-
 // Build and render the UI Showcase
+$state = new SessionStateManager();
 $showcase = new Showcase();
-$ui = $showcase->render();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $payload = json_decode(file_get_contents('php://input'), true);
+    $event = $payload['event'] ?? '';
+    $pathStr = $payload['path'] ?? '';
+    $path = array_map('intval', explode(',', $pathStr));
+
+    // Render the component tree
+    $ui = $showcase->render($state);
+
+    // Find the node by path and execute the event
+    $node = $ui->findByPath($path);
+    if ($node !== null) {
+        $node->executeEvent($event);
+        Console::log("Executed event '$event' on path '$pathStr'");
+    }
+
+    // Finalize to save state
+    $showcase->finalize($state);
+
+    echo json_encode(["success" => true, "js" => JsRuntime::dump(), "state" => $state->getAll()]);
+    die();
+}
+
+$ui = $showcase->render($state);
+$showcase->finalize($state);
 $html = $ui->toHtml();
 
 // Generate compressed styles with JS runtime
@@ -22,6 +50,70 @@ $generator = StyleGenerator::from($ui->collectStyles());
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SPWA UI Showcase</title>
     <?= $generator->toScriptTag() ?>
+    <script>
+
+        function resolveObject(path) {
+            const last = path.pop();
+            const resolved = path.reduce((acc, cur) => acc[cur], window);
+            return [resolved, last];
+        }
+
+
+        function executeJsDump(dump) {
+            for (const [mode, path, args] of dump) {
+                const [obj, bind] = resolveObject(path);
+                if (mode === 'invoke')
+                    obj[bind](...args);
+                else if (mode === 'assign')
+                    obj[bind] = args;
+            }
+        }
+
+
+        function callback(error, data) {
+
+            executeJsDump(data.js);
+
+            if (error) {
+                console.error("Error:", error);
+            } else {
+                console.log("Response:", data);
+            }
+        }
+
+        function post(data, headers) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", window.location.href, true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+
+            // Set custom headers
+            for (var key in headers ?? {}) {
+                if (headers.hasOwnProperty(key)) {
+                    xhr.setRequestHeader(key, headers[key]);
+                }
+            }
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) { // 4 means request is done
+                    if (xhr.status === 200) { // 200 means "OK"
+                        callback(null, JSON.parse(xhr.responseText));
+                    } else {s
+                        callback(new Error("Request failed: " + xhr.status));
+                    }
+                }
+            };
+
+            xhr.send(JSON.stringify(data));
+        }
+
+
+        function handleEvent(event, path) {
+            console.log('Event:', event, 'Path:', path);
+            post({ event, path });
+        }
+
+
+    </script>
 </head>
 <body style="margin: 0; font-family: system-ui, -apple-system, sans-serif;">
 <?= $html ?>

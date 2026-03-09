@@ -2,39 +2,129 @@
 
 namespace Spwa\UI;
 
+use Spwa\State\StateManager;
+use Spwa\VNode\Node;
+use Spwa\VNode\Patcher;
 use Spwa\VNode\VNode;
 
 /**
  * Base class for all UI elements.
- * Delegates DOM operations to an internal TagDomNode.
+ * Extends Node with additional styling and layout capabilities.
  */
-class UIElement extends VNode
+class UIElement extends Node
 {
-    protected TagDomNode $domNode;
+    /** @var TagDomNode */
+    protected DomNode $domNode;
+
+    /** @var (DomNode|VNode|string)[] Children to be rendered */
+    protected array $children = [];
 
     public function __construct(string $tag = 'div')
     {
-        $this->domNode = new TagDomNode($tag);
+        parent::__construct(new TagDomNode($tag));
     }
 
     /**
      * Render this UI element to a DOM node.
+     * @param StateManager $state The state manager
      * @param VNode|null $parent The parent VNode
      */
-    public function render(?VNode $parent = null): DomNode
+    public function render(StateManager $state, ?VNode $parent = null): DomNode
     {
         $this->parent = $parent;
         $this->path = $parent?->getPath() ?? [];
+
+        // Render VNode children now that we have StateManager
+        $domChildren = array_map(function ($child) use ($state) {
+            if ($child instanceof VNode) {
+                return $child->render($state, $this);
+            }
+            return $child;
+        }, $this->children);
+
+        $this->domNode->content(...$domChildren);
 
         return $this->domNode->assignPaths($this->path);
     }
 
     /**
-     * Get the underlying TagDomNode.
+     * Compare this element with another node and generate patches.
+     * @param VNode $parent The parent VNode
+     * @param StateManager $manager The state manager
+     * @param VNode $other The other VNode to compare with
+     * @param Patcher $patcher The patcher to record operations
      */
-    protected function getDomNode(): TagDomNode
+    public function compare(VNode $parent, StateManager $manager, VNode $other, Patcher $patcher): void
     {
-        return $this->domNode;
+        $this->parent = $parent;
+        $this->path = $parent->getPath();
+
+        // If types don't match, replace the node
+        if (!$other instanceof UIElement) {
+            $patcher->replaceNode($this->path, $this->render($manager, $parent));
+            return;
+        }
+
+        $thisTag = $this->domNode;
+        $otherTag = $other->domNode;
+
+        // If tag names differ, replace the node
+        if ($thisTag->getTag() !== $otherTag->getTag()) {
+            $patcher->replaceNode($this->path, $this->render($manager, $parent));
+            return;
+        }
+
+        // Compare attributes
+        $thisAttrs = $thisTag->getAttributes();
+        $otherAttrs = $otherTag->getAttributes();
+
+        foreach ($thisAttrs as $name => $value) {
+            if (!isset($otherAttrs[$name]) || $otherAttrs[$name] !== $value) {
+                $patcher->setAttribute($this->path, $name, $value);
+            }
+        }
+
+        foreach ($otherAttrs as $name => $value) {
+            if (!isset($thisAttrs[$name])) {
+                $patcher->removeAttribute($this->path, $name);
+            }
+        }
+
+        // Compare children
+        $thisCount = count($this->children);
+        $otherCount = count($other->children);
+        $maxCount = max($thisCount, $otherCount);
+
+        for ($i = 0; $i < $maxCount; $i++) {
+            $childPath = [...$this->path, $i];
+
+            if ($i >= $thisCount) {
+                // Child was removed
+                $patcher->deleteNode($childPath);
+            } elseif ($i >= $otherCount) {
+                // Child was added
+                $child = $this->children[$i];
+                if ($child instanceof VNode) {
+                    $patcher->insertNode($childPath, $child->render($manager, $this));
+                } else {
+                    $patcher->insertNode($childPath, $child);
+                }
+            } else {
+                // Compare existing children
+                $thisChild = $this->children[$i];
+                $otherChild = $other->children[$i];
+
+                if ($thisChild instanceof VNode && $otherChild instanceof VNode) {
+                    $thisChild->compare($this, $manager, $otherChild, $patcher);
+                } elseif ($thisChild !== $otherChild) {
+                    if ($thisChild instanceof VNode) {
+                        $patcher->replaceNode($childPath, $thisChild->render($manager, $this));
+                    } else {
+                        $patcher->replaceNode($childPath, $thisChild);
+                    }
+                }
+            }
+        }
     }
 
     // ============================================================
@@ -78,15 +168,7 @@ class UIElement extends VNode
 
     public function content(DomNode|VNode|string ...$children): static
     {
-        // Convert VNodes to DomNodes by rendering them
-        $domChildren = array_map(function ($child) {
-            if ($child instanceof VNode) {
-                return $child->render($this);
-            }
-            return $child;
-        }, $children);
-
-        $this->domNode->content(...$domChildren);
+        $this->children = array_merge($this->children, $children);
         return $this;
     }
 
