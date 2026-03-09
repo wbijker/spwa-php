@@ -12,9 +12,9 @@ class SvgEllipse extends SvgElement
     ) {
     }
 
-    public function toNode(): Node
+    public function toNode(): DomNode
     {
-        $node = Node::el('ellipse')
+        $node = DomNode::el('ellipse')
             ->attr('cx', (string)$this->cx)
             ->attr('cy', (string)$this->cy)
             ->attr('rx', (string)$this->rx)

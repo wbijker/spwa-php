@@ -11,7 +11,7 @@ class Small extends UIElement
     {
     }
 
-    public function render(): Node
+    public function render(): DomNode
     {
         return $this->node('small')->children($this->content);
     }

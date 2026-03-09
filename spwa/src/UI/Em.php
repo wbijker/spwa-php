@@ -11,7 +11,7 @@ class Em extends UIElement
     {
     }
 
-    public function render(): Node
+    public function render(): DomNode
     {
         return $this->node('em')->children($this->content);
     }

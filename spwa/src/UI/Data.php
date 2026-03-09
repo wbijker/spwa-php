@@ -13,7 +13,7 @@ class Data extends UIElement
     ) {
     }
 
-    public function render(): Node
+    public function render(): DomNode
     {
         return $this->node('data')
             ->attr('value', $this->value)

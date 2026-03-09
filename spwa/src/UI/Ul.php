@@ -16,7 +16,7 @@ class Ul extends UIElement
         return $this;
     }
 
-    public function render(): Node
+    public function render(): DomNode
     {
         $node = $this->node('ul');
 

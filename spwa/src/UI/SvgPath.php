@@ -8,9 +8,9 @@ class SvgPath extends SvgElement
     {
     }
 
-    public function toNode(): Node
+    public function toNode(): DomNode
     {
-        $node = Node::el('path')->attr('d', $this->d);
+        $node = DomNode::el('path')->attr('d', $this->d);
         $this->applyCommonAttrs($node);
         return $node;
     }

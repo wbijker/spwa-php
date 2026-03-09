@@ -28,9 +28,9 @@ class Option
         return $this;
     }
 
-    public function toNode(): Node
+    public function toNode(): DomNode
     {
-        $node = Node::el('option')->children($this->label);
+        $node = DomNode::el('option')->children($this->label);
 
         if ($this->value !== null) {
             $node->attr('value', $this->value);

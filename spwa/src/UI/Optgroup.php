@@ -27,9 +27,9 @@ class Optgroup
         return $this;
     }
 
-    public function toNode(): Node
+    public function toNode(): DomNode
     {
-        $node = Node::el('optgroup')->attr('label', $this->label);
+        $node = DomNode::el('optgroup')->attr('label', $this->label);
 
         if ($this->disabled) {
             $node->attr('disabled', 'disabled');

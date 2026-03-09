@@ -6,9 +6,9 @@ namespace Spwa\UI;
  * Represents an element node in the DOM.
  * Base class for all UI elements.
  */
-class TagNode extends Node
+class TagDomNode extends DomNode
 {
-    /** @var (Node|string)[] */
+    /** @var (DomNode|string)[] */
     protected array $children = [];
 
     /** @var array<string, string> */
@@ -115,7 +115,7 @@ class TagNode extends Node
     /**
      * Add child nodes or text.
      */
-    public function content(Node|string ...$children): static
+    public function content(DomNode|string ...$children): static
     {
         $this->children = array_merge($this->children, $children);
         return $this;
@@ -123,7 +123,7 @@ class TagNode extends Node
 
     /**
      * Get all children.
-     * @return (Node|string)[]
+     * @return (DomNode|string)[]
      */
     public function getChildren(): array
     {
@@ -137,7 +137,7 @@ class TagNode extends Node
     {
         $index = 0;
         foreach ($this->children as $child) {
-            if ($child instanceof Node) {
+            if ($child instanceof DomNode) {
                 $child->assignPaths([...$this->path, $index]);
             }
             $index++;
@@ -153,7 +153,7 @@ class TagNode extends Node
         $allStyles = $this->styles;
 
         foreach ($this->children as $child) {
-            if ($child instanceof Node) {
+            if ($child instanceof DomNode) {
                 $allStyles = array_merge($allStyles, $child->collectStyles());
             }
         }
@@ -195,7 +195,7 @@ class TagNode extends Node
         // Build children
         $childrenHtml = '';
         foreach ($this->children as $child) {
-            if ($child instanceof Node) {
+            if ($child instanceof DomNode) {
                 $childrenHtml .= $child->toHtml();
             } else {
                 $childrenHtml .= htmlspecialchars($child);

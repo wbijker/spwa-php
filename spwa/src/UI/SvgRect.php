@@ -22,9 +22,9 @@ class SvgRect extends SvgElement
         return $this;
     }
 
-    public function toNode(): Node
+    public function toNode(): DomNode
     {
-        $node = Node::el('rect')
+        $node = DomNode::el('rect')
             ->attr('x', (string)$this->x)
             ->attr('y', (string)$this->y)
             ->attr('width', (string)$this->width)

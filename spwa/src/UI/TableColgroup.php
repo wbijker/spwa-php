@@ -21,9 +21,9 @@ class TableColgroup
         return $this;
     }
 
-    public function toNode(): Node
+    public function toNode(): DomNode
     {
-        $node = Node::el('colgroup');
+        $node = DomNode::el('colgroup');
 
         foreach ($this->cols as $col) {
             $node->children($col->toNode());

@@ -14,13 +14,15 @@ use Spwa\UI\Table;
 use Spwa\UI\UI;
 use Spwa\UI\UIElement;
 use Spwa\UI\Unit;
+use Spwa\VNode\Component;
+use Spwa\VNode\VNode;
 
 /**
  * Complete showcase of all UI elements, properties, and pseudo classes.
  */
-class Showcase
+class Showcase extends Component
 {
-    public static function build(): UIElement
+    protected function build(): VNode
     {
         return UI::column()
             ->gap(Unit::extraLarge())

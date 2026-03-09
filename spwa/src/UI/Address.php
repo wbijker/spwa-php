@@ -7,7 +7,7 @@ namespace Spwa\UI;
  */
 class Address extends Container
 {
-    public function render(): Node
+    public function render(): DomNode
     {
         $node = $this->node('address');
         foreach ($this->children as $child) {

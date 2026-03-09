@@ -8,8 +8,8 @@ use Spwa\UI\StyleGenerator;
 require 'vendor/autoload.php';
 
 // Build and render the UI Showcase
-$ui = Showcase::build();
-$ui->assignPaths();
+$showcase = new Showcase();
+$ui = $showcase->render();
 $html = $ui->toHtml();
 
 // Generate compressed styles with JS runtime

@@ -30,7 +30,7 @@ class Details extends UIElement
         return $this;
     }
 
-    public function render(): Node
+    public function render(): DomNode
     {
         $node = $this->node('details');
 
@@ -39,7 +39,7 @@ class Details extends UIElement
         }
 
         if ($this->summary !== null) {
-            $node->children(Node::el('summary')->children($this->summary));
+            $node->children(DomNode::el('summary')->children($this->summary));
         }
 
         foreach ($this->children as $child) {

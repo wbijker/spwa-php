@@ -40,7 +40,7 @@ class Layers extends UIElement
         return $this;
     }
 
-    public function render(): Node
+    public function render(): DomNode
     {
         $node = $this->node('div');
 
@@ -50,7 +50,7 @@ class Layers extends UIElement
 
         foreach ($this->layers as $layer) {
             // Wrap each layer in absolute positioning
-            $wrapper = Node::el('div')
+            $wrapper = DomNode::el('div')
                 ->class('absolute', 'inset-0')
                 ->style('absolute', ['position' => 'absolute'])
                 ->style('inset-0', ['top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0'])

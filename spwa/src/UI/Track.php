@@ -60,9 +60,9 @@ class Track
         return $this;
     }
 
-    public function toNode(): Node
+    public function toNode(): DomNode
     {
-        $node = Node::el('track')->attr('src', $this->src);
+        $node = DomNode::el('track')->attr('src', $this->src);
 
         if ($this->kind !== null) {
             $node->attr('kind', $this->kind);

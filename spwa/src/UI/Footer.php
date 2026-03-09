@@ -7,7 +7,7 @@ namespace Spwa\UI;
  */
 class Footer extends Container
 {
-    public function render(): Node
+    public function render(): DomNode
     {
         $node = $this->node('footer');
         foreach ($this->children as $child) {

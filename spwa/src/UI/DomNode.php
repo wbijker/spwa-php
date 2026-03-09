@@ -5,7 +5,7 @@ namespace Spwa\UI;
 /**
  * Base class for DOM nodes.
  */
-abstract class Node
+abstract class DomNode
 {
     protected string|int|null $key = null;
 
@@ -15,17 +15,17 @@ abstract class Node
     /**
      * Create an element node.
      */
-    public static function el(string $tag): TagNode
+    public static function el(string $tag): TagDomNode
     {
-        return new TagNode($tag);
+        return new TagDomNode($tag);
     }
 
     /**
      * Create a text node.
      */
-    public static function text(string $content): TextNode
+    public static function text(string $content): TextDomNode
     {
-        return new TextNode($content);
+        return new TextDomNode($content);
     }
 
     /**

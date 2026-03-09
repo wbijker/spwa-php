@@ -22,9 +22,9 @@ class TableCol
         return $this;
     }
 
-    public function toNode(): Node
+    public function toNode(): DomNode
     {
-        $node = Node::el('col');
+        $node = DomNode::el('col');
 
         if ($this->span !== null) {
             $node->attr('span', (string)$this->span);

@@ -15,7 +15,7 @@ class Dialog extends Container
         return $this;
     }
 
-    public function render(): Node
+    public function render(): DomNode
     {
         $node = $this->node('dialog');
 

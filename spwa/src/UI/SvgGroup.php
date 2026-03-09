@@ -13,9 +13,9 @@ class SvgGroup extends SvgElement
         return $this;
     }
 
-    public function toNode(): Node
+    public function toNode(): DomNode
     {
-        $node = Node::el('g');
+        $node = DomNode::el('g');
         $this->applyCommonAttrs($node);
 
         foreach ($this->children as $child) {

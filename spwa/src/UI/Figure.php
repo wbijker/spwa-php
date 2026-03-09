@@ -29,12 +29,12 @@ class Figure extends UIElement
         return $this;
     }
 
-    public function render(): Node
+    public function render(): DomNode
     {
         $node = $this->node('figure');
 
         if ($this->captionAbove && $this->caption !== null) {
-            $node->children(Node::el('figcaption')->children($this->caption));
+            $node->children(DomNode::el('figcaption')->children($this->caption));
         }
 
         if ($this->content !== null) {
@@ -42,7 +42,7 @@ class Figure extends UIElement
         }
 
         if (!$this->captionAbove && $this->caption !== null) {
-            $node->children(Node::el('figcaption')->children($this->caption));
+            $node->children(DomNode::el('figcaption')->children($this->caption));
         }
 
         return $node;

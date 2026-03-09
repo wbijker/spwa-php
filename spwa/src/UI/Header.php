@@ -7,7 +7,7 @@ namespace Spwa\UI;
  */
 class Header extends Container
 {
-    public function render(): Node
+    public function render(): DomNode
     {
         $node = $this->node('header');
         foreach ($this->children as $child) {

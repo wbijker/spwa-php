@@ -7,7 +7,7 @@ namespace Spwa\UI;
  */
 class Nav extends Container
 {
-    public function render(): Node
+    public function render(): DomNode
     {
         $node = $this->node('nav');
         foreach ($this->children as $child) {

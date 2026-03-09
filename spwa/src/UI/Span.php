@@ -7,7 +7,7 @@ namespace Spwa\UI;
  */
 class Span extends UIElement
 {
-    public function __construct(Node|string|null $content = null)
+    public function __construct(DomNode|string|null $content = null)
     {
         parent::__construct('span');
         if ($content !== null) {

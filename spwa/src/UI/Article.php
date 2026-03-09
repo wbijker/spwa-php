@@ -7,7 +7,7 @@ namespace Spwa\UI;
  */
 class Article extends Container
 {
-    public function render(): Node
+    public function render(): DomNode
     {
         $node = $this->node('article');
         foreach ($this->children as $child) {

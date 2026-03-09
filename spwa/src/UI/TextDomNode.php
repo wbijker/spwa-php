@@ -5,7 +5,7 @@ namespace Spwa\UI;
 /**
  * Represents a text node in the DOM.
  */
-class TextNode extends Node
+class TextDomNode extends DomNode
 {
     public function __construct(
         protected string $content

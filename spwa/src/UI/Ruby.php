@@ -16,12 +16,12 @@ class Ruby extends UIElement
         $this->annotation = $annotation;
     }
 
-    public function render(): Node
+    public function render(): DomNode
     {
         return $this->node('ruby')
             ->children($this->base)
-            ->children(Node::el('rp')->children('('))
-            ->children(Node::el('rt')->children($this->annotation))
-            ->children(Node::el('rp')->children(')'));
+            ->children(DomNode::el('rp')->children('('))
+            ->children(DomNode::el('rt')->children($this->annotation))
+            ->children(DomNode::el('rp')->children(')'));
     }
 }

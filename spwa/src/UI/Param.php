@@ -13,9 +13,9 @@ class Param
     ) {
     }
 
-    public function toNode(): Node
+    public function toNode(): DomNode
     {
-        return Node::el('param')
+        return DomNode::el('param')
             ->attr('name', $this->name)
             ->attr('value', $this->value);
     }

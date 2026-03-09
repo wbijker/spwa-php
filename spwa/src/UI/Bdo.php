@@ -25,7 +25,7 @@ class Bdo extends UIElement
         return $this;
     }
 
-    public function render(): Node
+    public function render(): DomNode
     {
         return $this->node('bdo')
             ->attr('dir', $this->dir)

@@ -29,7 +29,7 @@ class Fieldset extends Container
         return $this;
     }
 
-    public function render(): Node
+    public function render(): DomNode
     {
         $node = $this->node('fieldset');
 
@@ -42,7 +42,7 @@ class Fieldset extends Container
         }
 
         if ($this->legend !== null) {
-            $node->children(Node::el('legend')->children($this->legend));
+            $node->children(DomNode::el('legend')->children($this->legend));
         }
 
         foreach ($this->children as $child) {

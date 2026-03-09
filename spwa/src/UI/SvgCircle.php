@@ -11,9 +11,9 @@ class SvgCircle extends SvgElement
     ) {
     }
 
-    public function toNode(): Node
+    public function toNode(): DomNode
     {
-        $node = Node::el('circle')
+        $node = DomNode::el('circle')
             ->attr('cx', (string)$this->cx)
             ->attr('cy', (string)$this->cy)
             ->attr('r', (string)$this->r);

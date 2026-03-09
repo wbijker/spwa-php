@@ -128,7 +128,7 @@ class Table extends UIElement
     public function toHtml(): string
     {
         if ($this->tableCaption !== null) {
-            $this->content(Node::el('caption')->content($this->tableCaption));
+            $this->content(DomNode::el('caption')->content($this->tableCaption));
         }
 
         if ($this->tableColgroup !== null) {
@@ -136,12 +136,12 @@ class Table extends UIElement
         }
 
         if ($this->headRow !== null) {
-            $thead = Node::el('thead')->content($this->headRow);
+            $thead = DomNode::el('thead')->content($this->headRow);
             $this->content($thead);
         }
 
         if (!empty($this->bodyRows)) {
-            $tbody = Node::el('tbody');
+            $tbody = DomNode::el('tbody');
             foreach ($this->bodyRows as $row) {
                 $tbody->content($row);
             }
@@ -149,7 +149,7 @@ class Table extends UIElement
         }
 
         if (!empty($this->footRows)) {
-            $tfoot = Node::el('tfoot');
+            $tfoot = DomNode::el('tfoot');
             foreach ($this->footRows as $row) {
                 $tfoot->content($row);
             }

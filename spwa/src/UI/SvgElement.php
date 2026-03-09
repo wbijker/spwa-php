@@ -57,7 +57,7 @@ abstract class SvgElement
         return $this;
     }
 
-    protected function applyCommonAttrs(Node $node): void
+    protected function applyCommonAttrs(DomNode $node): void
     {
         if ($this->fill !== null) {
             $node->attr('fill', $this->fill);
@@ -82,5 +82,5 @@ abstract class SvgElement
         }
     }
 
-    abstract public function toNode(): Node;
+    abstract public function toNode(): DomNode;
 }

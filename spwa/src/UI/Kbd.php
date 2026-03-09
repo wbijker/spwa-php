@@ -11,7 +11,7 @@ class Kbd extends UIElement
     {
     }
 
-    public function render(): Node
+    public function render(): DomNode
     {
         return $this->node('kbd')->children($this->content);
     }

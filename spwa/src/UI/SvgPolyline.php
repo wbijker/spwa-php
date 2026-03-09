@@ -8,9 +8,9 @@ class SvgPolyline extends SvgElement
     {
     }
 
-    public function toNode(): Node
+    public function toNode(): DomNode
     {
-        $node = Node::el('polyline')->attr('points', $this->points);
+        $node = DomNode::el('polyline')->attr('points', $this->points);
         $this->applyCommonAttrs($node);
         return $node;
     }

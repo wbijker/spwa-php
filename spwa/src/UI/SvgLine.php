@@ -12,9 +12,9 @@ class SvgLine extends SvgElement
     ) {
     }
 
-    public function toNode(): Node
+    public function toNode(): DomNode
     {
-        $node = Node::el('line')
+        $node = DomNode::el('line')
             ->attr('x1', (string)$this->x1)
             ->attr('y1', (string)$this->y1)
             ->attr('x2', (string)$this->x2)

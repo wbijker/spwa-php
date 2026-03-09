@@ -40,9 +40,9 @@ class Source
         return $this;
     }
 
-    public function toNode(): Node
+    public function toNode(): DomNode
     {
-        $node = Node::el('source')->attr('src', $this->src);
+        $node = DomNode::el('source')->attr('src', $this->src);
 
         if ($this->type !== null) {
             $node->attr('type', $this->type);
