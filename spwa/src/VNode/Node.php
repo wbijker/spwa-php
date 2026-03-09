@@ -29,7 +29,10 @@ class Node extends VNode
     public function render(StateManager $state, ?VNode $parent = null): DomNode
     {
         $this->parent = $parent;
-        $this->path = $parent?->getPath() ?? [];
+        // Only set path from parent if not already set (e.g., by setPath)
+        if (empty($this->path)) {
+            $this->path = $parent?->getPath() ?? [];
+        }
 
         return $this->domNode->assignPaths($this->path);
     }

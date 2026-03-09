@@ -23,14 +23,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $ui = $showcase->render($state);
 
     // Find the node by path and execute the event
+    // executeEvent will finalize the owning component automatically
     $node = $ui->findByPath($path);
     if ($node !== null) {
-        $node->executeEvent($event);
+        $node->executeEvent($event, $state);
         Console::log("Executed event '$event' on path '$pathStr'");
     }
-
-    // Finalize to save state
-    $showcase->finalize($state);
 
     echo json_encode(["success" => true, "js" => JsRuntime::dump(), "state" => $state->getAll()]);
     die();

@@ -44,10 +44,13 @@ abstract class Component extends VNode
     public function render(StateManager $state, ?VNode $parent = null): DomNode
     {
         $this->parent = $parent;
-        $this->path = $parent?->getPath() ?? [];
+        // Only set path from parent if not already set (e.g., by setPath)
+        if (empty($this->path)) {
+            $this->path = $parent?->getPath() ?? [];
+        }
 
-        // Restore state from state manager
-        $pathKey = implode('.', $this->path);
+        // Restore state from state manager using component class name as key
+        $pathKey = $this->getStateKey();
         $savedState = $state->getState($pathKey);
         if (!empty($savedState)) {
             $this->setState($savedState);
@@ -56,6 +59,17 @@ abstract class Component extends VNode
         $child = $this->build();
 
         return $child->render($state, $this);
+    }
+
+    /**
+     * Get the state key for this component.
+     * Uses class name and path for uniqueness.
+     */
+    protected function getStateKey(): string
+    {
+        $className = static::class;
+        $pathStr = implode('.', $this->path);
+        return $pathStr === '' ? $className : "$pathStr:$className";
     }
 
     /**
@@ -89,7 +103,7 @@ abstract class Component extends VNode
      */
     public function finalize(StateManager $state): void
     {
-        $pathKey = implode('.', $this->path);
+        $pathKey = $this->getStateKey();
         $currentState = $this->getState();
         if (!empty($currentState)) {
             $state->saveState($pathKey, $currentState);

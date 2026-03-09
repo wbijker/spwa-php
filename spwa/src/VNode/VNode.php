@@ -42,6 +42,15 @@ abstract class VNode
     }
 
     /**
+     * Set the path for this node.
+     * @param int[] $path
+     */
+    public function setPath(array $path): void
+    {
+        $this->path = $path;
+    }
+
+    /**
      * Get the parent node.
      */
     public function getParent(): ?VNode

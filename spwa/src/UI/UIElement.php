@@ -3,6 +3,7 @@
 namespace Spwa\UI;
 
 use Spwa\State\StateManager;
+use Spwa\VNode\Component;
 use Spwa\VNode\Node;
 use Spwa\VNode\Patcher;
 use Spwa\VNode\VNode;
@@ -19,6 +20,9 @@ class UIElement extends Node
     /** @var (DomNode|VNode|string)[] Children to be rendered */
     protected array $children = [];
 
+    /** @var Component|null The component that owns this element's events */
+    protected ?Component $eventOwner = null;
+
     public function __construct(string $tag = 'div')
     {
         parent::__construct(new TagDomNode($tag));
@@ -32,19 +36,51 @@ class UIElement extends Node
     public function render(StateManager $state, ?VNode $parent = null): DomNode
     {
         $this->parent = $parent;
-        $this->path = $parent?->getPath() ?? [];
+        // Only set path from parent if not already set (e.g., by setPath)
+        if (empty($this->path)) {
+            $this->path = $parent?->getPath() ?? [];
+        }
+
+        // Find the owning Component by traversing up the parent chain
+        $this->eventOwner = $this->findOwningComponent($parent);
+
+        // Set the event owner on the DOM node for all registered events
+        if ($this->eventOwner !== null) {
+            $this->domNode->setEventOwner($this->eventOwner);
+        }
 
         // Render VNode children now that we have StateManager
-        $domChildren = array_map(function ($child) use ($state) {
+        // Track child index for proper path assignment
+        $domChildren = [];
+        $index = 0;
+        foreach ($this->children as $child) {
             if ($child instanceof VNode) {
-                return $child->render($state, $this);
+                // Set the child's path before rendering
+                $child->setPath([...$this->path, $index]);
+                $domChildren[] = $child->render($state, $this);
+            } else {
+                $domChildren[] = $child;
             }
-            return $child;
-        }, $this->children);
+            $index++;
+        }
 
         $this->domNode->content(...$domChildren);
 
         return $this->domNode->assignPaths($this->path);
+    }
+
+    /**
+     * Find the nearest Component ancestor.
+     */
+    private function findOwningComponent(?VNode $node): ?Component
+    {
+        while ($node !== null) {
+            if ($node instanceof Component) {
+                return $node;
+            }
+            $node = $node->getParent();
+        }
+        return null;
     }
 
     /**

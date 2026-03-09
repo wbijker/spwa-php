@@ -2,6 +2,9 @@
 
 namespace Spwa\UI;
 
+use Spwa\State\StateManager;
+use Spwa\VNode\Component;
+
 /**
  * Represents an element node in the DOM.
  * Base class for all UI elements.
@@ -17,7 +20,7 @@ class TagDomNode extends DomNode
     /** @var array<string, array<string, string>> */
     protected array $styles = [];
 
-    /** @var array<string, callable> */
+    /** @var array<string, array{callback: callable, owner: ?Component}> */
     protected array $events = [];
 
     /** @var string[] Collected class names */
@@ -97,19 +100,30 @@ class TagDomNode extends DomNode
     /**
      * Add an event listener.
      */
-    public function on(string $event, callable $callback): static
+    public function on(string $event, callable $callback, ?Component $owner = null): static
     {
-        $this->events[$event] = $callback;
+        $this->events[$event] = ['callback' => $callback, 'owner' => $owner];
         return $this;
     }
 
     /**
      * Get all event listeners.
-     * @return array<string, callable>
+     * @return array<string, array{callback: callable, owner: ?Component}>
      */
     public function getEvents(): array
     {
         return $this->events;
+    }
+
+    /**
+     * Set the owner component for all events.
+     */
+    public function setEventOwner(Component $owner): static
+    {
+        foreach ($this->events as $event => $data) {
+            $this->events[$event]['owner'] = $owner;
+        }
+        return $this;
     }
 
     /**
@@ -725,12 +739,20 @@ class TagDomNode extends DomNode
     /**
      * Execute an event handler if it exists.
      * @param string $event
+     * @param StateManager|null $state The state manager for finalizing the owner component
      * @return bool Whether the event was handled
      */
-    public function executeEvent(string $event): bool
+    public function executeEvent(string $event, ?StateManager $state = null): bool
     {
         if (isset($this->events[$event])) {
-            ($this->events[$event])();
+            $eventData = $this->events[$event];
+            ($eventData['callback'])();
+
+            // Finalize the owner component if available
+            if ($state !== null && $eventData['owner'] !== null) {
+                $eventData['owner']->finalize($state);
+            }
+
             return true;
         }
         return false;
