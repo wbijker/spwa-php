@@ -44,9 +44,12 @@ class TextDomNode extends DomNode
      */
     public function compare(DomNode $other, Patcher $patcher): void
     {
-        // If other is not a text node or content differs, replace
-        if (!$other instanceof TextDomNode || $this->content !== $other->content) {
+        if (!$other instanceof TextDomNode) {
+            // Different node type, replace entirely
             $patcher->replaceNode($this->path, $this);
+        } elseif ($this->content !== $other->content) {
+            // Same type but different text, just replace text
+            $patcher->replaceText($this->path, $this->content);
         }
     }
 }

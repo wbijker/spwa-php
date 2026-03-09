@@ -83,12 +83,19 @@ $generator = StyleGenerator::from($ui->collectStyles());
         }
 
 
-        function findNodeByPath(path) {
+        function findNodeByPath(path, includeTextNodes = false) {
             // Start from body's first child (the root element)
             let node = document.body.firstElementChild;
-            for (const index of path) {
+            for (let i = 0; i < path.length; i++) {
                 if (!node) return null;
-                node = node.children[index];
+                const index = path[i];
+                if (includeTextNodes) {
+                    // Use childNodes to include text nodes
+                    node = node.childNodes[index];
+                } else {
+                    // Use children for elements only
+                    node = node.children[index];
+                }
             }
             return node;
         }
@@ -143,6 +150,16 @@ $generator = StyleGenerator::from($ui->collectStyles());
                         const node = findNodeByPath(path);
                         if (node) {
                             node.removeAttribute(patch.name);
+                        }
+                        break;
+                    }
+                    case 'replace_text': {
+                        // Get parent element and child index
+                        const parentPath = path.slice(0, -1);
+                        const childIndex = path[path.length - 1];
+                        const parent = findNodeByPath(parentPath);
+                        if (parent && parent.childNodes[childIndex]) {
+                            parent.childNodes[childIndex].textContent = patch.text;
                         }
                         break;
                     }

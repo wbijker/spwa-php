@@ -53,6 +53,20 @@ class Patcher
     }
 
     /**
+     * Replace text content at the given path.
+     * @param int[] $path
+     * @param string $text
+     */
+    public function replaceText(array $path, string $text): void
+    {
+        $this->operations[] = [
+            'type' => 'replace_text',
+            'path' => $path,
+            'text' => $text,
+        ];
+    }
+
+    /**
      * Set an attribute on a node at the given path.
      * @param int[] $path
      * @param string $name
