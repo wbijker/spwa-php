@@ -2,6 +2,8 @@
 
 namespace Spwa\VNode;
 
+use Spwa\UI\DomNode;
+
 /**
  * Handles DOM patching operations.
  */
@@ -82,11 +84,18 @@ class Patcher
 
     /**
      * Get all collected operations.
+     * Serializes DomNode objects to HTML strings.
      * @return array
      */
     public function getOperations(): array
     {
-        return $this->operations;
+        return array_map(function ($op) {
+            if (isset($op['node']) && $op['node'] instanceof DomNode) {
+                $op['html'] = $op['node']->toHtml();
+                unset($op['node']);
+            }
+            return $op;
+        }, $this->operations);
     }
 
     /**

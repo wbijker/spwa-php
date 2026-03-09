@@ -38,31 +38,6 @@ class Node extends VNode
     }
 
     /**
-     * Compare this node with another node and generate patches.
-     * @param VNode $parent The parent VNode
-     * @param StateManager $manager The state manager
-     * @param VNode $other The other VNode to compare with
-     * @param Patcher $patcher The patcher to record operations
-     */
-    public function compare(VNode $parent, StateManager $manager, VNode $other, Patcher $patcher): void
-    {
-        $this->parent = $parent;
-        $this->path = $parent->getPath();
-
-        // If types don't match, replace the node
-        if (!$other instanceof static) {
-            $patcher->replaceNode($this->path, $this->render($manager, $parent));
-            return;
-        }
-
-        // Compare the wrapped DOM nodes
-        // For now, just replace if they're different instances
-        if ($this->domNode !== $other->domNode) {
-            $patcher->replaceNode($this->path, $this->render($manager, $parent));
-        }
-    }
-
-    /**
      * Get the wrapped DOM node.
      */
     public function getDomNode(): DomNode

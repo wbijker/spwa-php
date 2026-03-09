@@ -2,6 +2,8 @@
 
 namespace Spwa\UI;
 
+use Spwa\VNode\Patcher;
+
 /**
  * Base class for DOM nodes.
  */
@@ -118,4 +120,11 @@ abstract class DomNode
     {
         return false;
     }
+
+    /**
+     * Compare this node with another and generate patches.
+     * @param DomNode $other The other node to compare with
+     * @param Patcher $patcher The patcher to record operations
+     */
+    abstract public function compare(DomNode $other, Patcher $patcher): void;
 }

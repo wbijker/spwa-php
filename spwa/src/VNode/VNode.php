@@ -24,15 +24,6 @@ abstract class VNode
     abstract public function render(StateManager $state, ?VNode $parent = null): DomNode;
 
     /**
-     * Compare this node with another node and generate patches.
-     * @param VNode $parent The parent VNode
-     * @param StateManager $manager The state manager
-     * @param VNode $other The other VNode to compare with
-     * @param Patcher $patcher The patcher to record operations
-     */
-    abstract public function compare(VNode $parent, StateManager $manager, VNode $other, Patcher $patcher): void;
-
-    /**
      * Get the path to this node.
      * @return int[]
      */

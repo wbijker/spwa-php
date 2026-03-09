@@ -5,7 +5,6 @@ namespace Spwa\UI;
 use Spwa\State\StateManager;
 use Spwa\VNode\Component;
 use Spwa\VNode\Node;
-use Spwa\VNode\Patcher;
 use Spwa\VNode\VNode;
 
 /**
@@ -81,86 +80,6 @@ class UIElement extends Node
             $node = $node->getParent();
         }
         return null;
-    }
-
-    /**
-     * Compare this element with another node and generate patches.
-     * @param VNode $parent The parent VNode
-     * @param StateManager $manager The state manager
-     * @param VNode $other The other VNode to compare with
-     * @param Patcher $patcher The patcher to record operations
-     */
-    public function compare(VNode $parent, StateManager $manager, VNode $other, Patcher $patcher): void
-    {
-        $this->parent = $parent;
-        $this->path = $parent->getPath();
-
-        // If types don't match, replace the node
-        if (!$other instanceof UIElement) {
-            $patcher->replaceNode($this->path, $this->render($manager, $parent));
-            return;
-        }
-
-        $thisTag = $this->domNode;
-        $otherTag = $other->domNode;
-
-        // If tag names differ, replace the node
-        if ($thisTag->getTag() !== $otherTag->getTag()) {
-            $patcher->replaceNode($this->path, $this->render($manager, $parent));
-            return;
-        }
-
-        // Compare attributes
-        $thisAttrs = $thisTag->getAttributes();
-        $otherAttrs = $otherTag->getAttributes();
-
-        foreach ($thisAttrs as $name => $value) {
-            if (!isset($otherAttrs[$name]) || $otherAttrs[$name] !== $value) {
-                $patcher->setAttribute($this->path, $name, $value);
-            }
-        }
-
-        foreach ($otherAttrs as $name => $value) {
-            if (!isset($thisAttrs[$name])) {
-                $patcher->removeAttribute($this->path, $name);
-            }
-        }
-
-        // Compare children
-        $thisCount = count($this->children);
-        $otherCount = count($other->children);
-        $maxCount = max($thisCount, $otherCount);
-
-        for ($i = 0; $i < $maxCount; $i++) {
-            $childPath = [...$this->path, $i];
-
-            if ($i >= $thisCount) {
-                // Child was removed
-                $patcher->deleteNode($childPath);
-            } elseif ($i >= $otherCount) {
-                // Child was added
-                $child = $this->children[$i];
-                if ($child instanceof VNode) {
-                    $patcher->insertNode($childPath, $child->render($manager, $this));
-                } else {
-                    $patcher->insertNode($childPath, $child);
-                }
-            } else {
-                // Compare existing children
-                $thisChild = $this->children[$i];
-                $otherChild = $other->children[$i];
-
-                if ($thisChild instanceof VNode && $otherChild instanceof VNode) {
-                    $thisChild->compare($this, $manager, $otherChild, $patcher);
-                } elseif ($thisChild !== $otherChild) {
-                    if ($thisChild instanceof VNode) {
-                        $patcher->replaceNode($childPath, $thisChild->render($manager, $this));
-                    } else {
-                        $patcher->replaceNode($childPath, $thisChild);
-                    }
-                }
-            }
-        }
     }
 
     // ============================================================

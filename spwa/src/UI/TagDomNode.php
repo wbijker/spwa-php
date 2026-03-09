@@ -4,6 +4,7 @@ namespace Spwa\UI;
 
 use Spwa\State\StateManager;
 use Spwa\VNode\Component;
+use Spwa\VNode\Patcher;
 
 /**
  * Represents an element node in the DOM.
@@ -756,5 +757,81 @@ class TagDomNode extends DomNode
             return true;
         }
         return false;
+    }
+
+    /**
+     * Compare this node with another and generate patches.
+     */
+    public function compare(DomNode $other, Patcher $patcher): void
+    {
+        // If other is not a TagDomNode or tag differs, replace entirely
+        if (!$other instanceof TagDomNode || $this->tag !== $other->tag) {
+            $patcher->replaceNode($this->path, $this);
+            return;
+        }
+
+        // Compare attributes
+        $thisAttrs = $this->attributes;
+        $otherAttrs = $other->attributes;
+
+        foreach ($thisAttrs as $name => $value) {
+            if (!isset($otherAttrs[$name]) || $otherAttrs[$name] !== $value) {
+                $patcher->setAttribute($this->path, $name, $value);
+            }
+        }
+
+        foreach ($otherAttrs as $name => $value) {
+            if (!isset($thisAttrs[$name])) {
+                $patcher->removeAttribute($this->path, $name);
+            }
+        }
+
+        // Compare classes
+        $thisClasses = $this->classes;
+        $otherClasses = $other->classes;
+        if ($thisClasses !== $otherClasses) {
+            $patcher->setAttribute($this->path, 'class', implode(' ', array_unique($thisClasses)));
+        }
+
+        // Compare children
+        $thisCount = count($this->children);
+        $otherCount = count($other->children);
+        $maxCount = max($thisCount, $otherCount);
+
+        for ($i = 0; $i < $maxCount; $i++) {
+            $childPath = [...$this->path, $i];
+
+            if ($i >= $thisCount) {
+                // Child was removed
+                $patcher->deleteNode($childPath);
+            } elseif ($i >= $otherCount) {
+                // Child was added
+                $child = $this->children[$i];
+                if ($child instanceof DomNode) {
+                    $patcher->insertNode($childPath, $child);
+                } else {
+                    // String child - wrap in text node for consistency
+                    $patcher->insertNode($childPath, new TextDomNode($child));
+                }
+            } else {
+                // Compare existing children
+                $thisChild = $this->children[$i];
+                $otherChild = $other->children[$i];
+
+                // Handle string children
+                if (is_string($thisChild)) {
+                    $thisChild = new TextDomNode($thisChild);
+                    $thisChild->assignPaths($childPath);
+                }
+                if (is_string($otherChild)) {
+                    $otherChild = new TextDomNode($otherChild);
+                    $otherChild->assignPaths($childPath);
+                }
+
+                if ($thisChild instanceof DomNode && $otherChild instanceof DomNode) {
+                    $thisChild->compare($otherChild, $patcher);
+                }
+            }
+        }
     }
 }

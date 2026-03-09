@@ -7,6 +7,7 @@ use Spwa\Js\JsRuntime;
 use Spwa\State\SessionStateManager;
 use Spwa\UI\Examples\Showcase;
 use Spwa\UI\StyleGenerator;
+use Spwa\VNode\Patcher;
 
 require 'vendor/autoload.php';
 // Build and render the UI Showcase
@@ -19,18 +20,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $pathStr = $payload['path'] ?? '';
     $path = array_map('intval', explode(',', $pathStr));
 
-    // Render the component tree
-    $ui = $showcase->render($state);
+    // 1. Render the old component tree (before event)
+    $oldShowcase = new Showcase();
+    $oldUi = $oldShowcase->render($state);
 
-    // Find the node by path and execute the event
+    // 2. Find the node by path and execute the event
     // executeEvent will finalize the owning component automatically
-    $node = $ui->findByPath($path);
+    $node = $oldUi->findByPath($path);
     if ($node !== null) {
         $node->executeEvent($event, $state);
-        Console::log("Executed event '$event' on path '$pathStr'");
     }
 
-    echo json_encode(["success" => true, "js" => JsRuntime::dump(), "state" => $state->getAll()]);
+    // 3. Render the new component tree (after event, with updated state)
+    $newShowcase = new Showcase();
+    $newUi = $newShowcase->render($state);
+
+    // 4. Compare new DOM vs old DOM to generate patches
+    $patcher = new Patcher();
+    $newUi->compare($oldUi, $patcher);
+
+    // 5. Return patches to frontend
+    echo json_encode([
+        "success" => true,
+        "js" => JsRuntime::dump(),
+        "patches" => $patcher->getOperations(),
+        "state" => $state->getAll()
+    ]);
     die();
 }
 
@@ -68,15 +83,91 @@ $generator = StyleGenerator::from($ui->collectStyles());
         }
 
 
+        function findNodeByPath(path) {
+            // Start from body's first child (the root element)
+            let node = document.body.firstElementChild;
+            for (const index of path) {
+                if (!node) return null;
+                node = node.children[index];
+            }
+            return node;
+        }
+
+        function applyPatches(patches) {
+            for (const patch of patches) {
+                const path = patch.path;
+
+                switch (patch.type) {
+                    case 'replace_node': {
+                        const node = findNodeByPath(path);
+                        if (node) {
+                            const temp = document.createElement('div');
+                            temp.innerHTML = patch.html;
+                            node.replaceWith(temp.firstElementChild);
+                        }
+                        break;
+                    }
+                    case 'insert_node': {
+                        const parentPath = path.slice(0, -1);
+                        const index = path[path.length - 1];
+                        const parent = parentPath.length === 0
+                            ? document.body.firstElementChild
+                            : findNodeByPath(parentPath);
+                        if (parent) {
+                            const temp = document.createElement('div');
+                            temp.innerHTML = patch.html;
+                            const newNode = temp.firstElementChild;
+                            if (index >= parent.children.length) {
+                                parent.appendChild(newNode);
+                            } else {
+                                parent.insertBefore(newNode, parent.children[index]);
+                            }
+                        }
+                        break;
+                    }
+                    case 'delete_node': {
+                        const node = findNodeByPath(path);
+                        if (node) {
+                            node.remove();
+                        }
+                        break;
+                    }
+                    case 'set_attribute': {
+                        const node = findNodeByPath(path);
+                        if (node) {
+                            node.setAttribute(patch.name, patch.value);
+                        }
+                        break;
+                    }
+                    case 'remove_attribute': {
+                        const node = findNodeByPath(path);
+                        if (node) {
+                            node.removeAttribute(patch.name);
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
         function callback(error, data) {
-
-            executeJsDump(data.js);
-
             if (error) {
                 console.error("Error:", error);
-            } else {
-                console.log("Response:", data);
+                return;
             }
+
+            // Execute JS commands from server
+            if (data.js) {
+                executeJsDump(data.js);
+            }
+
+            // Apply DOM patches
+            if (data.patches && data.patches.length > 0) {
+                console.log("Applying patches:", data.patches);
+                applyPatches(data.patches);
+            }
+
+            console.log("Response:", data);
         }
 
         function post(data, headers) {
@@ -95,7 +186,7 @@ $generator = StyleGenerator::from($ui->collectStyles());
                 if (xhr.readyState === 4) { // 4 means request is done
                     if (xhr.status === 200) { // 200 means "OK"
                         callback(null, JSON.parse(xhr.responseText));
-                    } else {s
+                    } else {
                         callback(new Error("Request failed: " + xhr.status));
                     }
                 }

@@ -73,31 +73,6 @@ abstract class Component extends VNode
     }
 
     /**
-     * Compare this component with another node and generate patches.
-     * @param VNode $parent The parent VNode
-     * @param StateManager $manager The state manager
-     * @param VNode $other The other VNode to compare with
-     * @param Patcher $patcher The patcher to record operations
-     */
-    public function compare(VNode $parent, StateManager $manager, VNode $other, Patcher $patcher): void
-    {
-        $this->parent = $parent;
-        $this->path = $parent->getPath();
-
-        // If the other node is not the same component type, replace entirely
-        if (get_class($this) !== get_class($other)) {
-            $patcher->replaceNode($this->path, $this->render($manager, $parent));
-            return;
-        }
-
-        // Build both components and compare their children
-        $thisChild = $this->build();
-        $otherChild = $other->build();
-
-        $thisChild->compare($this, $manager, $otherChild, $patcher);
-    }
-
-    /**
      * Finalize this component, saving its state.
      * @param StateManager $state The state manager
      */
