@@ -2,6 +2,7 @@
 
 namespace Spwa\UI\Examples;
 
+use Closure;
 use Spwa\Js\Console;
 use Spwa\UI\Color;
 use Spwa\UI\FontSize;
@@ -12,20 +13,14 @@ use Spwa\VNode\VNode;
 
 /**
  * A simple counter component with increment and decrement buttons.
+ * Accepts value and change handler from parent.
  */
 class Counter extends Component
 {
-    private int $count = 0;
-
-    protected function getState(): array
-    {
-        return ['count' => $this->count];
-    }
-
-    protected function setState(array $state): void
-    {
-        $this->count = $state['count'] ?? 0;
-    }
+    public function __construct(
+        private int $value,
+        private Closure $onChange
+    ) {}
 
     protected function build(): VNode
     {
@@ -41,11 +36,10 @@ class Counter extends Component
                     ->color(Color::white())
                     ->rounded(Unit::rem(0.25))
                     ->on('click', function() {
-                        $this->count--;
-                        Console::log("We have decremented the count to {$this->count}");
+                        ($this->onChange)($this->value - 1);
                     }),
 
-                UI::text((string)$this->count)
+                UI::text((string)$this->value)
                     ->padding(Unit::rem(0.5), Unit::rem(1))
                     ->fontSize(FontSize::TwoXL)
                     ->semibold(),
@@ -56,8 +50,7 @@ class Counter extends Component
                     ->color(Color::white())
                     ->rounded(Unit::rem(0.25))
                     ->on('click', function() {
-                        $this->count++;
-                        Console::log("We have incremented the count to {$this->count}");
+                        ($this->onChange)($this->value + 1);
                     })
             );
     }

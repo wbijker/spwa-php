@@ -25,25 +25,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $oldUi = $oldShowcase->render($state);
 
     // 2. Find the node by path and execute the event
-    // executeEvent will finalize the owning component automatically
     $node = $oldUi->findByPath($path);
     if ($node !== null) {
         $node->executeEvent($event, $state);
     }
 
-    // 3. Render the new component tree (after event, with updated state)
+    // 3. Finalize the root component to save any state changes from closures
+    $oldShowcase->finalize($state);
+
+    // 4. Render the new component tree (after event, with updated state)
     $newShowcase = new Showcase();
     $newUi = $newShowcase->render($state);
 
-    // 4. Compare new DOM vs old DOM to generate patches
+    // 5. Compare new DOM vs old DOM to generate patches
     $patcher = new Patcher();
     $newUi->compare($oldUi, $patcher);
 
-    // 5. Return patches to frontend
+    // 6. Collect styles from new UI and send compressed format
+    $generator = StyleGenerator::from($newUi->collectStyles());
+
+    // 7. Return patches to frontend
     echo json_encode([
         "success" => true,
         "js" => JsRuntime::dump(),
         "patches" => $patcher->getOperations(),
+        "styles" => $generator->toCompressed(),
         "state" => $state->getAll()
     ]);
     die();

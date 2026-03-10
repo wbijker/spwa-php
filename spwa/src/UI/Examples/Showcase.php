@@ -2,6 +2,7 @@
 
 namespace Spwa\UI\Examples;
 
+use Spwa\Js\Console;
 use Spwa\UI\Align;
 use Spwa\UI\Color;
 use Spwa\UI\Cursor;
@@ -22,6 +23,20 @@ use Spwa\VNode\VNode;
  */
 class Showcase extends Component
 {
+    private int $a = 0;
+    private int $b = 0;
+
+    protected function getState(): array
+    {
+        return ['a' => $this->a, 'b' => $this->b];
+    }
+
+    protected function setState(array $state): void
+    {
+        $this->a = $state['a'] ?? 0;
+        $this->b = $state['b'] ?? 0;
+    }
+
     protected function build(): VNode
     {
         return UI::column()
@@ -29,9 +44,20 @@ class Showcase extends Component
             ->padding(Unit::large())
             ->background(Color::gray(50))
             ->content(
-                new Counter(),
+                new Counter($this->a, function (int $v) {
+                    $this->a = $v;
+                    Console::log("Showcase state updated: a={$this->a}, b={$this->b}");
+                }),
                 self::header(),
-                new Counter(),
+                new Counter($this->b, function (int $v) {
+                    $this->b = $v;
+                    Console::log("Showcase state updated: a={$this->a}, b={$this->b}");
+                }),
+                UI::text("Sum: " . ($this->a + $this->b))
+                    ->fontSize(FontSize::TwoXL)
+                    ->weight(FontWeight::Bold)
+                    ->color(Color::indigo(600))
+                    ->padding(Unit::medium()),
                 self::colorPalette(),
                 self::typography(),
                 self::buttons(),
@@ -175,7 +201,7 @@ class Showcase extends Component
                     ->gap(Unit::medium())
                     ->wrap()
                     ->content(
-                        // Primary button with hover
+                    // Primary button with hover
                         UI::button("Primary")
                             ->background(Color::blue(500), Color::blue(600)->hover())
                             ->color(Color::white())
@@ -247,7 +273,7 @@ class Showcase extends Component
                 UI::grid(3)
                     ->gap(Unit::large())
                     ->content(
-                        // Simple card
+                    // Simple card
                         UI::column()
                             ->gap(Unit::medium())
                             ->padding(Unit::large())
@@ -260,8 +286,6 @@ class Showcase extends Component
                                     ->color(Color::gray(600))
                                     ->fontSize(FontSize::Small)
                             ),
-
-
 
 
                         // Card with image
@@ -323,7 +347,7 @@ class Showcase extends Component
                                     Table::heading()->content(UI::text("Role")),
                                     Table::heading()->content(UI::text("Status"))
                                 )
-                                ->background(Color::gray(50))
+                                    ->background(Color::gray(50))
                             )
                             ->body(
                                 Table::row(
@@ -340,8 +364,8 @@ class Showcase extends Component
                                             ->color(Color::green(800))
                                     )
                                 )
-                                ->borderColor(Color::gray(200))
-                                ->bordered(),
+                                    ->borderColor(Color::gray(200))
+                                    ->bordered(),
                                 Table::row(
                                     Table::cell()->content("Jane Smith"),
                                     Table::cell()->content("jane@example.com"),
@@ -356,8 +380,8 @@ class Showcase extends Component
                                             ->color(Color::green(800))
                                     )
                                 )
-                                ->borderColor(Color::gray(200))
-                                ->bordered(),
+                                    ->borderColor(Color::gray(200))
+                                    ->bordered(),
                                 Table::row(
                                     Table::cell()->content("Bob Wilson"),
                                     Table::cell()->content("bob@example.com"),
@@ -372,8 +396,8 @@ class Showcase extends Component
                                             ->color(Color::gray(600))
                                     )
                                 )
-                                ->borderColor(Color::gray(200))
-                                ->bordered()
+                                    ->borderColor(Color::gray(200))
+                                    ->bordered()
                             )
                     )
             );
@@ -461,7 +485,7 @@ class Showcase extends Component
                     ->gap(Unit::large())
                     ->wrap()
                     ->content(
-                        // Hover state
+                    // Hover state
                         UI::column()
                             ->gap(Unit::small())
                             ->alignCenter()
