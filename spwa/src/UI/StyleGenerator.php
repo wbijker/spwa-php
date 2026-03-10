@@ -313,6 +313,15 @@ class StyleGenerator
     }
 
     /**
+     * Generate CSS string for use inside a style tag.
+     * Returns minified CSS suitable for embedding.
+     */
+    public function toStyle(): string
+    {
+        return $this->toMinifiedCSS();
+    }
+
+    /**
      * Get styles as array.
      *
      * @return array<string, array<string, string>>
