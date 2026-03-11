@@ -12,28 +12,36 @@ abstract class Component extends VNode
 {
     /**
      * Build the component's virtual node tree.
-     * Override this method to define the component's structure.
      */
     abstract protected function build(): VNode;
 
     /**
      * Get the component's state as a keyed array.
-     * Override this method to define stateful properties.
+     * By convention, uses the $state property if it exists.
      * @return array<string, mixed>
      */
     protected function getState(): array
     {
+        if (property_exists($this, 'state') && is_object($this->state)) {
+            return get_object_vars($this->state);
+        }
         return [];
     }
 
     /**
      * Set the component's state from a keyed array.
-     * Override this method to restore stateful properties.
+     * By convention, populates the $state property if it exists.
      * @param array<string, mixed> $state
      */
     protected function setState(array $state): void
     {
-        // Default: do nothing
+        if (property_exists($this, 'state') && is_object($this->state)) {
+            foreach ($state as $key => $value) {
+                if (property_exists($this->state, $key)) {
+                    $this->state->$key = $value;
+                }
+            }
+        }
     }
 
     /**
@@ -44,12 +52,10 @@ abstract class Component extends VNode
     public function render(StateManager $state, ?VNode $parent = null): DomNode
     {
         $this->parent = $parent;
-        // Only set path from parent if not already set (e.g., by setPath)
         if (empty($this->path)) {
             $this->path = $parent?->getPath() ?? [];
         }
 
-        // Restore state from state manager using component class name as key
         $pathKey = $this->getStateKey();
         $savedState = $state->getState($pathKey);
         if (!empty($savedState)) {
@@ -63,7 +69,6 @@ abstract class Component extends VNode
 
     /**
      * Get the state key for this component.
-     * Uses class name and path for uniqueness.
      */
     protected function getStateKey(): string
     {

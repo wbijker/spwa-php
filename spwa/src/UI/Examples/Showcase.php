@@ -23,18 +23,11 @@ use Spwa\VNode\VNode;
  */
 class Showcase extends Component
 {
-    private int $a = 0;
-    private int $b = 0;
+    protected ShowcaseState $state;
 
-    protected function getState(): array
+    public function __construct()
     {
-        return ['a' => $this->a, 'b' => $this->b];
-    }
-
-    protected function setState(array $state): void
-    {
-        $this->a = $state['a'] ?? 0;
-        $this->b = $state['b'] ?? 0;
+        $this->state = new ShowcaseState();
     }
 
     protected function build(): VNode
@@ -44,16 +37,16 @@ class Showcase extends Component
             ->padding(Unit::large())
             ->background(Color::gray(50))
             ->content(
-                new Counter($this->a, function (int $v) {
-                    $this->a = $v;
-                    Console::log("Showcase state updated: a={$this->a}, b={$this->b}");
+                new Counter($this->state->a, function (int $v) {
+                    $this->state->a = $v;
+                    Console::log("Showcase state updated: a={$this->state->a}, b={$this->state->b}");
                 }),
                 self::header(),
-                new Counter($this->b, function (int $v) {
-                    $this->b = $v;
-                    Console::log("Showcase state updated: a={$this->a}, b={$this->b}");
+                new Counter($this->state->b, function (int $v) {
+                    $this->state->b = $v;
+                    Console::log("Showcase state updated: a={$this->state->a}, b={$this->state->b}");
                 }),
-                UI::text("Sum: " . ($this->a + $this->b))
+                UI::text("Sum: " . $this->state->sum())
                     ->fontSize(FontSize::TwoXL)
                     ->weight(FontWeight::Bold)
                     ->color(Color::indigo(600))
