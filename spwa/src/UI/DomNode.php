@@ -9,8 +9,6 @@ use Spwa\VNode\Patcher;
  */
 abstract class DomNode
 {
-    protected string|int|null $key = null;
-
     /** @var int[] Path to this node in the tree */
     protected array $path = [];
 
@@ -28,23 +26,6 @@ abstract class DomNode
     public static function text(string $content): TextDomNode
     {
         return new TextDomNode($content);
-    }
-
-    /**
-     * Set a unique key for this node.
-     */
-    public function key(string|int $key): static
-    {
-        $this->key = $key;
-        return $this;
-    }
-
-    /**
-     * Get the node key.
-     */
-    public function getKey(): string|int|null
-    {
-        return $this->key;
     }
 
     /**
