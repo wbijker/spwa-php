@@ -23,11 +23,13 @@ use Spwa\VNode\VNode;
  */
 class Showcase extends Component
 {
-    protected ShowcaseState $state;
+    private int $a = 0;
+    private int $b = 0;
 
-    public function __construct()
+    protected function initialize(): void
     {
-        $this->state = new ShowcaseState();
+        $this->useState($this->a);
+        $this->useState($this->b);
     }
 
     protected function build(): VNode
@@ -37,16 +39,16 @@ class Showcase extends Component
             ->padding(Unit::large())
             ->background(Color::gray(50))
             ->content(
-                new Counter($this->state->a, function (int $v) {
-                    $this->state->a = $v;
-                    Console::log("Showcase state updated: a={$this->state->a}, b={$this->state->b}");
+                new Counter($this->a, function (int $v) {
+                    $this->a = $v;
+                    Console::log("Showcase state updated: a={$this->a}, b={$this->b}");
                 }),
                 self::header(),
-                new Counter($this->state->b, function (int $v) {
-                    $this->state->b = $v;
-                    Console::log("Showcase state updated: a={$this->state->a}, b={$this->state->b}");
+                new Counter($this->b, function (int $v) {
+                    $this->b = $v;
+                    Console::log("Showcase state updated: a={$this->a}, b={$this->b}");
                 }),
-                UI::text("Sum: " . $this->state->sum())
+                UI::text("Sum: " . ($this->a + $this->b))
                     ->fontSize(FontSize::TwoXL)
                     ->weight(FontWeight::Bold)
                     ->color(Color::indigo(600))

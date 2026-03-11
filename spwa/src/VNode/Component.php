@@ -10,37 +10,57 @@ use Spwa\UI\DomNode;
  */
 abstract class Component extends VNode
 {
+    /** @var array<int, mixed> References to state variables */
+    private array $stateRefs = [];
+
+    /**
+     * Register a variable as state. Call in initialize().
+     */
+    protected function useState(mixed &$ref): void
+    {
+        $this->stateRefs[] = &$ref;
+    }
+
+    /**
+     * Override to register state variables via useState().
+     */
+    protected function initialize(): void
+    {
+    }
+
     /**
      * Build the component's virtual node tree.
      */
     abstract protected function build(): VNode;
 
     /**
-     * Get the component's state as a keyed array.
-     * By convention, uses the $state property if it exists.
-     * @return array<string, mixed>
+     * Get the component's state as an indexed array.
+     * @return array<int, mixed>
      */
     protected function getState(): array
     {
-        if (property_exists($this, 'state') && is_object($this->state)) {
-            return get_object_vars($this->state);
+        $state = [];
+        foreach ($this->stateRefs as $ref) {
+            $state[] = $ref;
         }
-        return [];
+        return $state;
     }
 
     /**
-     * Set the component's state from a keyed array.
-     * By convention, populates the $state property if it exists.
-     * @param array<string, mixed> $state
+     * Set the component's state from an indexed array.
+     * Aborts if the count doesn't match.
+     * @param array<int, mixed> $state
      */
     protected function setState(array $state): void
     {
-        if (property_exists($this, 'state') && is_object($this->state)) {
-            foreach ($state as $key => $value) {
-                if (property_exists($this->state, $key)) {
-                    $this->state->$key = $value;
-                }
-            }
+        $values = array_values($state);
+
+        if (count($values) !== count($this->stateRefs)) {
+            return;
+        }
+
+        for ($i = 0; $i < count($this->stateRefs); $i++) {
+            $this->stateRefs[$i] = $values[$i];
         }
     }
 
@@ -56,6 +76,10 @@ abstract class Component extends VNode
             $this->path = $parent?->getPath() ?? [];
         }
 
+        // Initialize state references
+        $this->initialize();
+
+        // Restore state
         $pathKey = $this->getStateKey();
         $savedState = $state->getState($pathKey);
         if (!empty($savedState)) {
