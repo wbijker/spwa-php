@@ -25,8 +25,9 @@ class Node extends VNode
      * Render this node to a DOM node.
      * @param StateManager $state The state manager
      * @param VNode|null $parent The parent VNode
+     * @param RenderPhase $phase The render phase (Initial or Patch)
      */
-    public function render(StateManager $state, ?VNode $parent = null): DomNode
+    public function render(StateManager $state, ?VNode $parent = null, RenderPhase $phase = RenderPhase::Initial): DomNode
     {
         $this->parent = $parent;
         // Only set path from parent if not already set (e.g., by setPath)

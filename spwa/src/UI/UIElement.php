@@ -5,6 +5,7 @@ namespace Spwa\UI;
 use Spwa\State\StateManager;
 use Spwa\VNode\Component;
 use Spwa\VNode\Node;
+use Spwa\VNode\RenderPhase;
 use Spwa\VNode\VNode;
 
 /**
@@ -31,8 +32,9 @@ class UIElement extends Node
      * Render this UI element to a DOM node.
      * @param StateManager $state The state manager
      * @param VNode|null $parent The parent VNode
+     * @param RenderPhase $phase The render phase (Initial or Patch)
      */
-    public function render(StateManager $state, ?VNode $parent = null): DomNode
+    public function render(StateManager $state, ?VNode $parent = null, RenderPhase $phase = RenderPhase::Initial): DomNode
     {
         $this->parent = $parent;
         // Only set path from parent if not already set (e.g., by setPath)
@@ -56,7 +58,7 @@ class UIElement extends Node
             if ($child instanceof VNode) {
                 // Set the child's path before rendering
                 $child->setPath([...$this->path, $index]);
-                $domChildren[] = $child->render($state, $this);
+                $domChildren[] = $child->render($state, $this, $phase);
             } else {
                 $domChildren[] = $child;
             }

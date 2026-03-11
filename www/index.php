@@ -8,6 +8,7 @@ use Spwa\State\SessionStateManager;
 use Spwa\UI\Examples\Showcase;
 use Spwa\UI\StyleGenerator;
 use Spwa\VNode\Patcher;
+use Spwa\VNode\RenderPhase;
 
 require 'vendor/autoload.php';
 // Build and render the UI Showcase
@@ -20,9 +21,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $pathStr = $payload['path'] ?? '';
     $path = array_map('intval', explode(',', $pathStr));
 
-    // 1. Render the old component tree (before event)
+    // 1. Render the old component tree (before event) in Initial phase
     $oldShowcase = new Showcase();
-    $oldUi = $oldShowcase->render($state);
+    $oldUi = $oldShowcase->render($state, null, RenderPhase::Initial);
 
     // 2. Find the node by path and execute the event
     $node = $oldUi->findByPath($path);
@@ -33,9 +34,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // 3. Finalize the root component to save any state changes from closures
     $oldShowcase->finalize($state);
 
-    // 4. Render the new component tree (after event, with updated state)
+    // 4. Render the new component tree (after event, with updated state) in Patch phase
     $newShowcase = new Showcase();
-    $newUi = $newShowcase->render($state);
+    $newUi = $newShowcase->render($state, null, RenderPhase::Patch);
 
     // 5. Compare new DOM vs old DOM to generate patches
     $patcher = new Patcher();
@@ -55,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     die();
 }
 
-$ui = $showcase->render($state);
+$ui = $showcase->render($state, null, RenderPhase::Initial);
 $showcase->finalize($state);
 $html = $ui->toHtml();
 

@@ -20,8 +20,9 @@ abstract class VNode
      * Render this virtual node to a DOM node.
      * @param StateManager $state The state manager
      * @param VNode|null $parent The parent VNode
+     * @param RenderPhase $phase The render phase (Initial or Patch)
      */
-    abstract public function render(StateManager $state, ?VNode $parent = null): DomNode;
+    abstract public function render(StateManager $state, ?VNode $parent = null, RenderPhase $phase = RenderPhase::Initial): DomNode;
 
     /**
      * Get the path to this node.

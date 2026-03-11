@@ -68,8 +68,9 @@ abstract class Component extends VNode
      * Render this component to a DOM node.
      * @param StateManager $state The state manager
      * @param VNode|null $parent The parent VNode
+     * @param RenderPhase $phase The render phase (Initial or Patch)
      */
-    public function render(StateManager $state, ?VNode $parent = null): DomNode
+    public function render(StateManager $state, ?VNode $parent = null, RenderPhase $phase = RenderPhase::Initial): DomNode
     {
         $this->parent = $parent;
         if (empty($this->path)) {
@@ -88,7 +89,7 @@ abstract class Component extends VNode
 
         $child = $this->build();
 
-        return $child->render($state, $this);
+        return $child->render($state, $this, $phase);
     }
 
     /**
