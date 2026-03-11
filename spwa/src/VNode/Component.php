@@ -4,6 +4,7 @@ namespace Spwa\VNode;
 
 use Spwa\State\StateManager;
 use Spwa\UI\DomNode;
+use Spwa\UI\NoOpDomNode;
 
 /**
  * A component virtual node that can have state and lifecycle.
@@ -26,6 +27,23 @@ abstract class Component extends VNode
      */
     protected function initialize(): void
     {
+    }
+
+    /**
+     * Called after state has been restored.
+     * Override to perform actions after state restoration.
+     */
+    protected function restored(): void
+    {
+    }
+
+    /**
+     * Called before build() to determine if rendering should proceed.
+     * Return false to skip rendering and return a NoOpDomNode.
+     */
+    protected function shouldRender(): bool
+    {
+        return true;
     }
 
     /**
@@ -85,6 +103,14 @@ abstract class Component extends VNode
         $savedState = $state->getState($pathKey);
         if (!empty($savedState)) {
             $this->setState($savedState);
+        }
+
+        // Lifecycle: restored
+        $this->restored();
+
+        // Lifecycle: shouldRender (only in Patch phase)
+        if ($phase === RenderPhase::Patch && !$this->shouldRender()) {
+            return new NoOpDomNode();
         }
 
         $child = $this->build();

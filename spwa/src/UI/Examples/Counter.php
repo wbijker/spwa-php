@@ -22,6 +22,11 @@ class Counter extends Component
         private Closure $onChange
     ) {}
 
+    protected function shouldRender(): bool
+    {
+        return true;
+    }
+
     protected function build(): VNode
     {
         return UI::row()
