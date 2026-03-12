@@ -112,9 +112,55 @@ var SPWA = (function() {
         initKnownClasses();
     }
 
+    // --- State management ---
+    var stateHandler = null;
+
+    function addStateHandler(name, handler) {
+        if (typeof handler.load !== 'function' ||
+            typeof handler.save !== 'function' ||
+            typeof handler.clear !== 'function') {
+            console.error('SPWA: State handler must have load, save, and clear functions');
+            return;
+        }
+        stateHandler = handler;
+    }
+
+    function getState(path) {
+        if (!stateHandler) return {};
+        var all = stateHandler.load();
+        return all[path] || {};
+    }
+
+    function saveState(path, state) {
+        if (!stateHandler) return;
+        var all = stateHandler.load();
+        all[path] = state;
+        stateHandler.save(all);
+    }
+
+    function getAll() {
+        if (!stateHandler) return null;
+        return stateHandler.load();
+    }
+
+    function setAll(state) {
+        if (!stateHandler || !state) return;
+        stateHandler.save(state);
+    }
+
+    function isStateEnabled() {
+        return stateHandler !== null;
+    }
+
     return {
         addRawStyles: addRawStyles,
-        addCompressedStyles: addCompressedStyles
+        addCompressedStyles: addCompressedStyles,
+        addStateHandler: addStateHandler,
+        getState: getState,
+        saveState: saveState,
+        getAll: getAll,
+        setAll: setAll,
+        isStateEnabled: isStateEnabled
     };
 })();
 
@@ -258,6 +304,11 @@ function callback(error, data) {
         return;
     }
 
+    // Save state if client state management is enabled
+    if (data.state) {
+        SPWA.setAll(data.state);
+    }
+
     // Add new styles before applying patches
     // Supports both raw (className => CSS string) and compressed formats
     if (data.styles) {
@@ -290,6 +341,14 @@ function post(data, headers) {
     for (var key in headers ?? {}) {
         if (headers.hasOwnProperty(key)) {
             xhr.setRequestHeader(key, headers[key]);
+        }
+    }
+
+    // Include client state if state management is enabled
+    if (SPWA.isStateEnabled()) {
+        var clientState = SPWA.getAll();
+        if (clientState) {
+            data.state = clientState;
         }
     }
 

@@ -4,6 +4,7 @@ namespace Spwa\State;
 
 /**
  * State manager that persists state in PHP session.
+ * State is stored server-side, no client transport needed.
  */
 class SessionStateManager implements StateManager
 {
@@ -20,33 +21,29 @@ class SessionStateManager implements StateManager
         }
     }
 
-    /**
-     * Get state for a given path.
-     * @param string $path
-     * @return array
-     */
     public function getState(string $path): array
     {
         return $_SESSION[self::SESSION_KEY][$path] ?? [];
     }
 
-    /**
-     * Save state for a given path.
-     * @param string $path
-     * @param array $state
-     */
     public function saveState(string $path, array $state): void
     {
-
         $_SESSION[self::SESSION_KEY][$path] = $state;
     }
 
-    /**
-     * Get all state.
-     * @return array<string, array>
-     */
     public function getAll(): array
     {
         return $_SESSION[self::SESSION_KEY];
+    }
+
+    public function getClientState(): ?array
+    {
+        // Session state is server-side only
+        return null;
+    }
+
+    public function getClientJs(): ?string
+    {
+        return null;
     }
 }

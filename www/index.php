@@ -48,14 +48,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $deltaStyles = StyleGenerator::delta($oldStyles, $newStyles);
     $deltaGenerator = StyleGenerator::from($deltaStyles);
 
-    // 7. Return patches to frontend with delta styles
-    echo json_encode([
+    // 7. Build response
+    $response = [
         "success" => true,
         "js" => JsRuntime::dump(),
         "patches" => $patcher->getOperations(),
         "styles" => $deltaGenerator->toRaw(),
-        "state" => $state->getAll()
-    ]);
+    ];
+
+    // Include client state if state manager has client-side JS
+    if ($state->getClientJs() !== null) {
+        $response["state"] = $state->getClientState();
+    }
+
+    echo json_encode($response);
     die();
 }
 
@@ -74,6 +80,9 @@ $generator = StyleGenerator::from($ui->collectStyles());
     <title>SPWA UI Showcase</title>
     <style id="spwa-styles"><?= $generator->toStyle() ?></style>
     <script src="spwa.js"></script>
+<?php if ($stateJs = $state->getClientJs()): ?>
+    <script><?= $stateJs ?></script>
+<?php endif; ?>
 </head>
 <body style="margin: 0; font-family: system-ui, -apple-system, sans-serif;">
 <?= $html ?>
