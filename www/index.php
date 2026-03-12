@@ -42,15 +42,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $patcher = new Patcher();
     $newUi->compare($oldUi, $patcher);
 
-    // 6. Collect styles from new UI and send compressed format
-    $generator = StyleGenerator::from($newUi->collectStyles());
+    // 6. Collect styles from old and new, compute delta
+    $oldStyles = $oldUi->collectStyles();
+    $newStyles = $newUi->collectStyles();
+    $deltaStyles = StyleGenerator::delta($oldStyles, $newStyles);
+    $deltaGenerator = StyleGenerator::from($deltaStyles);
 
-    // 7. Return patches to frontend
+    // 7. Return patches to frontend with delta styles
     echo json_encode([
         "success" => true,
         "js" => JsRuntime::dump(),
         "patches" => $patcher->getOperations(),
-        "styles" => $generator->toCompressed(),
+        "styles" => $deltaGenerator->toRaw(),
         "state" => $state->getAll()
     ]);
     die();

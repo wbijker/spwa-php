@@ -483,4 +483,44 @@ JS;
         $generator->addAll($styles);
         return $generator;
     }
+
+    /**
+     * Compute delta styles (new styles not in old).
+     *
+     * @param array<string, array<string, string>> $oldStyles
+     * @param array<string, array<string, string>> $newStyles
+     * @return array<string, array<string, string>>
+     */
+    public static function delta(array $oldStyles, array $newStyles): array
+    {
+        $delta = [];
+        foreach ($newStyles as $className => $properties) {
+            if (!isset($oldStyles[$className])) {
+                $delta[$className] = $properties;
+            }
+        }
+        return $delta;
+    }
+
+    /**
+     * Convert styles to raw format for frontend (className => CSS string).
+     *
+     * @return array<string, string>
+     */
+    public function toRaw(): array
+    {
+        $raw = [];
+        foreach ($this->styles as $className => $properties) {
+            $parsed = $this->parseClassName($className);
+            $selector = '.' . $this->escapeClassName($className) . $parsed['pseudoSelector'];
+            $rule = $this->buildMinifiedRule($selector, $properties);
+
+            if ($parsed['mediaQuery']) {
+                $rule = $parsed['mediaQuery'] . '{' . $rule . '}';
+            }
+
+            $raw[$className] = $rule;
+        }
+        return $raw;
+    }
 }

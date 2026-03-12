@@ -6,6 +6,7 @@ var SPWA = (function() {
     var C = {"dark":"(prefers-color-scheme: dark)","light":"(prefers-color-scheme: light)"};
     var X = {"hover":":hover","active":":active","focus":":focus","focus-visible":":focus-visible","focus-within":":focus-within","visited":":visited","disabled":":disabled","enabled":":enabled","checked":":checked","required":":required","valid":":valid","invalid":":invalid","placeholder":"::placeholder","first":":first-child","last":":last-child","only":":only-child","odd":":nth-child(odd)","even":":nth-child(even)","empty":":empty"};
 
+
     var styleEl = null;
     var knownClasses = new Set();
 
@@ -102,6 +103,21 @@ var SPWA = (function() {
         }
     }
 
+    // Add raw CSS rules (className => CSS rule string)
+    function addRawStyles(styles) {
+        var css = '';
+        for (var cls in styles) {
+            if (!knownClasses.has(cls)) {
+                css += styles[cls];
+                knownClasses.add(cls);
+            }
+        }
+        if (css) {
+            var el = getStyleElement();
+            el.textContent += css;
+        }
+    }
+
     // Initialize on load
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initKnownClasses);
@@ -111,6 +127,7 @@ var SPWA = (function() {
 
     return {
         addStyles: addStyles,
+        addRawStyles: addRawStyles,
         decodeStyles: decodeStyles
     };
 })();
@@ -255,9 +272,9 @@ function callback(error, data) {
         return;
     }
 
-    // Add new styles before applying patches
+    // Add new styles before applying patches (raw CSS format)
     if (data.styles) {
-        SPWA.addStyles(data.styles);
+        SPWA.addRawStyles(data.styles);
     }
 
     // Execute JS commands from server
