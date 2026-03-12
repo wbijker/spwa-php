@@ -3,6 +3,7 @@
 namespace Spwa\UI;
 
 use Spwa\State\StateManager;
+use Spwa\UI\Css\CssStyle;
 use Spwa\VNode\Component;
 use Spwa\VNode\Patcher;
 
@@ -20,6 +21,9 @@ class TagDomNode extends DomNode
 
     /** @var array<string, array<string, string>> */
     protected array $styles = [];
+
+    /** @var CssStyle[] */
+    protected array $cssStyles = [];
 
     /** @var array<string, array{callback: callable, owner: ?Component}> */
     protected array $events = [];
@@ -78,7 +82,7 @@ class TagDomNode extends DomNode
     }
 
     /**
-     * Add a class with its CSS properties.
+     * Add a class with its CSS properties (legacy format).
      */
     protected function addStyle(string $class, array $css): void
     {
@@ -89,12 +93,30 @@ class TagDomNode extends DomNode
     }
 
     /**
+     * Add a CssStyle object.
+     */
+    protected function addCssStyle(CssStyle $style): void
+    {
+        $this->classes[] = $style->getClassName();
+        $this->cssStyles[] = $style;
+    }
+
+    /**
      * Add a style rule for CSS generation.
      * @param array<string, string> $css
      */
     public function style(string $className, array $css): static
     {
         $this->addStyle($className, $css);
+        return $this;
+    }
+
+    /**
+     * Add a CssStyle rule.
+     */
+    public function css(CssStyle $style): static
+    {
+        $this->addCssStyle($style);
         return $this;
     }
 
@@ -167,9 +189,32 @@ class TagDomNode extends DomNode
     {
         $allStyles = $this->styles;
 
+        // Include CssStyle objects in legacy format
+        foreach ($this->cssStyles as $style) {
+            $legacy = $style->toLegacy();
+            $allStyles = array_merge($allStyles, $legacy);
+        }
+
         foreach ($this->children as $child) {
             if ($child instanceof DomNode) {
                 $allStyles = array_merge($allStyles, $child->collectStyles());
+            }
+        }
+
+        return $allStyles;
+    }
+
+    /**
+     * Collect CssStyle objects from this node and descendants.
+     * @return CssStyle[]
+     */
+    public function collectCssStyles(): array
+    {
+        $allStyles = $this->cssStyles;
+
+        foreach ($this->children as $child) {
+            if ($child instanceof DomNode) {
+                $allStyles = array_merge($allStyles, $child->collectCssStyles());
             }
         }
 

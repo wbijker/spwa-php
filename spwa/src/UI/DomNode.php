@@ -2,6 +2,7 @@
 
 namespace Spwa\UI;
 
+use Spwa\UI\Css\CssStyle;
 use Spwa\VNode\Patcher;
 
 /**
@@ -65,6 +66,15 @@ abstract class DomNode
      * @return array<string, array<string, string>>
      */
     abstract public function collectStyles(): array;
+
+    /**
+     * Collect CssStyle objects from this node and descendants.
+     * @return CssStyle[]
+     */
+    public function collectCssStyles(): array
+    {
+        return [];
+    }
 
     /**
      * Render to HTML string.
