@@ -211,6 +211,40 @@ function applyPatches(patches) {
                 }
                 break;
             }
+            case 'insert_at': {
+                // Insert child at specific index in a list
+                const parent = findNodeByPath(path);
+                if (parent) {
+                    const temp = document.createElement('div');
+                    temp.innerHTML = patch.html;
+                    const newNode = temp.firstElementChild;
+                    const index = patch.index;
+                    if (index >= parent.children.length) {
+                        parent.appendChild(newNode);
+                    } else {
+                        parent.insertBefore(newNode, parent.children[index]);
+                    }
+                }
+                break;
+            }
+            case 'remove_at': {
+                // Remove child at specific index in a list
+                const parent = findNodeByPath(path);
+                if (parent && parent.children[patch.index]) {
+                    parent.children[patch.index].remove();
+                }
+                break;
+            }
+            case 'update_at': {
+                // Replace child at specific index in a list
+                const parent = findNodeByPath(path);
+                if (parent && parent.children[patch.index]) {
+                    const temp = document.createElement('div');
+                    temp.innerHTML = patch.html;
+                    parent.children[patch.index].replaceWith(temp.firstElementChild);
+                }
+                break;
+            }
         }
     }
 }

@@ -155,44 +155,39 @@ class ListDomNode extends TagDomNode
         // Process diff operations in reverse order (as Levenshtein returns them backwards)
         $diff = array_reverse($diff);
 
-        $oldIndex = 0;
         $newIndex = 0;
+        $removeOffset = 0;
 
         foreach ($diff as [$action, $oldItem, $newItem]) {
-            $childPath = [...$this->path, $newIndex];
-
             switch ($action) {
                 case Levenshtein::SKIP:
                     // Same key - compare the nodes recursively
                     if ($oldItem !== null && $newItem !== null) {
                         $newItem->node->compare($oldItem->node, $patcher);
                     }
-                    $oldIndex++;
                     $newIndex++;
                     break;
 
                 case Levenshtein::SUBSTITUTE:
-                    // Key changed - replace node
+                    // Key changed - update node at index
                     if ($newItem !== null) {
-                        $patcher->replaceNode($childPath, $newItem->node);
+                        $patcher->updateAt($this->path, $newIndex, $newItem->node);
                     }
-                    $oldIndex++;
                     $newIndex++;
                     break;
 
                 case Levenshtein::INSERT:
-                    // New item inserted
+                    // New item inserted at index
                     if ($newItem !== null) {
-                        $patcher->insertNode($childPath, $newItem->node);
+                        $patcher->insertAt($this->path, $newIndex, $newItem->node);
                     }
                     $newIndex++;
                     break;
 
                 case Levenshtein::DELETE:
-                    // Item removed
-                    $deletePath = [...$this->path, $oldIndex];
-                    $patcher->deleteNode($deletePath);
-                    $oldIndex++;
+                    // Item removed - use adjusted index accounting for previous removals
+                    $patcher->removeAt($this->path, $newIndex + $removeOffset);
+                    $removeOffset++;
                     break;
             }
         }

@@ -97,6 +97,52 @@ class Patcher
     }
 
     /**
+     * Insert a child at a specific index in a list.
+     * @param int[] $parentPath Path to the list container
+     * @param int $index Index to insert at
+     * @param DomNode $node Node to insert
+     */
+    public function insertAt(array $parentPath, int $index, DomNode $node): void
+    {
+        $this->operations[] = [
+            'type' => 'insert_at',
+            'path' => $parentPath,
+            'index' => $index,
+            'node' => $node,
+        ];
+    }
+
+    /**
+     * Remove a child at a specific index in a list.
+     * @param int[] $parentPath Path to the list container
+     * @param int $index Index to remove
+     */
+    public function removeAt(array $parentPath, int $index): void
+    {
+        $this->operations[] = [
+            'type' => 'remove_at',
+            'path' => $parentPath,
+            'index' => $index,
+        ];
+    }
+
+    /**
+     * Update/replace a child at a specific index in a list.
+     * @param int[] $parentPath Path to the list container
+     * @param int $index Index to update
+     * @param DomNode $node New node
+     */
+    public function updateAt(array $parentPath, int $index, DomNode $node): void
+    {
+        $this->operations[] = [
+            'type' => 'update_at',
+            'path' => $parentPath,
+            'index' => $index,
+            'node' => $node,
+        ];
+    }
+
+    /**
      * Get all collected operations.
      * Serializes DomNode objects to HTML strings.
      * @return array
