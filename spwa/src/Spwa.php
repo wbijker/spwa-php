@@ -3,7 +3,7 @@
 namespace Spwa;
 
 use Spwa\Js\JsRuntime;
-use Spwa\State\StateManagers;
+use Spwa\State\StateManager;
 use Spwa\UI\StyleGenerator;
 use Spwa\UI\TagDomNode;
 use Spwa\VNode\App;
@@ -14,17 +14,22 @@ class Spwa
 {
     public static function run(App $entry): void
     {
-        StateManagers::init();
-        $state = StateManagers::$session;
+        // Bootstrap the app to discover state managers
+        $entry->boot();
+        $states = $entry->getStateManagers();
+        $primaryState = $entry->getDefaultState();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            self::handlePost($entry, $state);
+            self::handlePost($entry, $primaryState, $states);
         } else {
-            self::handleGet($entry, $state);
+            self::handleGet($entry, $primaryState, $states);
         }
     }
 
-    private static function handlePost(App $entry, $state): void
+    /**
+     * @param StateManager[] $states
+     */
+    private static function handlePost(App $entry, StateManager $primaryState, array $states): void
     {
         ob_start();
 
@@ -36,18 +41,18 @@ class Spwa
 
         // Render the old tree, execute event, save state
         $oldApp = new ($entry::class)();
-        $oldUi = $oldApp->render($state, null, RenderPhase::Initial);
+        $oldUi = $oldApp->render($primaryState, null, RenderPhase::Initial);
 
         $node = $oldUi->findByPath($path);
         if ($node !== null) {
-            $node->executeEvent($event, $state, $value);
+            $node->executeEvent($event, $primaryState, $value);
         }
 
-        $oldApp->finalize($state);
+        $oldApp->finalize($primaryState);
 
         // Render the new tree with updated state
         $newApp = new ($entry::class)();
-        $newUi = $newApp->render($state, null, RenderPhase::Patch);
+        $newUi = $newApp->render($primaryState, null, RenderPhase::Patch);
 
         // Diff
         $patcher = new Patcher();
@@ -70,9 +75,16 @@ class Spwa
             'js' => JsRuntime::dump(),
             'patches' => $patcher->getOperations(),
             'styles' => $deltaGenerator->toRaw(),
+            'debug' => [
+                'nodes' => $newUi->countNodes(),
+                'states' => array_map(fn(StateManager $s) => [
+                    'name' => $s->name(),
+                    'bytes' => $s->bytes(),
+                ], $states),
+            ],
         ];
 
-        $clientState = StateManagers::getClientState();
+        $clientState = self::getClientState($states);
         if ($clientState !== null) {
             $response['state'] = $clientState;
         }
@@ -82,13 +94,16 @@ class Spwa
         exit;
     }
 
-    private static function handleGet(App $entry, $state): void
+    /**
+     * @param StateManager[] $states
+     */
+    private static function handleGet(App $entry, StateManager $primaryState, array $states): void
     {
-        $ui = $entry->render($state, null, RenderPhase::Initial);
-        $entry->finalize($state);
+        $ui = $entry->render($primaryState, null, RenderPhase::Initial);
+        $entry->finalize($primaryState);
 
         $generator = StyleGenerator::from($ui->collectStyles());
-        $stateJs = StateManagers::getClientJs();
+        $stateJs = self::getClientJs($states);
 
         $head = (new TagDomNode('head'))
             ->content(
@@ -112,5 +127,35 @@ class Spwa
             ->content($head, $body);
 
         echo '<!DOCTYPE html>' . $document->toHtml();
+    }
+
+    /**
+     * @param StateManager[] $states
+     */
+    private static function getClientJs(array $states): ?string
+    {
+        $js = '';
+        foreach ($states as $manager) {
+            $managerJs = $manager->getClientJs();
+            if ($managerJs !== null) {
+                $js .= $managerJs . "\n";
+            }
+        }
+        return $js === '' ? null : $js;
+    }
+
+    /**
+     * @param StateManager[] $states
+     */
+    private static function getClientState(array $states): ?array
+    {
+        $result = [];
+        foreach ($states as $manager) {
+            $clientState = $manager->getClientState();
+            if ($clientState !== null) {
+                $result[] = $clientState;
+            }
+        }
+        return empty($result) ? null : array_merge(...$result);
     }
 }

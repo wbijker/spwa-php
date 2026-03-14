@@ -132,4 +132,12 @@ abstract class DomNode
      * @param Patcher $patcher The patcher to record operations
      */
     abstract public function compare(DomNode $other, Patcher $patcher): void;
+
+    /**
+     * Count the total number of DOM nodes in this subtree (including this node).
+     */
+    public function countNodes(): int
+    {
+        return 1;
+    }
 }

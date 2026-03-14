@@ -5,7 +5,7 @@ namespace Spwa\State;
 /**
  * Simple in-memory state manager implementation.
  */
-class InMemoryStateManager implements StateManager
+class InMemoryStateManager extends StateManager
 {
     /** @var array<string, array> */
     private array $states = [];

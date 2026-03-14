@@ -6,7 +6,7 @@ namespace Spwa\State;
  * State manager that persists state in cookies.
  * State is stored client-side in a cookie, sent with each request.
  */
-class CookieStateManager implements StateManager
+class CookieStateManager extends StateManager
 {
     private const COOKIE_NAME = 'spwa_state';
     private array $state = [];

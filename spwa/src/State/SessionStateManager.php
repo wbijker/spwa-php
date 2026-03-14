@@ -6,7 +6,7 @@ namespace Spwa\State;
  * State manager that persists state in PHP session.
  * State is stored server-side, no client transport needed.
  */
-class SessionStateManager implements StateManager
+class SessionStateManager extends StateManager
 {
     private const SESSION_KEY = 'spwa_state';
 

@@ -3,6 +3,7 @@
 namespace Spwa\Samples;
 
 use Spwa\Events\InputEvent;
+use Spwa\State\SessionStateManager;
 use Spwa\UI\Color;
 use Spwa\UI\FontSize;
 use Spwa\UI\FontWeight;
@@ -26,6 +27,8 @@ class TodoApp extends App
 
     protected function initialize(): void
     {
+        $this->addState(new SessionStateManager());
+
         $this->useState($this->todos);
         $this->useState($this->nextId);
         $this->useState($this->filter);

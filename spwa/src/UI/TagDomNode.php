@@ -943,6 +943,15 @@ class TagDomNode extends DomNode
         return null;
     }
 
+    public function countNodes(): int
+    {
+        $count = 1;
+        foreach ($this->children as $child) {
+            $count += $child->countNodes();
+        }
+        return $count;
+    }
+
     /**
      * Execute an event handler if it exists.
      * @param string $event

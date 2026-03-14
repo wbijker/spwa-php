@@ -6,7 +6,7 @@ namespace Spwa\State;
  * State manager for client-side storage (localStorage or sessionStorage).
  * State is sent from client in request payload and returned in response.
  */
-class ClientStateManager implements StateManager
+class ClientStateManager extends StateManager
 {
     private array $state = [];
 

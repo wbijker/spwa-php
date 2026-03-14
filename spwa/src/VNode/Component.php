@@ -17,6 +17,9 @@ abstract class Component extends VNode
     /** @var StateManager|null Per-component state manager override */
     private ?StateManager $stateManager = null;
 
+    /** @var bool Whether initialize() has been called */
+    protected bool $initialized = false;
+
     /**
      * Register a variable as state. Call in initialize().
      */
@@ -41,6 +44,17 @@ abstract class Component extends VNode
      */
     protected function initialize(): void
     {
+    }
+
+    /**
+     * Ensure initialize() has been called exactly once.
+     */
+    protected function ensureInitialized(): void
+    {
+        if (!$this->initialized) {
+            $this->initialize();
+            $this->initialized = true;
+        }
     }
 
     /**
@@ -109,8 +123,8 @@ abstract class Component extends VNode
             $this->path = $parent?->getPath() ?? [];
         }
 
-        // Initialize state references
-        $this->initialize();
+        // Initialize state references (guard against double-init from boot())
+        $this->ensureInitialized();
 
         // Restore state (use per-component override if set)
         $resolved = $this->resolveStateManager($state);
