@@ -14,12 +14,26 @@ abstract class Component extends VNode
     /** @var array<int, mixed> References to state variables */
     private array $stateRefs = [];
 
+    /** @var StateManager|null Per-component state manager override */
+    private ?StateManager $stateManager = null;
+
     /**
      * Register a variable as state. Call in initialize().
      */
-    protected function useState(mixed &$ref): void
+    protected function useState(mixed &$ref, ?StateManager $stateManager = null): void
     {
+        if ($stateManager !== null) {
+            $this->stateManager = $stateManager;
+        }
         $this->stateRefs[] = &$ref;
+    }
+
+    /**
+     * Resolve which state manager to use: per-component override or the inherited one.
+     */
+    private function resolveStateManager(StateManager $default): StateManager
+    {
+        return $this->stateManager ?? $default;
     }
 
     /**
@@ -98,9 +112,10 @@ abstract class Component extends VNode
         // Initialize state references
         $this->initialize();
 
-        // Restore state
+        // Restore state (use per-component override if set)
+        $resolved = $this->resolveStateManager($state);
         $pathKey = $this->getStateKey();
-        $savedState = $state->getState($pathKey);
+        $savedState = $resolved->getState($pathKey);
         if (!empty($savedState)) {
             $this->setState($savedState);
         }
@@ -134,10 +149,11 @@ abstract class Component extends VNode
      */
     public function finalize(StateManager $state): void
     {
+        $resolved = $this->resolveStateManager($state);
         $pathKey = $this->getStateKey();
         $currentState = $this->getState();
         if (!empty($currentState)) {
-            $state->saveState($pathKey, $currentState);
+            $resolved->saveState($pathKey, $currentState);
         }
     }
 }

@@ -249,7 +249,7 @@ class TagDomNode extends DomNode
         // Add event listeners
         $pathStr = implode(',', $this->path);
         foreach ($this->events as $event => $callback) {
-            $attrHtml .= ' on' . $event . "=\"handleEvent('" . $event . "', '" . $pathStr . "')\"";
+            $attrHtml .= ' on' . $event . "=\"handleEvent('" . $event . "', '" . $pathStr . "', this)\"";
         }
 
         // Self-closing tags
@@ -344,6 +344,42 @@ class TagDomNode extends DomNode
     public function dotted(): static
     {
         $this->addStyle('border-dotted', ['border-style' => 'dotted']);
+        return $this;
+    }
+
+    /**
+     * Add border on top only.
+     */
+    public function borderTop(int $width = 1): static
+    {
+        $this->addStyle('border-t-' . $width, ['border-top-width' => $width . 'px', 'border-top-style' => 'solid']);
+        return $this;
+    }
+
+    /**
+     * Add border on bottom only.
+     */
+    public function borderBottom(int $width = 1): static
+    {
+        $this->addStyle('border-b-' . $width, ['border-bottom-width' => $width . 'px', 'border-bottom-style' => 'solid']);
+        return $this;
+    }
+
+    /**
+     * Remove all borders.
+     */
+    public function borderNone(): static
+    {
+        $this->addStyle('border-none', ['border' => 'none']);
+        return $this;
+    }
+
+    /**
+     * Remove outline.
+     */
+    public function outlineNone(): static
+    {
+        $this->addStyle('outline-none', ['outline' => 'none']);
         return $this;
     }
 
@@ -662,6 +698,28 @@ class TagDomNode extends DomNode
     }
 
     // ============================================================
+    // Typography
+    // ============================================================
+
+    /**
+     * Set font size.
+     */
+    public function fontSize(FontSize $size): static
+    {
+        $this->addStyle($size->toClass(), ['font-size' => $size->getCssValue()]);
+        return $this;
+    }
+
+    /**
+     * Set font weight.
+     */
+    public function weight(FontWeight $weight): static
+    {
+        $this->addStyle($weight->toClass(), ['font-weight' => $weight->getCssValue()]);
+        return $this;
+    }
+
+    // ============================================================
     // Cursor
     // ============================================================
 
@@ -759,6 +817,94 @@ class TagDomNode extends DomNode
         return $this;
     }
 
+    // ============================================================
+    // Flex item properties
+    // ============================================================
+
+    /**
+     * Allow element to grow to fill available space.
+     */
+    public function grow(int $factor = 1): static
+    {
+        $this->addStyle('grow-' . $factor, ['flex-grow' => (string)$factor]);
+        return $this;
+    }
+
+    /**
+     * Prevent element from shrinking.
+     */
+    public function noShrink(): static
+    {
+        $this->addStyle('shrink-0', ['flex-shrink' => '0']);
+        return $this;
+    }
+
+    // ============================================================
+    // Position
+    // ============================================================
+
+    /**
+     * Set position to relative.
+     */
+    public function relative(): static
+    {
+        $this->addStyle('relative', ['position' => 'relative']);
+        return $this;
+    }
+
+    /**
+     * Set position to absolute.
+     */
+    public function absolute(): static
+    {
+        $this->addStyle('absolute', ['position' => 'absolute']);
+        return $this;
+    }
+
+    /**
+     * Set top offset.
+     */
+    public function offsetTop(Unit ...$values): static
+    {
+        foreach ($values as $value) {
+            $this->addStyle($value->withContext('top'), ['top' => $value->getCssValue()]);
+        }
+        return $this;
+    }
+
+    /**
+     * Set left offset.
+     */
+    public function offsetLeft(Unit ...$values): static
+    {
+        foreach ($values as $value) {
+            $this->addStyle($value->withContext('left'), ['left' => $value->getCssValue()]);
+        }
+        return $this;
+    }
+
+    /**
+     * Set right offset.
+     */
+    public function offsetRight(Unit ...$values): static
+    {
+        foreach ($values as $value) {
+            $this->addStyle($value->withContext('right'), ['right' => $value->getCssValue()]);
+        }
+        return $this;
+    }
+
+    /**
+     * Set bottom offset.
+     */
+    public function offsetBottom(Unit ...$values): static
+    {
+        foreach ($values as $value) {
+            $this->addStyle($value->withContext('bottom'), ['bottom' => $value->getCssValue()]);
+        }
+        return $this;
+    }
+
     /**
      * Find a node by its path.
      * @param int[] $targetPath
@@ -788,11 +934,11 @@ class TagDomNode extends DomNode
      * @param StateManager|null $state The state manager for finalizing the owner component
      * @return bool Whether the event was handled
      */
-    public function executeEvent(string $event, ?StateManager $state = null): bool
+    public function executeEvent(string $event, ?StateManager $state = null, mixed $value = null): bool
     {
         if (isset($this->events[$event])) {
             $eventData = $this->events[$event];
-            ($eventData['callback'])();
+            ($eventData['callback'])($value);
 
             // Finalize the owner component if available
             if ($state !== null && $eventData['owner'] !== null) {

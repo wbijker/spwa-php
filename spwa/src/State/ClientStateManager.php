@@ -10,13 +10,8 @@ class ClientStateManager implements StateManager
 {
     private array $state = [];
 
-    /**
-     * Create from incoming request payload.
-     * @param string $storageType 'localStorage' or 'sessionStorage'
-     * @param array|null $clientState State received from client
-     */
     public function __construct(
-        private string $storageType = 'localStorage',
+        private ClientStorage $storage = ClientStorage::LocalStorage,
         ?array $clientState = null,
     )
     {
@@ -25,14 +20,11 @@ class ClientStateManager implements StateManager
         }
     }
 
-    /**
-     * Create from the current request (reads from payload).
-     */
-    public static function fromRequest(string $storageType = 'localStorage'): self
+    public static function fromRequest(ClientStorage $storage = ClientStorage::LocalStorage): self
     {
         $payload = json_decode(file_get_contents('php://input'), true);
         $clientState = $payload['state'] ?? null;
-        return new self($storageType, $clientState);
+        return new self($storage, $clientState);
     }
 
     public function getState(string $path): array
@@ -58,7 +50,7 @@ class ClientStateManager implements StateManager
 
     public function getClientJs(): ?string
     {
-        $storage = $this->storageType;
+        $storage = $this->storage->value;
         $key = 'spwa_state';
         return <<<JS
 SPWA.addStateHandler('$storage', {

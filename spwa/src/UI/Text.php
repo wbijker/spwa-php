@@ -13,41 +13,12 @@ namespace Spwa\UI;
  */
 class Text extends UIElement
 {
+    private string $tag = '';
+
     public function __construct(string $content)
     {
         parent::__construct('span');
         $this->content($content);
-    }
-
-    // ============================================================
-    // Semantic tags
-    // ============================================================
-
-    /**
-     * Render as paragraph.
-     */
-    public function paragraph(): static
-    {
-        $this->tag = 'p';
-        return $this;
-    }
-
-    /**
-     * Render as heading.
-     */
-    public function heading(int $level = 1): static
-    {
-        $this->tag = 'h' . min(max($level, 1), 6);
-        return $this;
-    }
-
-    /**
-     * Render as label.
-     */
-    public function label(): static
-    {
-        $this->tag = 'label';
-        return $this;
     }
 
     // ============================================================

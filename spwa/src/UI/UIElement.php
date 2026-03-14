@@ -177,6 +177,30 @@ class UIElement extends Node
         return $this;
     }
 
+    public function borderTop(int $width = 1): static
+    {
+        $this->domNode->borderTop($width);
+        return $this;
+    }
+
+    public function borderBottom(int $width = 1): static
+    {
+        $this->domNode->borderBottom($width);
+        return $this;
+    }
+
+    public function borderNone(): static
+    {
+        $this->domNode->borderNone();
+        return $this;
+    }
+
+    public function outlineNone(): static
+    {
+        $this->domNode->outlineNone();
+        return $this;
+    }
+
     // ============================================================
     // Sizing
     // ============================================================
@@ -368,6 +392,22 @@ class UIElement extends Node
     }
 
     // ============================================================
+    // Typography
+    // ============================================================
+
+    public function fontSize(FontSize $size): static
+    {
+        $this->domNode->fontSize($size);
+        return $this;
+    }
+
+    public function weight(FontWeight $weight): static
+    {
+        $this->domNode->weight($weight);
+        return $this;
+    }
+
+    // ============================================================
     // Cursor
     // ============================================================
 
@@ -434,6 +474,62 @@ class UIElement extends Node
     public function layer(int $index): static
     {
         $this->domNode->layer($index);
+        return $this;
+    }
+
+    // ============================================================
+    // Flex item properties
+    // ============================================================
+
+    public function grow(int $factor = 1): static
+    {
+        $this->domNode->grow($factor);
+        return $this;
+    }
+
+    public function noShrink(): static
+    {
+        $this->domNode->noShrink();
+        return $this;
+    }
+
+    // ============================================================
+    // Position
+    // ============================================================
+
+    public function relative(): static
+    {
+        $this->domNode->relative();
+        return $this;
+    }
+
+    public function absolute(): static
+    {
+        $this->domNode->absolute();
+        return $this;
+    }
+
+    public function offsetTop(Unit ...$values): static
+    {
+        $this->domNode->offsetTop(...$values);
+        return $this;
+    }
+
+    public function offsetLeft(Unit ...$values): static
+    {
+        $this->domNode->offsetLeft(...$values);
+        return $this;
+    }
+
+    public function offsetRight(Unit ...$values): static
+    {
+        $this->domNode->offsetRight(...$values);
+        return $this;
+    }
+
+    public function offsetBottom(Unit ...$values): static
+    {
+        $this->domNode->offsetBottom(...$values);
         return $this;
     }
 }

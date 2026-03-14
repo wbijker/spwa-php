@@ -303,4 +303,12 @@ class Color extends Property
     {
         return new static('gradient');
     }
+
+    /**
+     * Custom hex color value.
+     */
+    public static function hex(string $hex): static
+    {
+        return new static($hex);
+    }
 }

@@ -124,12 +124,12 @@ class UI
 
     public static function heading(string $content, int $level = 1): Text
     {
-        return (new Text($content))->heading($level);
+        return new Text($content);
     }
 
     public static function paragraph(string $content): Text
     {
-        return (new Text($content))->paragraph();
+        return new Text($content);
     }
 
     public static function image(string $src, string $alt = ''): Image

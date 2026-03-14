@@ -113,7 +113,7 @@ var SPWA = (function() {
     }
 
     // --- State management ---
-    var stateHandler = null;
+    var stateHandlers = {};
 
     function addStateHandler(name, handler) {
         if (typeof handler.load !== 'function' ||
@@ -122,34 +122,48 @@ var SPWA = (function() {
             console.error('SPWA: State handler must have load, save, and clear functions');
             return;
         }
-        stateHandler = handler;
+        stateHandlers[name] = handler;
     }
 
-    function getState(path) {
-        if (!stateHandler) return {};
-        var all = stateHandler.load();
+    function getState(name, path) {
+        var handler = stateHandlers[name];
+        if (!handler) return {};
+        var all = handler.load();
         return all[path] || {};
     }
 
-    function saveState(path, state) {
-        if (!stateHandler) return;
-        var all = stateHandler.load();
+    function saveState(name, path, state) {
+        var handler = stateHandlers[name];
+        if (!handler) return;
+        var all = handler.load();
         all[path] = state;
-        stateHandler.save(all);
+        handler.save(all);
     }
 
     function getAll() {
-        if (!stateHandler) return null;
-        return stateHandler.load();
+        var result = {};
+        var hasAny = false;
+        for (var name in stateHandlers) {
+            result[name] = stateHandlers[name].load();
+            hasAny = true;
+        }
+        return hasAny ? result : null;
     }
 
     function setAll(state) {
-        if (!stateHandler || !state) return;
-        stateHandler.save(state);
+        if (!state) return;
+        for (var name in state) {
+            if (stateHandlers[name]) {
+                stateHandlers[name].save(state[name]);
+            }
+        }
     }
 
     function isStateEnabled() {
-        return stateHandler !== null;
+        for (var name in stateHandlers) {
+            return true;
+        }
+        return false;
     }
 
     return {
@@ -365,7 +379,10 @@ function post(data, headers) {
     xhr.send(JSON.stringify(data));
 }
 
-function handleEvent(event, path) {
-    console.log('Event:', event, 'Path:', path);
-    post({ event, path });
+function handleEvent(event, path, el) {
+    var data = { event: event, path: path };
+    if (el && el.value !== undefined) {
+        data.value = el.value;
+    }
+    post(data);
 }

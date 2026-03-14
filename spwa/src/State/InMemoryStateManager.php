@@ -38,4 +38,14 @@ class InMemoryStateManager implements StateManager
     {
         return $this->states;
     }
+
+    public function getClientState(): ?array
+    {
+        return null;
+    }
+
+    public function getClientJs(): ?string
+    {
+        return null;
+    }
 }
