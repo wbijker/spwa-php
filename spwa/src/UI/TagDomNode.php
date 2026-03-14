@@ -981,18 +981,21 @@ class TagDomNode extends DomNode
         // Compare children
         $thisCount = count($this->children);
         $otherCount = count($other->children);
-        $maxCount = max($thisCount, $otherCount);
+        $commonCount = min($thisCount, $otherCount);
 
-        for ($i = 0; $i < $maxCount; $i++) {
-            $childPath = [...$this->path, $i];
+        // Delete removed children in reverse order so index shifts don't affect earlier deletions
+        for ($i = $otherCount - 1; $i >= $thisCount; $i--) {
+            $patcher->deleteNode([...$this->path, $i]);
+        }
 
-            if ($i >= $thisCount) {
-                $patcher->deleteNode($childPath);
-            } elseif ($i >= $otherCount) {
-                $patcher->insertNode($childPath, $this->children[$i]);
-            } else {
-                $this->children[$i]->compare($other->children[$i], $patcher);
-            }
+        // Compare common children
+        for ($i = 0; $i < $commonCount; $i++) {
+            $this->children[$i]->compare($other->children[$i], $patcher);
+        }
+
+        // Insert new children
+        for ($i = $otherCount; $i < $thisCount; $i++) {
+            $patcher->insertNode([...$this->path, $i], $this->children[$i]);
         }
     }
 }
