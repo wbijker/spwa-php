@@ -3,3 +3,4 @@ www/vendor
 .idea
 
 spwa/vendor
+*.cache
