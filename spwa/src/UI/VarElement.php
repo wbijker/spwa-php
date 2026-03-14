@@ -11,8 +11,8 @@ class VarElement extends UIElement
     {
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        return $this->node('var')->children($this->content);
+        return $this->dom()->setTag('var')->children($this->content);
     }
 }

@@ -15,9 +15,9 @@ class Slot extends UIElement
         return $this;
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('slot');
+        $node = $this->dom()->setTag('slot');
 
         if ($this->name !== null) {
             $node->attr('name', $this->name);

@@ -65,9 +65,9 @@ class Select extends UIElement
         return $this;
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('select');
+        $node = $this->dom()->setTag('select');
 
         if ($this->name !== null) {
             $node->attr('name', $this->name);

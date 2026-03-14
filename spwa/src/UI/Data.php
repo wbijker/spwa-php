@@ -13,9 +13,9 @@ class Data extends UIElement
     ) {
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        return $this->node('data')
+        return $this->dom()->setTag('data')
             ->attr('value', $this->value)
             ->children($this->content);
     }

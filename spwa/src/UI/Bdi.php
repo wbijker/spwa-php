@@ -11,8 +11,8 @@ class Bdi extends UIElement
     {
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        return $this->node('bdi')->children($this->content);
+        return $this->dom()->setTag('bdi')->children($this->content);
     }
 }

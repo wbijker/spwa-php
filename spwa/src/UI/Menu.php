@@ -16,12 +16,12 @@ class Menu extends UIElement
         return $this;
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('menu');
+        $node = $this->dom()->setTag('menu');
 
         foreach ($this->items as $item) {
-            $node->children($item->render());
+            $node->children($item->build());
         }
 
         return $node;

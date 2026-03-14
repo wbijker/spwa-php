@@ -50,9 +50,9 @@ class Meter extends UIElement
         return $this;
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('meter');
+        $node = $this->dom()->setTag('meter');
 
         if ($this->value !== null) {
             $node->attr('value', (string)$this->value);

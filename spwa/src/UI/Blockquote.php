@@ -2,13 +2,15 @@
 
 namespace Spwa\UI;
 
+use Spwa\VNode\VNode;
+
 /**
  * Blockquote element.
  */
 class Blockquote extends UIElement
 {
     protected ?string $cite = null;
-    /** @var (UIElement|string)[] */
+    /** @var (DomNode|VNode|string)[] */
     protected array $children = [];
 
     public function __construct(?string $content = null)
@@ -18,7 +20,7 @@ class Blockquote extends UIElement
         }
     }
 
-    public function content(UIElement|string ...$children): static
+    public function content(DomNode|VNode|string ...$children): static
     {
         $this->children = array_merge($this->children, $children);
         return $this;
@@ -30,9 +32,9 @@ class Blockquote extends UIElement
         return $this;
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('blockquote');
+        $node = $this->dom()->setTag('blockquote');
 
         if ($this->cite !== null) {
             $node->attr('cite', $this->cite);
@@ -40,7 +42,7 @@ class Blockquote extends UIElement
 
         foreach ($this->children as $child) {
             if ($child instanceof UIElement) {
-                $node->children($child->render());
+                $node->children($child->build());
             } else {
                 $node->children($child);
             }

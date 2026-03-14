@@ -29,9 +29,9 @@ class Fieldset extends Container
         return $this;
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('fieldset');
+        $node = $this->dom()->setTag('fieldset');
 
         if ($this->disabled) {
             $node->attr('disabled', 'disabled');
@@ -46,7 +46,7 @@ class Fieldset extends Container
         }
 
         foreach ($this->children as $child) {
-            $node->children($child->render());
+            $node->children($child->build());
         }
 
         return $node;

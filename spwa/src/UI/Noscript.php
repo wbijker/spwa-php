@@ -2,27 +2,29 @@
 
 namespace Spwa\UI;
 
+use Spwa\VNode\VNode;
+
 /**
  * Noscript fallback element.
  */
 class Noscript extends UIElement
 {
-    /** @var (UIElement|string)[] */
+    /** @var (DomNode|VNode|string)[] */
     protected array $children = [];
 
-    public function content(UIElement|string ...$children): static
+    public function content(DomNode|VNode|string ...$children): static
     {
         $this->children = array_merge($this->children, $children);
         return $this;
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('noscript');
+        $node = $this->dom()->setTag('noscript');
 
         foreach ($this->children as $child) {
             if ($child instanceof UIElement) {
-                $node->children($child->render());
+                $node->children($child->build());
             } else {
                 $node->children($child);
             }

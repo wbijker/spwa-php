@@ -7,11 +7,11 @@ namespace Spwa\UI;
  */
 class Address extends Container
 {
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('address');
+        $node = $this->dom()->setTag('address');
         foreach ($this->children as $child) {
-            $node->children($child->render());
+            $node->children($child->build());
         }
         return $node;
     }

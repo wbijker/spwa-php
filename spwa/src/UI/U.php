@@ -11,8 +11,8 @@ class U extends UIElement
     {
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        return $this->node('u')->children($this->content);
+        return $this->dom()->setTag('u')->children($this->content);
     }
 }

@@ -19,9 +19,9 @@ class Time extends UIElement
         return $this;
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('time')->children($this->content);
+        $node = $this->dom()->setTag('time')->children($this->content);
 
         if ($this->datetime !== null) {
             $node->attr('datetime', $this->datetime);

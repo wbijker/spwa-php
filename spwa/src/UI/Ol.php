@@ -37,9 +37,9 @@ class Ol extends UIElement
         return $this;
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('ol');
+        $node = $this->dom()->setTag('ol');
 
         if ($this->start !== null) {
             $node->attr('start', (string)$this->start);
@@ -54,7 +54,7 @@ class Ol extends UIElement
         }
 
         foreach ($this->items as $item) {
-            $node->children($item->render());
+            $node->children($item->build());
         }
 
         return $node;

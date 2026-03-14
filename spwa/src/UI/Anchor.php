@@ -2,6 +2,8 @@
 
 namespace Spwa\UI;
 
+use Spwa\VNode\VNode;
+
 /**
  * Anchor element for links with child content.
  * Unlike Link which only accepts a text label, Anchor can contain any UI elements.
@@ -20,7 +22,7 @@ class Anchor extends UIElement
     protected ?string $href = null;
     protected bool $newTab = false;
     protected ?string $download = null;
-    /** @var UIElement[] */
+    /** @var (DomNode|VNode|string)[] */
     protected array $children = [];
 
     public function __construct(?string $href = null)
@@ -40,7 +42,7 @@ class Anchor extends UIElement
     /**
      * Add child elements.
      */
-    public function content(UIElement ...$children): static
+    public function content(DomNode|VNode|string ...$children): static
     {
         $this->children = array_merge($this->children, $children);
         return $this;
@@ -91,9 +93,9 @@ class Anchor extends UIElement
         return $this;
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('a');
+        $node = $this->dom()->setTag('a');
 
         if ($this->href !== null) {
             $node->attr('href', $this->href);
@@ -109,7 +111,13 @@ class Anchor extends UIElement
         }
 
         foreach ($this->children as $child) {
-            $node->children($child->render());
+            if ($child instanceof UIElement) {
+                $node->children($child->build());
+            } elseif ($child instanceof DomNode) {
+                $node->children($child);
+            } elseif (is_string($child)) {
+                $node->children($child);
+            }
         }
 
         return $node;

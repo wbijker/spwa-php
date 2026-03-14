@@ -9,7 +9,7 @@ abstract class App extends Component
 {
     abstract public function title(): string;
 
-    abstract protected function view(): UIElement;
+    abstract protected function view(): VNode;
 
     /**
      * Return the state managers used by this app.

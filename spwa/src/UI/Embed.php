@@ -19,9 +19,9 @@ class Embed extends UIElement
         return $this;
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('embed')->attr('src', $this->src);
+        $node = $this->dom()->setTag('embed')->attr('src', $this->src);
 
         if ($this->type !== null) {
             $node->attr('type', $this->type);

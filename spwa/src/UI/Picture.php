@@ -23,16 +23,16 @@ class Picture extends UIElement
         return $this;
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('picture');
+        $node = $this->dom()->setTag('picture');
 
         foreach ($this->sources as $source) {
             $node->children($source->toNode());
         }
 
         if ($this->fallback !== null) {
-            $node->children($this->fallback->render());
+            $node->children($this->fallback->build());
         }
 
         return $node;

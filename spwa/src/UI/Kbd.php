@@ -11,8 +11,8 @@ class Kbd extends UIElement
     {
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        return $this->node('kbd')->children($this->content);
+        return $this->dom()->setTag('kbd')->children($this->content);
     }
 }

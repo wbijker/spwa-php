@@ -11,8 +11,8 @@ class Mark extends UIElement
     {
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        return $this->node('mark')->children($this->content);
+        return $this->dom()->setTag('mark')->children($this->content);
     }
 }

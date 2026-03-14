@@ -2,18 +2,20 @@
 
 namespace Spwa\UI;
 
+use Spwa\VNode\VNode;
+
 /**
  * Figure element with optional caption.
  */
 class Figure extends UIElement
 {
-    protected ?UIElement $content = null;
+    protected DomNode|VNode|string|null $content = null;
     protected ?string $caption = null;
     protected bool $captionAbove = false;
 
-    public function content(UIElement $content): static
+    public function content(DomNode|VNode|string ...$children): static
     {
-        $this->content = $content;
+        $this->content = $children[0] ?? null;
         return $this;
     }
 
@@ -29,16 +31,20 @@ class Figure extends UIElement
         return $this;
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('figure');
+        $node = $this->dom()->setTag('figure');
 
         if ($this->captionAbove && $this->caption !== null) {
             $node->children(DomNode::el('figcaption')->children($this->caption));
         }
 
-        if ($this->content !== null) {
-            $node->children($this->content->render());
+        if ($this->content instanceof UIElement) {
+            $node->children($this->content->build());
+        } elseif ($this->content instanceof DomNode) {
+            $node->children($this->content);
+        } elseif (is_string($this->content)) {
+            $node->children($this->content);
         }
 
         if (!$this->captionAbove && $this->caption !== null) {

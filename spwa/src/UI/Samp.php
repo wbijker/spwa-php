@@ -11,8 +11,8 @@ class Samp extends UIElement
     {
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        return $this->node('samp')->children($this->content);
+        return $this->dom()->setTag('samp')->children($this->content);
     }
 }

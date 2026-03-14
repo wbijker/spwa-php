@@ -26,12 +26,12 @@ class Dl extends UIElement
         return $this;
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('dl');
+        $node = $this->dom()->setTag('dl');
 
         foreach ($this->items as $item) {
-            $node->children($item->render());
+            $node->children($item->build());
         }
 
         return $node;

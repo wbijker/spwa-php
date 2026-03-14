@@ -46,6 +46,15 @@ class TagDomNode extends DomNode
     }
 
     /**
+     * Set the tag name.
+     */
+    public function setTag(string $tag): static
+    {
+        $this->tag = $tag;
+        return $this;
+    }
+
+    /**
      * Set a key for efficient list diffing.
      */
     public function key(string $key): static
@@ -168,6 +177,14 @@ class TagDomNode extends DomNode
             $this->children[] = $child instanceof DomNode ? $child : new TextDomNode($child);
         }
         return $this;
+    }
+
+    /**
+     * Alias for content().
+     */
+    public function children(DomNode|string ...$children): static
+    {
+        return $this->content(...$children);
     }
 
     /**

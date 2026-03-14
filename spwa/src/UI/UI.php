@@ -317,7 +317,7 @@ class UI
     // Inline/Text Components
     // ============================================================
 
-    public static function code(string $content): Code
+    public static function code(string $content = ''): Code
     {
         return new Code($content);
     }

@@ -22,9 +22,9 @@ class Progress extends UIElement
         return $this;
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('progress');
+        $node = $this->dom()->setTag('progress');
 
         if ($this->value !== null) {
             $node->attr('value', (string)$this->value);

@@ -40,12 +40,12 @@ class Layers extends UIElement
         return $this;
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('div');
+        $node = $this->dom()->setTag('div');
 
         if ($this->primary !== null) {
-            $node->children($this->primary->render());
+            $node->children($this->primary->build());
         }
 
         foreach ($this->layers as $layer) {
@@ -54,7 +54,7 @@ class Layers extends UIElement
                 ->class('absolute', 'inset-0')
                 ->style('absolute', ['position' => 'absolute'])
                 ->style('inset-0', ['top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0'])
-                ->children($layer->render());
+                ->children($layer->build());
 
             $node->children($wrapper);
         }

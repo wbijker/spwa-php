@@ -16,12 +16,12 @@ class Ul extends UIElement
         return $this;
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('ul');
+        $node = $this->dom()->setTag('ul');
 
         foreach ($this->items as $item) {
-            $node->children($item->render());
+            $node->children($item->build());
         }
 
         return $node;

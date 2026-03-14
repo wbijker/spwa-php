@@ -65,9 +65,9 @@ class Form extends Container
         return $this;
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('form');
+        $node = $this->dom()->setTag('form');
 
         if ($this->action !== null) {
             $node->attr('action', $this->action);
@@ -94,7 +94,7 @@ class Form extends Container
         }
 
         foreach ($this->children as $child) {
-            $node->children($child->render());
+            $node->children($child->build());
         }
 
         return $node;

@@ -65,9 +65,9 @@ class Audio extends UIElement
         return $this;
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('audio');
+        $node = $this->dom()->setTag('audio');
 
         if ($this->src !== null) {
             $node->attr('src', $this->src);

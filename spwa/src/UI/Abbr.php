@@ -11,6 +11,7 @@ class Abbr extends UIElement
 
     public function __construct(protected string $content)
     {
+        parent::__construct('abbr');
     }
 
     public function title(string $title): static
@@ -19,9 +20,9 @@ class Abbr extends UIElement
         return $this;
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('abbr')->children($this->content);
+        $node = $this->dom()->setTag('abbr')->children($this->content);
 
         if ($this->title !== null) {
             $node->attr('title', $this->title);

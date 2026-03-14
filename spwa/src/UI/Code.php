@@ -7,12 +7,12 @@ namespace Spwa\UI;
  */
 class Code extends UIElement
 {
-    public function __construct(protected string $content)
+    public function __construct(protected string $content = '')
     {
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        return $this->node('code')->children($this->content);
+        return $this->dom()->setTag('code')->children($this->content);
     }
 }

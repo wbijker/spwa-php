@@ -15,16 +15,16 @@ class Dialog extends Container
         return $this;
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('dialog');
+        $node = $this->dom()->setTag('dialog');
 
         if ($this->open) {
             $node->attr('open', 'open');
         }
 
         foreach ($this->children as $child) {
-            $node->children($child->render());
+            $node->children($child->build());
         }
 
         return $node;

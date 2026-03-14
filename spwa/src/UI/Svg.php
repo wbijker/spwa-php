@@ -151,9 +151,9 @@ class Svg extends UIElement
         return new SvgGroup();
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('svg')
+        $node = $this->dom()->setTag('svg')
             ->attr('xmlns', 'http://www.w3.org/2000/svg');
 
         if ($this->viewBoxValue !== null) {

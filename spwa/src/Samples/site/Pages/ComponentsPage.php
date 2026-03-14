@@ -1,10 +1,9 @@
 <?php
 
-namespace Samples\Site\Pages;
+namespace Spwa\Samples\site\Pages;
 
-use Samples\Site\Components\CodeBlock;
-use Samples\Site\Components\DemoCard;
-use Samples\Site\Components\SectionHeading;
+use Spwa\Samples\site\Components\DemoCard;
+use Spwa\Samples\site\Components\SectionHeading;
 use Spwa\UI\Color;
 use Spwa\UI\FontSize;
 use Spwa\UI\FontWeight;

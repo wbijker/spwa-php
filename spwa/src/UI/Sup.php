@@ -11,8 +11,8 @@ class Sup extends UIElement
     {
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        return $this->node('sup')->children($this->content);
+        return $this->dom()->setTag('sup')->children($this->content);
     }
 }

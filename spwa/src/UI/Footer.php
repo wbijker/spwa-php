@@ -7,11 +7,11 @@ namespace Spwa\UI;
  */
 class Footer extends Container
 {
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('footer');
+        $node = $this->dom()->setTag('footer');
         foreach ($this->children as $child) {
-            $node->children($child->render());
+            $node->children($child->build());
         }
         return $node;
     }

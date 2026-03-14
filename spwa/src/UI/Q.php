@@ -19,9 +19,9 @@ class Q extends UIElement
         return $this;
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('q')->children($this->content);
+        $node = $this->dom()->setTag('q')->children($this->content);
 
         if ($this->cite !== null) {
             $node->attr('cite', $this->cite);

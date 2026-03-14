@@ -11,8 +11,8 @@ class Sub extends UIElement
     {
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        return $this->node('sub')->children($this->content);
+        return $this->dom()->setTag('sub')->children($this->content);
     }
 }

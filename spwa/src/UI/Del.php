@@ -26,9 +26,9 @@ class Del extends UIElement
         return $this;
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('del')->children($this->content);
+        $node = $this->dom()->setTag('del')->children($this->content);
 
         if ($this->cite !== null) {
             $node->attr('cite', $this->cite);

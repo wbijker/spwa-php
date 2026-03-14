@@ -2,12 +2,14 @@
 
 namespace Spwa\UI;
 
+use Spwa\VNode\VNode;
+
 /**
  * List item element.
  */
 class Li extends UIElement
 {
-    /** @var (UIElement|string)[] */
+    /** @var (DomNode|VNode|string)[] */
     protected array $children = [];
     protected ?int $value = null;
 
@@ -18,7 +20,7 @@ class Li extends UIElement
         }
     }
 
-    public function content(UIElement|string ...$children): static
+    public function content(DomNode|VNode|string ...$children): static
     {
         $this->children = array_merge($this->children, $children);
         return $this;
@@ -30,9 +32,9 @@ class Li extends UIElement
         return $this;
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('li');
+        $node = $this->dom()->setTag('li');
 
         if ($this->value !== null) {
             $node->attr('value', (string)$this->value);
@@ -40,7 +42,7 @@ class Li extends UIElement
 
         foreach ($this->children as $child) {
             if ($child instanceof UIElement) {
-                $node->children($child->render());
+                $node->children($child->build());
             } else {
                 $node->children($child);
             }

@@ -7,11 +7,11 @@ namespace Spwa\UI;
  */
 class Nav extends Container
 {
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('nav');
+        $node = $this->dom()->setTag('nav');
         foreach ($this->children as $child) {
-            $node->children($child->render());
+            $node->children($child->build());
         }
         return $node;
     }

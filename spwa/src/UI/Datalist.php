@@ -23,9 +23,9 @@ class Datalist extends UIElement
         return $this;
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('datalist');
+        $node = $this->dom()->setTag('datalist');
 
         if ($this->id !== null) {
             $node->attr('id', $this->id);

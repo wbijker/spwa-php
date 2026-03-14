@@ -1,8 +1,8 @@
 <?php
 
-namespace Samples\Site\Pages;
+namespace Spwa\Samples\site\Pages;
 
-use Samples\Site\Components\Navbar;
+use Spwa\Samples\site\Components\Navbar;
 use Spwa\UI\Color;
 use Spwa\UI\FontSize;
 use Spwa\UI\UI;

@@ -42,6 +42,39 @@ class UIElement extends Node
     }
 
     /**
+     * Get the domNode, initializing lazily if the constructor was skipped.
+     */
+    protected function dom(): TagDomNode
+    {
+        if (!isset($this->domNode)) {
+            $this->domNode = new TagDomNode('div');
+        }
+        return $this->domNode;
+    }
+
+    /**
+     * Build the DomNode for this element (without VNode lifecycle).
+     * Subclasses override to provide custom DOM building.
+     * Base implementation builds from domNode and children.
+     */
+    public function build(): DomNode
+    {
+        $domChildren = [];
+        foreach ($this->children as $child) {
+            if ($child instanceof UIElement) {
+                $domChildren[] = $child->build();
+            } elseif ($child instanceof DomNode) {
+                $domChildren[] = $child;
+            } elseif (is_string($child)) {
+                $domChildren[] = $child;
+            }
+        }
+
+        $this->dom()->content(...$domChildren);
+        return $this->domNode;
+    }
+
+    /**
      * Render this UI element to a DOM node.
      * @param StateManager $state The state manager
      * @param VNode|null $parent The parent VNode
@@ -60,7 +93,7 @@ class UIElement extends Node
 
         // Set the event owner on the DOM node for all registered events
         if ($this->eventOwner !== null) {
-            $this->domNode->setEventOwner($this->eventOwner);
+            $this->dom()->setEventOwner($this->eventOwner);
         }
 
         // Render VNode children now that we have StateManager
@@ -72,15 +105,17 @@ class UIElement extends Node
                 // Set the child's path before rendering
                 $child->setPath([...$this->path, $index]);
                 $domChildren[] = $child->render($state, $this, $phase);
-            } else {
+            } elseif ($child instanceof DomNode) {
+                $domChildren[] = $child;
+            } elseif (is_string($child)) {
                 $domChildren[] = $child;
             }
             $index++;
         }
 
-        $this->domNode->content(...$domChildren);
+        $this->dom()->content(...$domChildren);
 
-        return $this->domNode->assignPaths($this->path);
+        return $this->dom()->assignPaths($this->path);
     }
 
     /**
@@ -103,42 +138,42 @@ class UIElement extends Node
 
     protected function addStyle(string $class, array $css): void
     {
-        $this->domNode->style($class, $css);
+        $this->dom()->style($class, $css);
     }
 
     public function key(string $key): static
     {
-        $this->domNode->key($key);
+        $this->dom()->key($key);
         return $this;
     }
 
     public function attr(string $name, string $value): static
     {
-        $this->domNode->attr($name, $value);
+        $this->dom()->attr($name, $value);
         return $this;
     }
 
     public function attrs(array $attributes): static
     {
-        $this->domNode->attrs($attributes);
+        $this->dom()->attrs($attributes);
         return $this;
     }
 
     public function class(string ...$classes): static
     {
-        $this->domNode->class(...$classes);
+        $this->dom()->class(...$classes);
         return $this;
     }
 
     public function style(string $className, array $css): static
     {
-        $this->domNode->style($className, $css);
+        $this->dom()->style($className, $css);
         return $this;
     }
 
     public function on(string $event, callable $callback): static
     {
-        $this->domNode->on($event, $callback);
+        $this->dom()->on($event, $callback);
         return $this;
     }
 
@@ -343,7 +378,7 @@ class UIElement extends Node
 
     public function background(Color ...$colors): static
     {
-        $this->domNode->background(...$colors);
+        $this->dom()->background(...$colors);
         return $this;
     }
 
@@ -353,7 +388,7 @@ class UIElement extends Node
 
     public function color(Color ...$colors): static
     {
-        $this->domNode->color(...$colors);
+        $this->dom()->color(...$colors);
         return $this;
     }
 
@@ -363,49 +398,49 @@ class UIElement extends Node
 
     public function bordered(int $width = 1): static
     {
-        $this->domNode->bordered($width);
+        $this->dom()->bordered($width);
         return $this;
     }
 
     public function borderColor(Color ...$colors): static
     {
-        $this->domNode->borderColor(...$colors);
+        $this->dom()->borderColor(...$colors);
         return $this;
     }
 
     public function dashed(): static
     {
-        $this->domNode->dashed();
+        $this->dom()->dashed();
         return $this;
     }
 
     public function dotted(): static
     {
-        $this->domNode->dotted();
+        $this->dom()->dotted();
         return $this;
     }
 
     public function borderTop(int $width = 1): static
     {
-        $this->domNode->borderTop($width);
+        $this->dom()->borderTop($width);
         return $this;
     }
 
     public function borderBottom(int $width = 1): static
     {
-        $this->domNode->borderBottom($width);
+        $this->dom()->borderBottom($width);
         return $this;
     }
 
     public function borderNone(): static
     {
-        $this->domNode->borderNone();
+        $this->dom()->borderNone();
         return $this;
     }
 
     public function outlineNone(): static
     {
-        $this->domNode->outlineNone();
+        $this->dom()->outlineNone();
         return $this;
     }
 
@@ -415,67 +450,67 @@ class UIElement extends Node
 
     public function width(Unit ...$values): static
     {
-        $this->domNode->width(...$values);
+        $this->dom()->width(...$values);
         return $this;
     }
 
     public function height(Unit ...$values): static
     {
-        $this->domNode->height(...$values);
+        $this->dom()->height(...$values);
         return $this;
     }
 
     public function size(Unit ...$values): static
     {
-        $this->domNode->size(...$values);
+        $this->dom()->size(...$values);
         return $this;
     }
 
     public function minWidth(Unit ...$values): static
     {
-        $this->domNode->minWidth(...$values);
+        $this->dom()->minWidth(...$values);
         return $this;
     }
 
     public function maxWidth(Unit ...$values): static
     {
-        $this->domNode->maxWidth(...$values);
+        $this->dom()->maxWidth(...$values);
         return $this;
     }
 
     public function minHeight(Unit ...$values): static
     {
-        $this->domNode->minHeight(...$values);
+        $this->dom()->minHeight(...$values);
         return $this;
     }
 
     public function maxHeight(Unit ...$values): static
     {
-        $this->domNode->maxHeight(...$values);
+        $this->dom()->maxHeight(...$values);
         return $this;
     }
 
     public function extend(): static
     {
-        $this->domNode->extend();
+        $this->dom()->extend();
         return $this;
     }
 
     public function extendHorizontal(): static
     {
-        $this->domNode->extendHorizontal();
+        $this->dom()->extendHorizontal();
         return $this;
     }
 
     public function extendVertical(): static
     {
-        $this->domNode->extendVertical();
+        $this->dom()->extendVertical();
         return $this;
     }
 
     public function shrink(): static
     {
-        $this->domNode->shrink();
+        $this->dom()->shrink();
         return $this;
     }
 
@@ -485,43 +520,43 @@ class UIElement extends Node
 
     public function padding(Unit ...$values): static
     {
-        $this->domNode->padding(...$values);
+        $this->dom()->padding(...$values);
         return $this;
     }
 
     public function paddingHorizontal(Unit ...$values): static
     {
-        $this->domNode->paddingHorizontal(...$values);
+        $this->dom()->paddingHorizontal(...$values);
         return $this;
     }
 
     public function paddingVertical(Unit ...$values): static
     {
-        $this->domNode->paddingVertical(...$values);
+        $this->dom()->paddingVertical(...$values);
         return $this;
     }
 
     public function paddingTop(Unit ...$values): static
     {
-        $this->domNode->paddingTop(...$values);
+        $this->dom()->paddingTop(...$values);
         return $this;
     }
 
     public function margin(Unit ...$values): static
     {
-        $this->domNode->margin(...$values);
+        $this->dom()->margin(...$values);
         return $this;
     }
 
     public function marginHorizontal(Unit ...$values): static
     {
-        $this->domNode->marginHorizontal(...$values);
+        $this->dom()->marginHorizontal(...$values);
         return $this;
     }
 
     public function marginVertical(Unit ...$values): static
     {
-        $this->domNode->marginVertical(...$values);
+        $this->dom()->marginVertical(...$values);
         return $this;
     }
 
@@ -531,13 +566,13 @@ class UIElement extends Node
 
     public function rounded(Unit ...$values): static
     {
-        $this->domNode->rounded(...$values);
+        $this->dom()->rounded(...$values);
         return $this;
     }
 
     public function roundedFull(): static
     {
-        $this->domNode->roundedFull();
+        $this->dom()->roundedFull();
         return $this;
     }
 
@@ -547,7 +582,7 @@ class UIElement extends Node
 
     public function shadow(Shadow $size = Shadow::Medium): static
     {
-        $this->domNode->shadow($size);
+        $this->dom()->shadow($size);
         return $this;
     }
 
@@ -557,7 +592,7 @@ class UIElement extends Node
 
     public function opacity(int $value): static
     {
-        $this->domNode->opacity($value);
+        $this->dom()->opacity($value);
         return $this;
     }
 
@@ -567,13 +602,13 @@ class UIElement extends Node
 
     public function hidden(): static
     {
-        $this->domNode->hidden();
+        $this->dom()->hidden();
         return $this;
     }
 
     public function visible(): static
     {
-        $this->domNode->visible();
+        $this->dom()->visible();
         return $this;
     }
 
@@ -583,19 +618,19 @@ class UIElement extends Node
 
     public function clipContent(): static
     {
-        $this->domNode->clipContent();
+        $this->dom()->clipContent();
         return $this;
     }
 
     public function overflow(): static
     {
-        $this->domNode->overflow();
+        $this->dom()->overflow();
         return $this;
     }
 
     public function scrollable(): static
     {
-        $this->domNode->scrollable();
+        $this->dom()->scrollable();
         return $this;
     }
 
@@ -605,13 +640,13 @@ class UIElement extends Node
 
     public function fontSize(FontSize $size): static
     {
-        $this->domNode->fontSize($size);
+        $this->dom()->fontSize($size);
         return $this;
     }
 
     public function weight(FontWeight $weight): static
     {
-        $this->domNode->weight($weight);
+        $this->dom()->weight($weight);
         return $this;
     }
 
@@ -621,19 +656,19 @@ class UIElement extends Node
 
     public function cursor(Cursor ...$cursors): static
     {
-        $this->domNode->cursor(...$cursors);
+        $this->dom()->cursor(...$cursors);
         return $this;
     }
 
     public function clickable(): static
     {
-        $this->domNode->clickable();
+        $this->dom()->clickable();
         return $this;
     }
 
     public function notAllowed(): static
     {
-        $this->domNode->notAllowed();
+        $this->dom()->notAllowed();
         return $this;
     }
 
@@ -643,7 +678,7 @@ class UIElement extends Node
 
     public function animated(int $durationMs = 200): static
     {
-        $this->domNode->animated($durationMs);
+        $this->dom()->animated($durationMs);
         return $this;
     }
 
@@ -653,25 +688,25 @@ class UIElement extends Node
 
     public function rotate(int $degrees): static
     {
-        $this->domNode->rotate($degrees);
+        $this->dom()->rotate($degrees);
         return $this;
     }
 
     public function scale(int $percent): static
     {
-        $this->domNode->scale($percent);
+        $this->dom()->scale($percent);
         return $this;
     }
 
     public function flipHorizontal(): static
     {
-        $this->domNode->flipHorizontal();
+        $this->dom()->flipHorizontal();
         return $this;
     }
 
     public function flipVertical(): static
     {
-        $this->domNode->flipVertical();
+        $this->dom()->flipVertical();
         return $this;
     }
 
@@ -681,7 +716,7 @@ class UIElement extends Node
 
     public function layer(int $index): static
     {
-        $this->domNode->layer($index);
+        $this->dom()->layer($index);
         return $this;
     }
 
@@ -691,13 +726,13 @@ class UIElement extends Node
 
     public function grow(int $factor = 1): static
     {
-        $this->domNode->grow($factor);
+        $this->dom()->grow($factor);
         return $this;
     }
 
     public function noShrink(): static
     {
-        $this->domNode->noShrink();
+        $this->dom()->noShrink();
         return $this;
     }
 
@@ -707,37 +742,37 @@ class UIElement extends Node
 
     public function relative(): static
     {
-        $this->domNode->relative();
+        $this->dom()->relative();
         return $this;
     }
 
     public function absolute(): static
     {
-        $this->domNode->absolute();
+        $this->dom()->absolute();
         return $this;
     }
 
     public function offsetTop(Unit ...$values): static
     {
-        $this->domNode->offsetTop(...$values);
+        $this->dom()->offsetTop(...$values);
         return $this;
     }
 
     public function offsetLeft(Unit ...$values): static
     {
-        $this->domNode->offsetLeft(...$values);
+        $this->dom()->offsetLeft(...$values);
         return $this;
     }
 
     public function offsetRight(Unit ...$values): static
     {
-        $this->domNode->offsetRight(...$values);
+        $this->dom()->offsetRight(...$values);
         return $this;
     }
 
     public function offsetBottom(Unit ...$values): static
     {
-        $this->domNode->offsetBottom(...$values);
+        $this->dom()->offsetBottom(...$values);
         return $this;
     }
 }

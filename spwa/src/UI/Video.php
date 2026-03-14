@@ -87,9 +87,9 @@ class Video extends UIElement
         return $this;
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('video');
+        $node = $this->dom()->setTag('video');
 
         if ($this->src !== null) {
             $node->attr('src', $this->src);

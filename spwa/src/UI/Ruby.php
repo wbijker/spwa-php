@@ -16,9 +16,9 @@ class Ruby extends UIElement
         $this->annotation = $annotation;
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        return $this->node('ruby')
+        return $this->dom()->setTag('ruby')
             ->children($this->base)
             ->children(DomNode::el('rp')->children('('))
             ->children(DomNode::el('rt')->children($this->annotation))

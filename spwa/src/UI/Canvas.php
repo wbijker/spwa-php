@@ -29,9 +29,9 @@ class Canvas extends UIElement
         return $this;
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('canvas');
+        $node = $this->dom()->setTag('canvas');
 
         if ($this->canvasWidth !== null) {
             $node->attr('width', (string)$this->canvasWidth);

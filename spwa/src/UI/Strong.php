@@ -11,8 +11,8 @@ class Strong extends UIElement
     {
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        return $this->node('strong')->children($this->content);
+        return $this->dom()->setTag('strong')->children($this->content);
     }
 }

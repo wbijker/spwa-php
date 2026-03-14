@@ -69,9 +69,9 @@ class Iframe extends UIElement
         return $this;
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('iframe');
+        $node = $this->dom()->setTag('iframe');
 
         if ($this->src !== null) {
             $node->attr('src', $this->src);

@@ -26,9 +26,9 @@ class Ins extends UIElement
         return $this;
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('ins')->children($this->content);
+        $node = $this->dom()->setTag('ins')->children($this->content);
 
         if ($this->cite !== null) {
             $node->attr('cite', $this->cite);

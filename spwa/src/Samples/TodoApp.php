@@ -3,6 +3,7 @@
 namespace Spwa\Samples;
 
 use Spwa\Events\InputEvent;
+use Spwa\Samples\site\Pages\SiteApp;
 use Spwa\State\SessionStateManager;
 use Spwa\UI\Color;
 use Spwa\UI\FontSize;
@@ -12,6 +13,7 @@ use Spwa\UI\UI;
 use Spwa\UI\UIElement;
 use Spwa\UI\Unit;
 use Spwa\VNode\App;
+use Spwa\VNode\VNode;
 
 class TodoApp extends App
 {
@@ -37,8 +39,10 @@ class TodoApp extends App
         $this->useState($this->filter);
     }
 
-    protected function view(): UIElement
+    protected function view(): VNode
     {
+//        return new SiteApp();
+
         $filtered = $this->getFilteredTodos();
         $activeCount = count(array_filter($this->todos, fn($t) => !$t['completed']));
         $completedCount = count($this->todos) - $activeCount;

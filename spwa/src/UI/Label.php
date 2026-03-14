@@ -2,13 +2,15 @@
 
 namespace Spwa\UI;
 
+use Spwa\VNode\VNode;
+
 /**
  * Label element.
  */
 class Label extends UIElement
 {
     protected ?string $for = null;
-    /** @var (UIElement|string)[] */
+    /** @var (DomNode|VNode|string)[] */
     protected array $children = [];
 
     public function __construct(?string $text = null)
@@ -24,15 +26,15 @@ class Label extends UIElement
         return $this;
     }
 
-    public function content(UIElement|string ...$children): static
+    public function content(DomNode|VNode|string ...$children): static
     {
         $this->children = array_merge($this->children, $children);
         return $this;
     }
 
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('label');
+        $node = $this->dom()->setTag('label');
 
         if ($this->for !== null) {
             $node->attr('for', $this->for);
@@ -40,7 +42,7 @@ class Label extends UIElement
 
         foreach ($this->children as $child) {
             if ($child instanceof UIElement) {
-                $node->children($child->render());
+                $node->children($child->build());
             } else {
                 $node->children($child);
             }

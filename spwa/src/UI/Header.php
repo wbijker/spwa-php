@@ -7,11 +7,11 @@ namespace Spwa\UI;
  */
 class Header extends Container
 {
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        $node = $this->node('header');
+        $node = $this->dom()->setTag('header');
         foreach ($this->children as $child) {
-            $node->children($child->render());
+            $node->children($child->build());
         }
         return $node;
     }

@@ -7,8 +7,8 @@ namespace Spwa\UI;
  */
 class Wbr extends UIElement
 {
-    public function render(): DomNode
+    public function build(): DomNode
     {
-        return $this->node('wbr');
+        return $this->dom()->setTag('wbr');
     }
 }
