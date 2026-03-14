@@ -34,6 +34,11 @@ class UI
         return new Layers();
     }
 
+    public static function stack(): Stack
+    {
+        return new Stack();
+    }
+
     public static function grid(int $columns = 1): Grid
     {
         return new Grid($columns);
