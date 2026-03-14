@@ -9,15 +9,19 @@ use Spwa\UI\Shadow;
 use Spwa\UI\UI;
 use Spwa\UI\UIElement;
 use Spwa\UI\Unit;
-use Spwa\VNode\Component;
-use Spwa\VNode\VNode;
+use Spwa\VNode\App;
 
-class TodoApp extends Component
+class TodoApp extends App
 {
     /** @var array<int, array{id: int, text: string, completed: bool}> */
     private array $todos = [];
     private int $nextId = 1;
     private string $filter = 'all';
+
+    public function title(): string
+    {
+        return 'TodoMVC - SPWA';
+    }
 
     protected function initialize(): void
     {
@@ -26,7 +30,7 @@ class TodoApp extends Component
         $this->useState($this->filter);
     }
 
-    protected function build(): VNode
+    protected function view(): UIElement
     {
         $filtered = $this->getFilteredTodos();
         $activeCount = count(array_filter($this->todos, fn($t) => !$t['completed']));
