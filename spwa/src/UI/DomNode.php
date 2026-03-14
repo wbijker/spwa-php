@@ -13,6 +13,9 @@ abstract class DomNode
     /** @var int[] Path to this node in the tree */
     protected array $path = [];
 
+    /** @var string|null Key for efficient list diffing */
+    protected ?string $key = null;
+
     /**
      * Create an element node.
      */
@@ -36,6 +39,11 @@ abstract class DomNode
     public function getPath(): array
     {
         return $this->path;
+    }
+
+    public function getKey(): ?string
+    {
+        return $this->key;
     }
 
     /**

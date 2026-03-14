@@ -93,6 +93,12 @@ class UIElement extends Node
         $this->domNode->style($class, $css);
     }
 
+    public function key(string $key): static
+    {
+        $this->domNode->key($key);
+        return $this;
+    }
+
     public function attr(string $name, string $value): static
     {
         $this->domNode->attr($name, $value);

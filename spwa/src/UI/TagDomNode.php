@@ -45,6 +45,15 @@ class TagDomNode extends DomNode
     }
 
     /**
+     * Set a key for efficient list diffing.
+     */
+    public function key(string $key): static
+    {
+        $this->key = $key;
+        return $this;
+    }
+
+    /**
      * Set an attribute.
      */
     public function attr(string $name, string $value): static
@@ -979,11 +988,50 @@ class TagDomNode extends DomNode
         }
 
         // Compare children
+        $this->compareChildren($other, $patcher);
+    }
+
+    /**
+     * Check if children are keyed (all children have a non-null key).
+     */
+    private function childrenAreKeyed(): bool
+    {
+        if (empty($this->children)) {
+            return false;
+        }
+        foreach ($this->children as $child) {
+            if ($child->getKey() === null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Compare children using positional or keyed strategy.
+     */
+    private function compareChildren(TagDomNode $other, Patcher $patcher): void
+    {
+        $newKeyed = $this->childrenAreKeyed();
+        $oldKeyed = $other->childrenAreKeyed();
+
+        if ($newKeyed && $oldKeyed) {
+            $this->compareChildrenKeyed($other, $patcher);
+        } else {
+            $this->compareChildrenPositional($other, $patcher);
+        }
+    }
+
+    /**
+     * Positional child comparison (no keys).
+     */
+    private function compareChildrenPositional(TagDomNode $other, Patcher $patcher): void
+    {
         $thisCount = count($this->children);
         $otherCount = count($other->children);
         $commonCount = min($thisCount, $otherCount);
 
-        // Delete removed children in reverse order so index shifts don't affect earlier deletions
+        // Delete removed children in reverse order
         for ($i = $otherCount - 1; $i >= $thisCount; $i--) {
             $patcher->deleteNode([...$this->path, $i]);
         }
@@ -996,6 +1044,63 @@ class TagDomNode extends DomNode
         // Insert new children
         for ($i = $otherCount; $i < $thisCount; $i++) {
             $patcher->insertNode([...$this->path, $i], $this->children[$i]);
+        }
+    }
+
+    /**
+     * Keyed child comparison using key matching.
+     * Generates minimal insert/delete/update operations.
+     */
+    private function compareChildrenKeyed(TagDomNode $other, Patcher $patcher): void
+    {
+        // Build key→index maps
+        $oldByKey = [];
+        foreach ($other->children as $i => $child) {
+            $oldByKey[$child->getKey()] = $i;
+        }
+
+        $newByKey = [];
+        foreach ($this->children as $i => $child) {
+            $newByKey[$child->getKey()] = $i;
+        }
+
+        // Delete old children not present in new (reverse order for stable indices)
+        $toDelete = [];
+        foreach ($other->children as $i => $child) {
+            if (!isset($newByKey[$child->getKey()])) {
+                $toDelete[] = $i;
+            }
+        }
+        for ($i = count($toDelete) - 1; $i >= 0; $i--) {
+            $patcher->removeAt($this->path, $toDelete[$i]);
+        }
+
+        // Build the old key order after deletions
+        $oldKeysAfterDelete = [];
+        foreach ($other->children as $i => $child) {
+            $key = $child->getKey();
+            if (isset($newByKey[$key])) {
+                $oldKeysAfterDelete[] = $key;
+            }
+        }
+
+        // Walk new children: insert new keys, update existing ones
+        $oldPos = 0;
+        foreach ($this->children as $newIdx => $newChild) {
+            $key = $newChild->getKey();
+
+            if (!isset($oldByKey[$key])) {
+                // New key — insert at this position
+                $patcher->insertAt($this->path, $newIdx, $newChild);
+            } else {
+                // Existing key — compare content in place
+                $oldChild = $other->children[$oldByKey[$key]];
+                // Re-assign path to the new position before comparing
+                $newChild->assignPaths([...$this->path, $newIdx]);
+                $oldChild->assignPaths([...$this->path, $newIdx]);
+                $newChild->compare($oldChild, $patcher);
+                $oldPos++;
+            }
         }
     }
 }

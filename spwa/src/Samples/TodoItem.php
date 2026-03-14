@@ -24,6 +24,7 @@ class TodoItem extends Component
     protected function build(): VNode
     {
         return UI::row()
+            ->key($this->text . ':' . ($this->completed ? '1' : '0'))
             ->alignMiddle()
             ->background(Color::white())
             ->paddingHorizontal(Unit::rem(1))
