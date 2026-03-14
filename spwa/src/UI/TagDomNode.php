@@ -154,13 +154,15 @@ class TagDomNode extends DomNode
      */
     public function content(DomNode|string ...$children): static
     {
-        $this->children = array_merge($this->children, $children);
+        foreach ($children as $child) {
+            $this->children[] = $child instanceof DomNode ? $child : new TextDomNode($child);
+        }
         return $this;
     }
 
     /**
      * Get all children.
-     * @return (DomNode|string)[]
+     * @return DomNode[]
      */
     public function getChildren(): array
     {
@@ -172,12 +174,8 @@ class TagDomNode extends DomNode
      */
     protected function assignChildPaths(): void
     {
-        $index = 0;
-        foreach ($this->children as $child) {
-            if ($child instanceof DomNode) {
-                $child->assignPaths([...$this->path, $index]);
-            }
-            $index++;
+        foreach ($this->children as $index => $child) {
+            $child->assignPaths([...$this->path, $index]);
         }
     }
 
@@ -261,11 +259,7 @@ class TagDomNode extends DomNode
         // Build children
         $childrenHtml = '';
         foreach ($this->children as $child) {
-            if ($child instanceof DomNode) {
-                $childrenHtml .= $child->toHtml();
-            } else {
-                $childrenHtml .= htmlspecialchars($child);
-            }
+            $childrenHtml .= $child->toHtml();
         }
 
         return "<{$this->tag}{$attrHtml}>{$childrenHtml}</{$this->tag}>";
@@ -993,35 +987,11 @@ class TagDomNode extends DomNode
             $childPath = [...$this->path, $i];
 
             if ($i >= $thisCount) {
-                // Child was removed
                 $patcher->deleteNode($childPath);
             } elseif ($i >= $otherCount) {
-                // Child was added
-                $child = $this->children[$i];
-                if ($child instanceof DomNode) {
-                    $patcher->insertNode($childPath, $child);
-                } else {
-                    // String child - wrap in text node for consistency
-                    $patcher->insertNode($childPath, new TextDomNode($child));
-                }
+                $patcher->insertNode($childPath, $this->children[$i]);
             } else {
-                // Compare existing children
-                $thisChild = $this->children[$i];
-                $otherChild = $other->children[$i];
-
-                // Handle string children
-                if (is_string($thisChild)) {
-                    $thisChild = new TextDomNode($thisChild);
-                    $thisChild->assignPaths($childPath);
-                }
-                if (is_string($otherChild)) {
-                    $otherChild = new TextDomNode($otherChild);
-                    $otherChild->assignPaths($childPath);
-                }
-
-                if ($thisChild instanceof DomNode && $otherChild instanceof DomNode) {
-                    $thisChild->compare($otherChild, $patcher);
-                }
+                $this->children[$i]->compare($other->children[$i], $patcher);
             }
         }
     }

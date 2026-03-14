@@ -265,12 +265,9 @@ function applyPatches(patches) {
                 break;
             }
             case 'replace_text': {
-                // Get parent element and child index
-                const parentPath = path.slice(0, -1);
-                const childIndex = path[path.length - 1];
-                const parent = findNodeByPath(parentPath);
-                if (parent && parent.childNodes[childIndex]) {
-                    parent.childNodes[childIndex].textContent = patch.text;
+                const node = findNodeByPath(path);
+                if (node) {
+                    node.textContent = patch.text;
                 }
                 break;
             }
