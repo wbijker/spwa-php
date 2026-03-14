@@ -5,6 +5,7 @@ namespace Samples\Site\Pages;
 use Samples\Site\Components\CodeBlock;
 use Samples\Site\Components\DemoCard;
 use Samples\Site\Components\SectionHeading;
+use Spwa\Events\InputEvent;
 use Spwa\UI\Color;
 use Spwa\UI\FontSize;
 use Spwa\UI\FontWeight;
@@ -70,7 +71,7 @@ class FormsPage extends Component
                         ->bordered()
                         ->borderColor(Color::slate(300))
                         ->rounded(Unit::roundedLg())
-                        ->on('change', fn(?string $v) => $this->name = $v ?? ''),
+                        ->on('change', fn(InputEvent $e) => $this->name = $e->value ?? ''),
                 ),
                 // Email field
                 UI::column()->gap(Unit::xs())->content(
@@ -87,7 +88,7 @@ class FormsPage extends Component
                         ->bordered()
                         ->borderColor(Color::slate(300))
                         ->rounded(Unit::roundedLg())
-                        ->on('change', fn(?string $v) => $this->email = $v ?? ''),
+                        ->on('change', fn(InputEvent $e) => $this->email = $e->value ?? ''),
                 ),
                 // Role select
                 UI::column()->gap(Unit::xs())->content(
@@ -101,7 +102,7 @@ class FormsPage extends Component
                         ->bordered()
                         ->borderColor(Color::slate(300))
                         ->rounded(Unit::roundedLg())
-                        ->on('change', fn(?string $v) => $this->role = $v ?? 'developer')
+                        ->on('change', fn(InputEvent $e) => $this->role = $e->value ?? 'developer')
                         ->content(
                             UI::option('Developer', 'developer'),
                             UI::option('Designer', 'designer'),
@@ -167,11 +168,11 @@ protected function build(): VNode
             ->text()
             ->placeholder('Enter your name')
             ->value($this->name)
-            ->on('change', fn(?string $v) => $this->name = $v ?? ''),
+            ->on('change', fn(InputEvent $e) => $this->name = $e->value ?? ''),
 
         UI::label('Role'),
         UI::select()
-            ->on('change', fn(?string $v) => $this->role = $v ?? '')
+            ->on('change', fn(InputEvent $e) => $this->role = $e->value ?? '')
             ->content(
                 UI::option('Developer', 'developer'),
                 UI::option('Designer', 'designer'),

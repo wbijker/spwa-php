@@ -399,7 +399,7 @@ class ShoppingCart extends Component
             UI::input()
                 ->placeholder('Promo code')
                 ->value($this->promoCode)
-                ->on('change', fn(?string $v) => $this->promoCode = $v ?? ''),
+                ->on('change', fn(InputEvent $e) => $this->promoCode = $e->value ?? ''),
         );
     }
 }

@@ -376,10 +376,201 @@ function post(data, headers) {
     xhr.send(JSON.stringify(data));
 }
 
-function handleEvent(event, path, el) {
-    var data = { event: event, path: path };
-    if (el && el.value !== undefined) {
-        data.value = el.value;
+function extractEventData(evt, el) {
+    if (!evt) {
+        // Fallback: just return element value
+        return (el && el.value !== undefined) ? el.value : null;
     }
+
+    var type = evt.type;
+
+    // Form/input events — return element value or checked state
+    if (type === 'change' || type === 'input' || type === 'select' || type === 'invalid') {
+        if (el && (el.type === 'checkbox' || el.type === 'radio')) {
+            return { value: el.value, checked: el.checked };
+        }
+        return (el && el.value !== undefined) ? el.value : null;
+    }
+
+    // Focus/blur — return relatedTarget info
+    if (type === 'focus' || type === 'blur' || type === 'focusin' || type === 'focusout') {
+        return null;
+    }
+
+    // Submit/reset — prevent default, return null
+    if (type === 'submit' || type === 'reset') {
+        evt.preventDefault();
+        return null;
+    }
+
+    // Keyboard events
+    if (type === 'keydown' || type === 'keyup' || type === 'keypress') {
+        return {
+            key: evt.key,
+            code: evt.code,
+            altKey: evt.altKey,
+            ctrlKey: evt.ctrlKey,
+            shiftKey: evt.shiftKey,
+            metaKey: evt.metaKey,
+            repeat: evt.repeat
+        };
+    }
+
+    // Mouse events
+    if (type === 'click' || type === 'dblclick' || type === 'mousedown' || type === 'mouseup' ||
+        type === 'mouseover' || type === 'mouseout' || type === 'mouseenter' || type === 'mouseleave' ||
+        type === 'mousemove' || type === 'contextmenu') {
+        var mouseData = {
+            clientX: evt.clientX,
+            clientY: evt.clientY,
+            offsetX: evt.offsetX,
+            offsetY: evt.offsetY,
+            button: evt.button,
+            altKey: evt.altKey,
+            ctrlKey: evt.ctrlKey,
+            shiftKey: evt.shiftKey,
+            metaKey: evt.metaKey
+        };
+        if (type === 'contextmenu') {
+            evt.preventDefault();
+        }
+        // For click on form elements, also include value
+        if (el && el.value !== undefined) {
+            mouseData.value = el.value;
+        }
+        return mouseData;
+    }
+
+    // Pointer events
+    if (type.indexOf('pointer') === 0 || type === 'gotpointercapture' || type === 'lostpointercapture') {
+        return {
+            clientX: evt.clientX,
+            clientY: evt.clientY,
+            offsetX: evt.offsetX,
+            offsetY: evt.offsetY,
+            button: evt.button,
+            pointerId: evt.pointerId,
+            pointerType: evt.pointerType,
+            pressure: evt.pressure,
+            width: evt.width,
+            height: evt.height,
+            altKey: evt.altKey,
+            ctrlKey: evt.ctrlKey,
+            shiftKey: evt.shiftKey,
+            metaKey: evt.metaKey
+        };
+    }
+
+    // Touch events
+    if (type === 'touchstart' || type === 'touchend' || type === 'touchmove' || type === 'touchcancel') {
+        var touches = [];
+        var src = evt.touches || [];
+        for (var i = 0; i < src.length; i++) {
+            touches.push({ clientX: src[i].clientX, clientY: src[i].clientY, identifier: src[i].identifier });
+        }
+        var changedTouches = [];
+        var csrc = evt.changedTouches || [];
+        for (var j = 0; j < csrc.length; j++) {
+            changedTouches.push({ clientX: csrc[j].clientX, clientY: csrc[j].clientY, identifier: csrc[j].identifier });
+        }
+        return { touches: touches, changedTouches: changedTouches };
+    }
+
+    // Wheel events
+    if (type === 'wheel') {
+        return {
+            deltaX: evt.deltaX,
+            deltaY: evt.deltaY,
+            deltaZ: evt.deltaZ,
+            deltaMode: evt.deltaMode,
+            clientX: evt.clientX,
+            clientY: evt.clientY
+        };
+    }
+
+    // Scroll events
+    if (type === 'scroll') {
+        return {
+            scrollTop: el ? el.scrollTop : 0,
+            scrollLeft: el ? el.scrollLeft : 0,
+            scrollHeight: el ? el.scrollHeight : 0,
+            scrollWidth: el ? el.scrollWidth : 0
+        };
+    }
+
+    // Drag events
+    if (type === 'dragstart' || type === 'drag' || type === 'dragend' ||
+        type === 'dragenter' || type === 'dragleave' || type === 'dragover' || type === 'drop') {
+        if (type === 'dragover' || type === 'drop') {
+            evt.preventDefault();
+        }
+        var dragData = {
+            clientX: evt.clientX,
+            clientY: evt.clientY,
+            offsetX: evt.offsetX,
+            offsetY: evt.offsetY
+        };
+        if (evt.dataTransfer) {
+            try {
+                dragData.text = evt.dataTransfer.getData('text/plain');
+            } catch(e) {}
+            dragData.types = Array.from(evt.dataTransfer.types || []);
+            dragData.dropEffect = evt.dataTransfer.dropEffect;
+            dragData.effectAllowed = evt.dataTransfer.effectAllowed;
+        }
+        return dragData;
+    }
+
+    // Clipboard events
+    if (type === 'copy' || type === 'cut' || type === 'paste') {
+        var clipData = {};
+        if (evt.clipboardData) {
+            try {
+                clipData.text = evt.clipboardData.getData('text/plain');
+            } catch(e) {}
+        }
+        return clipData;
+    }
+
+    // Transition/animation events
+    if (type === 'transitionend' || type === 'transitionstart' || type === 'transitioncancel' ||
+        type === 'transitionrun') {
+        return { propertyName: evt.propertyName, elapsedTime: evt.elapsedTime, pseudoElement: evt.pseudoElement };
+    }
+    if (type === 'animationend' || type === 'animationstart' || type === 'animationiteration' ||
+        type === 'animationcancel') {
+        return { animationName: evt.animationName, elapsedTime: evt.elapsedTime, pseudoElement: evt.pseudoElement };
+    }
+
+    // Resize events
+    if (type === 'resize') {
+        return { width: el ? el.offsetWidth : 0, height: el ? el.offsetHeight : 0 };
+    }
+
+    // Media events
+    if (type === 'play' || type === 'pause' || type === 'ended' || type === 'timeupdate' ||
+        type === 'volumechange' || type === 'seeking' || type === 'seeked' ||
+        type === 'loadeddata' || type === 'loadedmetadata' || type === 'canplay' || type === 'canplaythrough' ||
+        type === 'waiting' || type === 'playing' || type === 'ratechange' || type === 'durationchange' ||
+        type === 'progress' || type === 'stalled' || type === 'suspend' || type === 'emptied' || type === 'abort') {
+        return {
+            currentTime: el ? el.currentTime : 0,
+            duration: el ? el.duration : 0,
+            paused: el ? el.paused : true,
+            volume: el ? el.volume : 1,
+            muted: el ? el.muted : false,
+            playbackRate: el ? el.playbackRate : 1,
+            ended: el ? el.ended : false,
+            readyState: el ? el.readyState : 0
+        };
+    }
+
+    // Default: return element value if available
+    return (el && el.value !== undefined) ? el.value : null;
+}
+
+function handleEvent(evt, event, path, el) {
+    var data = { event: event, path: path };
+    data.value = extractEventData(evt, el);
     post(data);
 }

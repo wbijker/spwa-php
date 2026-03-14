@@ -2,6 +2,7 @@
 
 namespace Spwa\UI;
 
+use Spwa\Events\EventData;
 use Spwa\State\StateManager;
 use Spwa\UI\Css\CssStyle;
 use Spwa\VNode\Component;
@@ -170,6 +171,15 @@ class TagDomNode extends DomNode
     }
 
     /**
+     * Add raw HTML content without wrapping in TextDomNode.
+     */
+    public function rawContent(string $content): static
+    {
+        $this->children[] = new RawContent($content);
+        return $this;
+    }
+
+    /**
      * Get all children.
      * @return DomNode[]
      */
@@ -242,8 +252,9 @@ class TagDomNode extends DomNode
         // Build attributes
         $attrHtml = '';
 
-        // Add data-path attribute
-        $attrHtml .= ' data-path="' . implode(',', $this->path) . '"';
+        if ($this->managed) {
+            $attrHtml .= ' data-path="' . implode(',', $this->path) . '"';
+        }
 
         if (!empty($allClasses)) {
             $attrHtml .= ' class="' . htmlspecialchars(implode(' ', array_unique($allClasses))) . '"';
@@ -253,10 +264,11 @@ class TagDomNode extends DomNode
             $attrHtml .= ' ' . $name . '="' . htmlspecialchars($value) . '"';
         }
 
-        // Add event listeners
-        $pathStr = implode(',', $this->path);
-        foreach ($this->events as $event => $callback) {
-            $attrHtml .= ' on' . $event . "=\"handleEvent('" . $event . "', '" . $pathStr . "', this)\"";
+        if ($this->managed) {
+            $pathStr = implode(',', $this->path);
+            foreach ($this->events as $event => $callback) {
+                $attrHtml .= ' on' . $event . "=\"handleEvent(event, '" . $event . "', '" . $pathStr . "', this)\"";
+            }
         }
 
         // Self-closing tags
@@ -937,11 +949,12 @@ class TagDomNode extends DomNode
      * @param StateManager|null $state The state manager for finalizing the owner component
      * @return bool Whether the event was handled
      */
-    public function executeEvent(string $event, ?StateManager $state = null, mixed $value = null): bool
+    public function executeEvent(string $event, mixed $state = null, mixed $value = null): bool
     {
         if (isset($this->events[$event])) {
             $eventData = $this->events[$event];
-            ($eventData['callback'])($value);
+            $typed = EventData::hydrate($event, $value);
+            ($eventData['callback'])($typed);
 
             // Finalize the owner component if available
             if ($state !== null && $eventData['owner'] !== null) {

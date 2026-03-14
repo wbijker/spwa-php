@@ -2,6 +2,19 @@
 
 namespace Spwa\UI;
 
+use Spwa\Events\AnimationEvent;
+use Spwa\Events\ClipboardEvent;
+use Spwa\Events\DragEvent;
+use Spwa\Events\InputEvent;
+use Spwa\Events\KeyboardEvent;
+use Spwa\Events\MediaEvent;
+use Spwa\Events\MouseEvent;
+use Spwa\Events\PointerEvent;
+use Spwa\Events\ResizeEvent;
+use Spwa\Events\ScrollEvent;
+use Spwa\Events\TouchEvent;
+use Spwa\Events\TransitionEvent;
+use Spwa\Events\WheelEvent;
 use Spwa\State\StateManager;
 use Spwa\VNode\Component;
 use Spwa\VNode\Node;
@@ -128,6 +141,195 @@ class UIElement extends Node
         $this->domNode->on($event, $callback);
         return $this;
     }
+
+    // ============================================================
+    // Mouse Events
+    // ============================================================
+
+    /** @param callable(MouseEvent): void $callback */
+    public function onClick(callable $callback): static { return $this->on('click', $callback); }
+    /** @param callable(MouseEvent): void $callback */
+    public function onDblClick(callable $callback): static { return $this->on('dblclick', $callback); }
+    /** @param callable(MouseEvent): void $callback */
+    public function onMouseDown(callable $callback): static { return $this->on('mousedown', $callback); }
+    /** @param callable(MouseEvent): void $callback */
+    public function onMouseUp(callable $callback): static { return $this->on('mouseup', $callback); }
+    /** @param callable(MouseEvent): void $callback */
+    public function onMouseOver(callable $callback): static { return $this->on('mouseover', $callback); }
+    /** @param callable(MouseEvent): void $callback */
+    public function onMouseOut(callable $callback): static { return $this->on('mouseout', $callback); }
+    /** @param callable(MouseEvent): void $callback */
+    public function onMouseEnter(callable $callback): static { return $this->on('mouseenter', $callback); }
+    /** @param callable(MouseEvent): void $callback */
+    public function onMouseLeave(callable $callback): static { return $this->on('mouseleave', $callback); }
+    /** @param callable(MouseEvent): void $callback */
+    public function onMouseMove(callable $callback): static { return $this->on('mousemove', $callback); }
+    /** @param callable(MouseEvent): void $callback */
+    public function onContextMenu(callable $callback): static { return $this->on('contextmenu', $callback); }
+
+    // ============================================================
+    // Keyboard Events
+    // ============================================================
+
+    /** @param callable(KeyboardEvent): void $callback */
+    public function onKeyDown(callable $callback): static { return $this->on('keydown', $callback); }
+    /** @param callable(KeyboardEvent): void $callback */
+    public function onKeyUp(callable $callback): static { return $this->on('keyup', $callback); }
+
+    // ============================================================
+    // Form / Input Events
+    // ============================================================
+
+    /** @param callable(InputEvent): void $callback */
+    public function onChange(callable $callback): static { return $this->on('change', $callback); }
+    /** @param callable(InputEvent): void $callback */
+    public function onInput(callable $callback): static { return $this->on('input', $callback); }
+    /** @param callable(): void $callback */
+    public function onSubmit(callable $callback): static { return $this->on('submit', $callback); }
+    /** @param callable(): void $callback */
+    public function onReset(callable $callback): static { return $this->on('reset', $callback); }
+    /** @param callable(): void $callback */
+    public function onFocus(callable $callback): static { return $this->on('focus', $callback); }
+    /** @param callable(): void $callback */
+    public function onBlur(callable $callback): static { return $this->on('blur', $callback); }
+    /** @param callable(): void $callback */
+    public function onFocusIn(callable $callback): static { return $this->on('focusin', $callback); }
+    /** @param callable(): void $callback */
+    public function onFocusOut(callable $callback): static { return $this->on('focusout', $callback); }
+    /** @param callable(InputEvent): void $callback */
+    public function onSelect(callable $callback): static { return $this->on('select', $callback); }
+    /** @param callable(InputEvent): void $callback */
+    public function onInvalid(callable $callback): static { return $this->on('invalid', $callback); }
+
+    // ============================================================
+    // Touch Events
+    // ============================================================
+
+    /** @param callable(TouchEvent): void $callback */
+    public function onTouchStart(callable $callback): static { return $this->on('touchstart', $callback); }
+    /** @param callable(TouchEvent): void $callback */
+    public function onTouchEnd(callable $callback): static { return $this->on('touchend', $callback); }
+    /** @param callable(TouchEvent): void $callback */
+    public function onTouchMove(callable $callback): static { return $this->on('touchmove', $callback); }
+    /** @param callable(TouchEvent): void $callback */
+    public function onTouchCancel(callable $callback): static { return $this->on('touchcancel', $callback); }
+
+    // ============================================================
+    // Pointer Events
+    // ============================================================
+
+    /** @param callable(PointerEvent): void $callback */
+    public function onPointerDown(callable $callback): static { return $this->on('pointerdown', $callback); }
+    /** @param callable(PointerEvent): void $callback */
+    public function onPointerUp(callable $callback): static { return $this->on('pointerup', $callback); }
+    /** @param callable(PointerEvent): void $callback */
+    public function onPointerMove(callable $callback): static { return $this->on('pointermove', $callback); }
+    /** @param callable(PointerEvent): void $callback */
+    public function onPointerOver(callable $callback): static { return $this->on('pointerover', $callback); }
+    /** @param callable(PointerEvent): void $callback */
+    public function onPointerOut(callable $callback): static { return $this->on('pointerout', $callback); }
+    /** @param callable(PointerEvent): void $callback */
+    public function onPointerEnter(callable $callback): static { return $this->on('pointerenter', $callback); }
+    /** @param callable(PointerEvent): void $callback */
+    public function onPointerLeave(callable $callback): static { return $this->on('pointerleave', $callback); }
+    /** @param callable(PointerEvent): void $callback */
+    public function onPointerCancel(callable $callback): static { return $this->on('pointercancel', $callback); }
+
+    // ============================================================
+    // Drag & Drop Events
+    // ============================================================
+
+    /** @param callable(DragEvent): void $callback */
+    public function onDragStart(callable $callback): static { return $this->on('dragstart', $callback); }
+    /** @param callable(DragEvent): void $callback */
+    public function onDrag(callable $callback): static { return $this->on('drag', $callback); }
+    /** @param callable(DragEvent): void $callback */
+    public function onDragEnd(callable $callback): static { return $this->on('dragend', $callback); }
+    /** @param callable(DragEvent): void $callback */
+    public function onDragEnter(callable $callback): static { return $this->on('dragenter', $callback); }
+    /** @param callable(DragEvent): void $callback */
+    public function onDragLeave(callable $callback): static { return $this->on('dragleave', $callback); }
+    /** @param callable(DragEvent): void $callback */
+    public function onDragOver(callable $callback): static { return $this->on('dragover', $callback); }
+    /** @param callable(DragEvent): void $callback */
+    public function onDrop(callable $callback): static { return $this->on('drop', $callback); }
+
+    // ============================================================
+    // Clipboard Events
+    // ============================================================
+
+    /** @param callable(ClipboardEvent): void $callback */
+    public function onCopy(callable $callback): static { return $this->on('copy', $callback); }
+    /** @param callable(ClipboardEvent): void $callback */
+    public function onCut(callable $callback): static { return $this->on('cut', $callback); }
+    /** @param callable(ClipboardEvent): void $callback */
+    public function onPaste(callable $callback): static { return $this->on('paste', $callback); }
+
+    // ============================================================
+    // Scroll & Wheel Events
+    // ============================================================
+
+    /** @param callable(ScrollEvent): void $callback */
+    public function onScroll(callable $callback): static { return $this->on('scroll', $callback); }
+    /** @param callable(WheelEvent): void $callback */
+    public function onWheel(callable $callback): static { return $this->on('wheel', $callback); }
+
+    // ============================================================
+    // Transition & Animation Events
+    // ============================================================
+
+    /** @param callable(TransitionEvent): void $callback */
+    public function onTransitionEnd(callable $callback): static { return $this->on('transitionend', $callback); }
+    /** @param callable(TransitionEvent): void $callback */
+    public function onTransitionStart(callable $callback): static { return $this->on('transitionstart', $callback); }
+    /** @param callable(AnimationEvent): void $callback */
+    public function onAnimationEnd(callable $callback): static { return $this->on('animationend', $callback); }
+    /** @param callable(AnimationEvent): void $callback */
+    public function onAnimationStart(callable $callback): static { return $this->on('animationstart', $callback); }
+    /** @param callable(AnimationEvent): void $callback */
+    public function onAnimationIteration(callable $callback): static { return $this->on('animationiteration', $callback); }
+
+    // ============================================================
+    // Media Events
+    // ============================================================
+
+    /** @param callable(MediaEvent): void $callback */
+    public function onPlay(callable $callback): static { return $this->on('play', $callback); }
+    /** @param callable(MediaEvent): void $callback */
+    public function onPause(callable $callback): static { return $this->on('pause', $callback); }
+    /** @param callable(MediaEvent): void $callback */
+    public function onEnded(callable $callback): static { return $this->on('ended', $callback); }
+    /** @param callable(MediaEvent): void $callback */
+    public function onTimeUpdate(callable $callback): static { return $this->on('timeupdate', $callback); }
+    /** @param callable(MediaEvent): void $callback */
+    public function onVolumeChange(callable $callback): static { return $this->on('volumechange', $callback); }
+    /** @param callable(MediaEvent): void $callback */
+    public function onSeeking(callable $callback): static { return $this->on('seeking', $callback); }
+    /** @param callable(MediaEvent): void $callback */
+    public function onSeeked(callable $callback): static { return $this->on('seeked', $callback); }
+    /** @param callable(MediaEvent): void $callback */
+    public function onLoadedData(callable $callback): static { return $this->on('loadeddata', $callback); }
+    /** @param callable(MediaEvent): void $callback */
+    public function onLoadedMetadata(callable $callback): static { return $this->on('loadedmetadata', $callback); }
+    /** @param callable(MediaEvent): void $callback */
+    public function onCanPlay(callable $callback): static { return $this->on('canplay', $callback); }
+    /** @param callable(MediaEvent): void $callback */
+    public function onCanPlayThrough(callable $callback): static { return $this->on('canplaythrough', $callback); }
+    /** @param callable(MediaEvent): void $callback */
+    public function onWaiting(callable $callback): static { return $this->on('waiting', $callback); }
+    /** @param callable(MediaEvent): void $callback */
+    public function onPlaying(callable $callback): static { return $this->on('playing', $callback); }
+
+    // ============================================================
+    // Misc Events
+    // ============================================================
+
+    /** @param callable(): void $callback */
+    public function onLoad(callable $callback): static { return $this->on('load', $callback); }
+    /** @param callable(): void $callback */
+    public function onError(callable $callback): static { return $this->on('error', $callback); }
+    /** @param callable(ResizeEvent): void $callback */
+    public function onResize(callable $callback): static { return $this->on('resize', $callback); }
 
     public function content(DomNode|VNode|string ...$children): static
     {

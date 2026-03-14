@@ -13,6 +13,9 @@ abstract class DomNode
     /** @var int[] Path to this node in the tree */
     protected array $path = [];
 
+    /** @var bool Whether this node is part of the managed SPWA tree */
+    protected bool $managed = false;
+
     /** @var string|null Key for efficient list diffing */
     protected ?string $key = null;
 
@@ -56,6 +59,7 @@ abstract class DomNode
     public function assignPaths(array $parentPath = []): static
     {
         $this->path = $parentPath;
+        $this->managed = true;
         $this->assignChildPaths();
         return $this;
     }
@@ -112,10 +116,12 @@ abstract class DomNode
 
     /**
      * Execute an event handler if it exists.
-     * @param string $event
+     * @param string $event The event name
+     * @param mixed $state The state manager for finalizing the owner component
+     * @param mixed $value Event data extracted by the client (type varies by event)
      * @return bool Whether the event was handled
      */
-    public function executeEvent(string $event): bool
+    public function executeEvent(string $event, mixed $state = null, mixed $value = null): bool
     {
         return false;
     }

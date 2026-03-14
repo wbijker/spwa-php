@@ -2,6 +2,7 @@
 
 namespace Spwa\Samples;
 
+use Spwa\Events\InputEvent;
 use Spwa\UI\Color;
 use Spwa\UI\FontSize;
 use Spwa\UI\FontWeight;
@@ -108,8 +109,8 @@ class TodoApp extends App
             ->fontSize(FontSize::TwoXL)
             ->weight(FontWeight::Light)
             ->color(Color::hex('#111'))
-            ->on('change', function (?string $value = null) {
-                $text = trim($value ?? '');
+            ->on('change', function (InputEvent $e) {
+                $text = trim($e->value ?? '');
                 if ($text !== '') {
                     $this->todos[] = [
                         'id' => $this->nextId++,

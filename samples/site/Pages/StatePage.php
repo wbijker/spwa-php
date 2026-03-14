@@ -5,6 +5,7 @@ namespace Samples\Site\Pages;
 use Samples\Site\Components\CodeBlock;
 use Samples\Site\Components\DemoCard;
 use Samples\Site\Components\SectionHeading;
+use Spwa\Events\InputEvent;
 use Spwa\UI\Color;
 use Spwa\UI\FontSize;
 use Spwa\UI\FontWeight;
@@ -66,7 +67,7 @@ class StatePage extends Component
                         ->bordered()
                         ->borderColor(Color::slate(300))
                         ->rounded(Unit::roundedLg())
-                        ->on('change', fn(?string $v) => $this->newTodo = $v ?? ''),
+                        ->on('change', fn(InputEvent $e) => $this->newTodo = $e->value ?? ''),
                     UI::button('Add')
                         ->primary()
                         ->on('click', function () {
