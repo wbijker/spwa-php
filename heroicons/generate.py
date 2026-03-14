@@ -53,8 +53,31 @@ for file in os.listdir(SVG_DIR):
 # Generate the full PHP class
 php_code = f"""<?php
 
-static class Heroicons
+
+namespace HeroIcons;
+
+use Spwa\\UI\\Svg;
+use Spwa\\UI\\SvgPath;
+
+class HeroIcons
 {{
+
+    private static function build(string $fill, float $strokeWidth, string $stroke, string $class, array $paths): Svg
+    {{
+        $svg = new Svg();
+        $svg->viewBox(0, 0, 24, 24)
+            ->fill($fill)
+            ->strokeWidth((string)$strokeWidth)
+            ->stroke($stroke)
+            ->class($class)
+            ->content(
+                ...array_map(fn($p) => Svg::path($p)
+                    ->strokeLinecap('round')
+                    ->strokeLinejoin('round'),
+                $paths)
+            );
+        return $svg;
+    }}
 {"".join(php_methods)}
 }}
 """

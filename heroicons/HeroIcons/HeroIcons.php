@@ -3,27 +3,27 @@
 
 namespace HeroIcons;
 
-use Spwa\Html\Svg;
-use Spwa\Html\SvgPath;
+use Spwa\UI\Svg;
+use Spwa\UI\SvgPath;
 
 class HeroIcons
 {
 
     private static function build(string $fill, float $strokeWidth, string $stroke, string $class, array $paths): Svg
     {
-        return new Svg(
-            xmlns: 'http://www.w3.org/2000/svg',
-            fill: $fill,
-            viewBox: '0 0 24 24',
-            strokeWidth: $strokeWidth,
-            stroke: $stroke,
-            class: $class,
-            children: array_map(fn($p) => new SvgPath(
-                strokeLinecap: 'round',
-                strokeLinejoin: 'round',
-                d: $p
-            ), $paths)
-        );
+        $svg = new Svg();
+        $svg->viewBox(0, 0, 24, 24)
+            ->fill($fill)
+            ->strokeWidth((string)$strokeWidth)
+            ->stroke($stroke)
+            ->class($class)
+            ->content(
+                ...array_map(fn($p) => Svg::path($p)
+                    ->strokeLinecap('round')
+                    ->strokeLinejoin('round'),
+                $paths)
+            );
+        return $svg;
     }
 
     static function Underline(string $fill = 'none', float $strokeWidth = 1.5, string $stroke = 'currentColor', string $class = 'size-6'): Svg
