@@ -14,9 +14,7 @@ class Spwa
 {
     public static function run(App $entry): void
     {
-        // Bootstrap the app to discover state managers
-        $entry->boot();
-        $states = $entry->getStateManagers();
+        $states = $entry->states();
         $primaryState = $entry->getDefaultState();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {

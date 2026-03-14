@@ -25,10 +25,13 @@ class TodoApp extends App
         return 'TodoMVC - SPWA';
     }
 
+    public function states(): array
+    {
+        return [new SessionStateManager()];
+    }
+
     protected function initialize(): void
     {
-        $this->addState(new SessionStateManager());
-
         $this->useState($this->todos);
         $this->useState($this->nextId);
         $this->useState($this->filter);
