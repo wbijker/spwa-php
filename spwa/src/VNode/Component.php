@@ -14,6 +14,9 @@ abstract class Component extends VNode
     /** @var array<int, mixed> References to state variables */
     private array $stateRefs = [];
 
+    /** @var array<string, mixed> References to global state variables keyed by path key */
+    private array $globalStateRefs = [];
+
     /** @var StateManager|null Per-component state manager override */
     private ?StateManager $stateManager = null;
 
@@ -32,6 +35,15 @@ abstract class Component extends VNode
             $this->stateManager = $stateManager;
         }
         $this->stateRefs[] = &$ref;
+    }
+
+    /**
+     * Register a variable as global state with a fixed path key.
+     * Multiple components can share the same global state by using the same key.
+     */
+    protected function useGlobalState(mixed &$ref, string $key): void
+    {
+        $this->globalStateRefs[$key] = &$ref;
     }
 
     /**
@@ -157,6 +169,14 @@ abstract class Component extends VNode
             $this->setState($savedState);
         }
 
+        // Restore global state
+        foreach ($this->globalStateRefs as $key => &$ref) {
+            $globalState = $resolved->getState($key);
+            if ($globalState !== null) {
+                $ref = $globalState;
+            }
+        }
+
         // Lifecycle: restored
         $this->restored();
 
@@ -191,6 +211,11 @@ abstract class Component extends VNode
         $currentState = $this->getState();
         if (!empty($currentState)) {
             $resolved->saveState($pathKey, $currentState);
+        }
+
+        // Save global state
+        foreach ($this->globalStateRefs as $key => $ref) {
+            $resolved->saveState($key, $ref);
         }
     }
 }
