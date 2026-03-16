@@ -64,6 +64,17 @@ class Select extends UIElement
         return $this;
     }
 
+    /**
+     * Bind a component property to this select's value.
+     * The property will be hydrated with the frontend value on each request.
+     */
+    public function bind(string &$ref): static
+    {
+        $this->dom()->attr('data-bind', 'true');
+        $this->dom()->bindRef($ref);
+        return $this;
+    }
+
     public function options(Option|Optgroup ...$options): static
     {
         $this->options = array_merge($this->options, $options);

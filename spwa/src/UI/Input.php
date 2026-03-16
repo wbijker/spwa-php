@@ -65,6 +65,18 @@ class Input extends UIElement
     }
 
     /**
+     * Bind a component property to this input's value.
+     * The property will be hydrated with the frontend value on each request.
+     */
+    public function bind(string &$ref): static
+    {
+        $this->inputValue = $ref;
+        $this->dom()->attr('data-bind', 'true');
+        $this->dom()->bindRef($ref);
+        return $this;
+    }
+
+    /**
      * Set placeholder text.
      */
     public function placeholder(string $placeholder): static

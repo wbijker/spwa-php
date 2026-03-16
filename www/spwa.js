@@ -309,6 +309,40 @@ function applyPatches(patches) {
     }
 }
 
+// --- Value bindings ---
+var boundValues = {};
+
+function initBindings() {
+    document.querySelectorAll('[data-bind]').forEach(function(el) {
+        var path = el.getAttribute('data-path');
+        if (!path) return;
+        boundValues[path] = el.value;
+        if (!el._spwaBound) {
+            el._spwaBound = true;
+            el.addEventListener('input', function() {
+                boundValues[el.getAttribute('data-path')] = el.value;
+            });
+        }
+    });
+}
+
+function collectBindings() {
+    // Refresh values from DOM before sending
+    document.querySelectorAll('[data-bind]').forEach(function(el) {
+        var path = el.getAttribute('data-path');
+        if (path) {
+            boundValues[path] = el.value;
+        }
+    });
+    return Object.keys(boundValues).length > 0 ? boundValues : null;
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initBindings);
+} else {
+    initBindings();
+}
+
 function callback(error, data) {
     if (error) {
         console.error("Error:", error);
@@ -336,11 +370,13 @@ function callback(error, data) {
 
     // Apply DOM patches
     if (data.patches && data.patches.length > 0) {
-        console.log("Applying patches:", data.patches);
+        // console.log("Applying patches:", data.patches);
         applyPatches(data.patches);
     }
 
-    console.log("Response:", data);
+    // Re-initialize bindings after patches (new elements may have data-bind)
+    boundValues = {};
+    initBindings();
 }
 
 function post(data, headers) {
@@ -353,6 +389,12 @@ function post(data, headers) {
         if (headers.hasOwnProperty(key)) {
             xhr.setRequestHeader(key, headers[key]);
         }
+    }
+
+    // Include bound input values
+    var bindings = collectBindings();
+    if (bindings) {
+        data.bindings = bindings;
     }
 
     // Include client state if state management is enabled

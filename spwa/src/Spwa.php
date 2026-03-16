@@ -37,10 +37,16 @@ class Spwa
         $pathStr = $payload['path'] ?? '';
         $path = array_map('intval', explode(',', $pathStr));
         $value = $payload['value'] ?? null;
+        $bindings = $payload['bindings'] ?? [];
 
         // Render the old tree, execute event, save state
         $oldApp = new ($entry::class)();
         $oldUi = $oldApp->render($primaryState, null, RenderPhase::Initial);
+
+        // Hydrate bound input values from the frontend
+        if (!empty($bindings) && $oldUi instanceof TagDomNode) {
+            $oldUi->hydrateBindings($bindings);
+        }
 
         $node = $oldUi->findByPath($path);
         if ($node !== null) {
@@ -70,8 +76,10 @@ class Spwa
         }
 
         // Debug panel → console (prepended so it appears first)
-        $debug = new DebugPanel($newUi, $states);
-        JsRuntime::prepend($debug->toCalls());
+        $appCalls = JsRuntime::drain();
+        (new DebugPanel($newUi, $states))->emit();
+        $debugCalls = JsRuntime::drain();
+        JsRuntime::prepend(array_merge($debugCalls, $appCalls));
 
         $response = [
             'success' => true,
@@ -102,8 +110,8 @@ class Spwa
         $stateJs = self::getClientJs($states);
 
         // Debug panel → inline script for initial render
-        $debug = new DebugPanel($ui, $states);
-        $debugJs = self::callsToJs($debug->toCalls());
+        (new DebugPanel($ui, $states))->emit();
+        $debugJs = self::callsToJs(JsRuntime::drain());
 
         $head = (new TagDomNode('head'))
             ->content(

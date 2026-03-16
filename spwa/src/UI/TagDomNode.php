@@ -32,6 +32,12 @@ class TagDomNode extends DomNode
     /** @var string[] Collected class names */
     protected array $classes = [];
 
+    /** @var bool Whether this node has a bound value ref */
+    private bool $hasBoundRef = false;
+
+    /** @var mixed Reference to the bound component property */
+    private mixed $boundRef = null;
+
     public function __construct(
         protected string $tag
     ) {
@@ -166,6 +172,42 @@ class TagDomNode extends DomNode
             $this->events[$event]['owner'] = $owner;
         }
         return $this;
+    }
+
+    public function bindRef(mixed &$ref): void
+    {
+        $this->boundRef = &$ref;
+        $this->hasBoundRef = true;
+    }
+
+    public function isBound(): bool
+    {
+        return $this->hasBoundRef;
+    }
+
+    public function hydrateBinding(string $value): void
+    {
+        if ($this->hasBoundRef) {
+            $this->boundRef = $value;
+        }
+    }
+
+    /**
+     * Find all bound nodes in the tree and hydrate them from the bindings map.
+     * @param array<string, string> $bindings Path string => value
+     */
+    public function hydrateBindings(array $bindings): void
+    {
+        $pathStr = implode(',', $this->path);
+        if ($this->hasBoundRef && isset($bindings[$pathStr])) {
+            $this->hydrateBinding($bindings[$pathStr]);
+        }
+
+        foreach ($this->children as $child) {
+            if ($child instanceof TagDomNode) {
+                $child->hydrateBindings($bindings);
+            }
+        }
     }
 
     /**
