@@ -418,6 +418,40 @@ function post(data, headers) {
     xhr.send(JSON.stringify(data));
 }
 
+function postMultipart(data, files) {
+    // Include bindings and state in the data payload
+    var bindings = collectBindings();
+    if (bindings) {
+        data.bindings = bindings;
+    }
+    if (SPWA.isStateEnabled()) {
+        var clientState = SPWA.getAll();
+        if (clientState) {
+            data.state = clientState;
+        }
+    }
+
+    var formData = new FormData();
+    formData.append('_spwa', JSON.stringify(data));
+    for (var i = 0; i < files.length; i++) {
+        formData.append('files[]', files[i]);
+    }
+
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", window.location.href, true);
+    // No Content-Type header — browser sets multipart boundary automatically
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                callback(null, JSON.parse(xhr.responseText));
+            } else {
+                callback(new Error("Request failed: " + xhr.status));
+            }
+        }
+    };
+    xhr.send(formData);
+}
+
 function extractEventData(evt, el) {
     if (!evt) {
         // Fallback: just return element value
@@ -613,6 +647,12 @@ function extractEventData(evt, el) {
 
 function handleEvent(evt, event, path, el) {
     var data = { event: event, path: path };
+    // File upload — send as multipart form
+    if (el && el.type === 'file' && el.files && el.files.length > 0) {
+        data.value = null;
+        postMultipart(data, el.files);
+        return;
+    }
     data.value = extractEventData(evt, el);
     post(data);
 }

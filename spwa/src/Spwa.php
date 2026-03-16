@@ -32,7 +32,14 @@ class Spwa
     {
         ob_start();
 
-        $payload = json_decode(file_get_contents('php://input'), true);
+        // Parse payload from JSON or multipart form
+        $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+        if (str_contains($contentType, 'multipart/form-data')) {
+            $payload = json_decode($_POST['_spwa'] ?? '{}', true);
+        } else {
+            $payload = json_decode(file_get_contents('php://input'), true);
+        }
+
         $event = $payload['event'] ?? '';
         $pathStr = $payload['path'] ?? '';
         $path = array_map('intval', explode(',', $pathStr));

@@ -62,6 +62,7 @@ class EventData
      */
     public static function hydrate(string $event, mixed $raw): mixed
     {
+        if ($event === 'upload') return FileEvent::from($raw);
         if (in_array($event, self::MOUSE_EVENTS)) return MouseEvent::from($raw);
         if (in_array($event, self::KEYBOARD_EVENTS)) return KeyboardEvent::from($raw);
         if (in_array($event, self::INPUT_EVENTS)) return InputEvent::from($raw);

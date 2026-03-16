@@ -5,6 +5,7 @@ namespace Spwa\UI;
 use Spwa\Events\AnimationEvent;
 use Spwa\Events\ClipboardEvent;
 use Spwa\Events\DragEvent;
+use Spwa\Events\FileEvent;
 use Spwa\Events\InputEvent;
 use Spwa\Events\KeyboardEvent;
 use Spwa\Events\MediaEvent;
@@ -190,6 +191,8 @@ class UIElement extends Node
     public function onSelect(callable $callback): static { return $this->on('select', $callback); }
     /** @param callable(InputEvent): void $callback */
     public function onInvalid(callable $callback): static { return $this->on('invalid', $callback); }
+    /** @param callable(FileEvent): void $callback */
+    public function onUpload(callable $callback): static { return $this->on('upload', $callback); }
 
     // ============================================================
     // Touch Events

@@ -14,6 +14,11 @@ use Spwa\VNode\Patcher;
  */
 class TagDomNode extends DomNode
 {
+    /** Maps custom event names to their DOM event attribute equivalents */
+    private const DOM_EVENT_MAP = [
+        'upload' => 'change',
+    ];
+
     /** @var (DomNode|string)[] */
     protected array $children = [];
 
@@ -332,7 +337,8 @@ class TagDomNode extends DomNode
         if ($this->managed) {
             $pathStr = implode(',', $this->path);
             foreach ($this->events as $event => $callback) {
-                $attrHtml .= ' on' . $event . "=\"handleEvent(event, '" . $event . "', '" . $pathStr . "', this)\"";
+                $domEvent = self::DOM_EVENT_MAP[$event] ?? $event;
+                $attrHtml .= ' on' . $domEvent . "=\"handleEvent(event, '" . $event . "', '" . $pathStr . "', this)\"";
             }
         }
 
