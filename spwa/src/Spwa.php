@@ -2,6 +2,7 @@
 
 namespace Spwa;
 
+use Spwa\Debug\DebugPanel;
 use Spwa\Js\JsRuntime;
 use Spwa\State\StateManager;
 use Spwa\UI\StyleGenerator;
@@ -68,18 +69,15 @@ class Spwa
             JsRuntime::invoke(['console', 'log'], [$output]);
         }
 
+        // Debug panel → console (prepended so it appears first)
+        $debug = new DebugPanel($newUi, $states);
+        JsRuntime::prepend($debug->toCalls());
+
         $response = [
             'success' => true,
             'js' => JsRuntime::dump(),
             'patches' => $patcher->getOperations(),
             'styles' => $deltaGenerator->toRaw(),
-            'debug' => [
-                'nodes' => $newUi->countNodes(),
-                'states' => array_map(fn(StateManager $s) => [
-                    'name' => $s->name(),
-                    'bytes' => $s->bytes(),
-                ], $states),
-            ],
         ];
 
         $clientState = self::getClientState($states);
@@ -103,6 +101,10 @@ class Spwa
         $generator = StyleGenerator::from($ui->collectStyles());
         $stateJs = self::getClientJs($states);
 
+        // Debug panel → inline script for initial render
+        $debug = new DebugPanel($ui, $states);
+        $debugJs = self::callsToJs($debug->toCalls());
+
         $head = (new TagDomNode('head'))
             ->content(
                 (new TagDomNode('meta'))->attr('charset', 'UTF-8'),
@@ -119,6 +121,8 @@ class Spwa
         $body = (new TagDomNode('body'))
             ->attr('style', 'margin: 0; font-family: system-ui, -apple-system, sans-serif;')
             ->content($ui);
+
+        $body->content((new TagDomNode('script'))->rawContent($debugJs));
 
         $document = (new TagDomNode('html'))
             ->attr('lang', 'en')
@@ -140,6 +144,22 @@ class Spwa
             }
         }
         return $js === '' ? null : $js;
+    }
+
+    /**
+     * Convert raw JsRuntime call entries to inline JavaScript.
+     */
+    private static function callsToJs(array $calls): string
+    {
+        $js = '';
+        foreach ($calls as [$mode, $path, $args]) {
+            $pathStr = implode('.', $path);
+            if ($mode === 'invoke') {
+                $argsJson = implode(',', array_map(fn($a) => json_encode($a, JSON_UNESCAPED_SLASHES), $args));
+                $js .= $pathStr . '(' . $argsJson . ');';
+            }
+        }
+        return $js;
     }
 
     /**
