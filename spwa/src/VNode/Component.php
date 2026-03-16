@@ -20,6 +20,9 @@ abstract class Component extends VNode
     /** @var bool Whether initialize() has been called */
     protected bool $initialized = false;
 
+    /** @var array<string, IProvideConsume> Provided values keyed by IProvideConsume::key() */
+    private static array $provided = [];
+
     /**
      * Register a variable as state. Call in initialize().
      */
@@ -37,6 +40,26 @@ abstract class Component extends VNode
     private function resolveStateManager(StateManager $default): StateManager
     {
         return $this->stateManager ?? $default;
+    }
+
+    /**
+     * Inject a value to be available to all descendant components.
+     */
+    protected function inject(IProvideConsume $value): void
+    {
+        self::$provided[$value->key()] = $value;
+    }
+
+    /**
+     * Consume a provided value by key. The variable's type must implement IProvideConsume.
+     * Fills the reference with the injected instance matching its key.
+     */
+    protected function consume(IProvideConsume &$ref): void
+    {
+        $key = $ref->key();
+        if (isset(self::$provided[$key])) {
+            $ref = self::$provided[$key];
+        }
     }
 
     /**
