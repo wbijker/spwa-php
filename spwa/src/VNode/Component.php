@@ -26,6 +26,12 @@ abstract class Component extends VNode
     /** @var array<string, IProvideConsume> Provided values keyed by IProvideConsume::key() */
     private static array $provided = [];
 
+    /** @var array<string, Component> Components rendered during the Initial (old) phase, keyed by state key */
+    private static array $oldRegistry = [];
+
+    /** @var array<string, Component> Components rendered during the Patch (new) phase, keyed by state key */
+    private static array $newRegistry = [];
+
     /**
      * Register a variable as state. Call in initialize().
      */
@@ -101,6 +107,27 @@ abstract class Component extends VNode
     }
 
     /**
+     * Called when the component is rendered for the first time (no prior state).
+     */
+    protected function created(): void
+    {
+    }
+
+    /**
+     * Called when the component existed in the tree before and is being re-rendered.
+     */
+    protected function updated(): void
+    {
+    }
+
+    /**
+     * Called when the component was in the old tree but not in the new tree.
+     */
+    protected function deleted(): void
+    {
+    }
+
+    /**
      * Called before build() to determine if rendering should proceed.
      * Return false to skip rendering and return a NoOpDomNode.
      */
@@ -165,8 +192,16 @@ abstract class Component extends VNode
         $resolved = $this->resolveStateManager($state);
         $pathKey = $this->getStateKey();
         $savedState = $resolved->getState($pathKey);
-        if (!empty($savedState)) {
+        $isNew = empty($savedState);
+        if (!$isNew) {
             $this->setState($savedState);
+        }
+
+        // Track component by phase for lifecycle diffing
+        if ($phase === RenderPhase::Initial) {
+            self::$oldRegistry[$pathKey] = $this;
+        } else {
+            self::$newRegistry[$pathKey] = $this;
         }
 
         // Restore global state
@@ -179,6 +214,13 @@ abstract class Component extends VNode
 
         // Lifecycle: restored
         $this->restored();
+
+        // Lifecycle: created or updated
+        if ($isNew) {
+            $this->created();
+        } else {
+            $this->updated();
+        }
 
         // Lifecycle: shouldRender (only in Patch phase)
         if ($phase === RenderPhase::Patch && !$this->shouldRender()) {
@@ -198,6 +240,20 @@ abstract class Component extends VNode
         $className = static::class;
         $pathStr = implode('.', $this->path);
         return $pathStr === '' ? $className : "$pathStr:$className";
+    }
+
+    /**
+     * Call deleted() on components that were in the old tree but not the new tree.
+     * Clears both registries afterwards.
+     */
+    public static function processDeleted(): void
+    {
+        $deletedKeys = array_diff_key(self::$oldRegistry, self::$newRegistry);
+        foreach ($deletedKeys as $component) {
+            $component->deleted();
+        }
+        self::$oldRegistry = [];
+        self::$newRegistry = [];
     }
 
     /**

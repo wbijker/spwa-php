@@ -8,6 +8,7 @@ use Spwa\State\StateManager;
 use Spwa\UI\StyleGenerator;
 use Spwa\UI\TagDomNode;
 use Spwa\VNode\App;
+use Spwa\VNode\Component;
 use Spwa\VNode\Patcher;
 use Spwa\VNode\RenderPhase;
 
@@ -65,6 +66,9 @@ class Spwa
         // Render the new tree with updated state
         $newApp = new ($entry::class)();
         $newUi = $newApp->render($primaryState, null, RenderPhase::Patch);
+
+        // Lifecycle: deleted (old tree components not in new tree)
+        Component::processDeleted();
 
         // Diff
         $patcher = new Patcher();
