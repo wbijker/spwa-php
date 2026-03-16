@@ -2,27 +2,22 @@
 
 namespace Spwa\UI;
 
-use Spwa\VNode\VNode;
-
 /**
  * Details/summary disclosure element.
  */
-class Details extends UIElement
+class Details extends UIElementContent
 {
+    public function __construct()
+    {
+        parent::__construct('details');
+    }
+
     protected ?string $summary = null;
-    /** @var (DomNode|VNode|string)[] */
-    protected array $children = [];
     protected bool $open = false;
 
     public function summary(string $summary): static
     {
         $this->summary = $summary;
-        return $this;
-    }
-
-    public function content(DomNode|VNode|string ...$children): static
-    {
-        $this->children = array_merge($this->children, $children);
         return $this;
     }
 

@@ -5,7 +5,7 @@ namespace Spwa\UI;
 /**
  * Generic span element.
  */
-class Span extends UIElement
+class Span extends UIElementContent
 {
     public function __construct(DomNode|string|null $content = null)
     {

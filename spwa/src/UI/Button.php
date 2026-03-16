@@ -10,7 +10,7 @@ namespace Spwa\UI;
  *       ->primary()
  *       ->padding(Unit::base())
  */
-class Button extends UIElement
+class Button extends UIElementContent
 {
     protected ?string $type = 'button';
 

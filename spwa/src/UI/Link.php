@@ -3,69 +3,84 @@
 namespace Spwa\UI;
 
 /**
- * Hyperlink element.
+ * Hyperlink element — supports both text labels and rich content.
  *
  * Usage:
  *   UI::link("Visit site", "https://example.com")
- *       ->color(Color::blue(600))
- *       ->underline()
+ *   UI::link("https://example.com")->content(UI::image("icon.png"), UI::text("Click"))
  */
-class Link extends UIElement
+class Link extends UIElementContent
 {
+    protected ?string $href = null;
     protected bool $newTab = false;
+    protected ?string $download = null;
 
-    public function __construct(string $label, string $href)
+    public function __construct(string $href, ?string $label = null)
     {
         parent::__construct('a');
-        $this->content($label);
-        $this->attr('href', $href);
+        $this->href = $href;
+        if ($label !== null) {
+            $this->content($label);
+        }
     }
 
-    /**
-     * Open in new tab.
-     */
+    public function href(string $url): static
+    {
+        $this->href = $url;
+        return $this;
+    }
+
     public function newTab(): static
     {
         $this->newTab = true;
         return $this;
     }
 
-    /**
-     * Add underline.
-     */
+    public function download(?string $filename = null): static
+    {
+        $this->download = $filename ?? '';
+        return $this;
+    }
+
     public function underline(): static
     {
         $this->addStyle('underline', ['text-decoration' => 'underline']);
         return $this;
     }
 
-    /**
-     * Underline on hover only.
-     */
-    public function hoverUnderline(): static
-    {
-        $this->addStyle('hover:underline', ['text-decoration' => 'underline']);
-        return $this;
-    }
-
-    /**
-     * No underline.
-     */
     public function noUnderline(): static
     {
         $this->addStyle('no-underline', ['text-decoration' => 'none']);
         return $this;
     }
 
-    /**
-     * Render to HTML string.
-     */
-    public function toHtml(): string
+    public function build(): DomNode
     {
-        if ($this->newTab) {
-            $this->attr('target', '_blank');
-            $this->attr('rel', 'noopener noreferrer');
+        $node = $this->dom()->setTag('a');
+
+        if ($this->href !== null) {
+            $node->attr('href', $this->href);
         }
-        return parent::toHtml();
+
+        if ($this->newTab) {
+            $node->attr('target', '_blank')
+                ->attr('rel', 'noopener noreferrer');
+        }
+
+        if ($this->download !== null) {
+            $node->attr('download', $this->download);
+        }
+
+        foreach ($this->children as $child) {
+            if ($child instanceof UIElement) {
+                $node->children($child->build());
+            } elseif ($child instanceof DomNode) {
+                $node->children($child);
+            } elseif (is_string($child)) {
+                $node->children($child);
+            }
+        }
+
+        return $node;
     }
 }

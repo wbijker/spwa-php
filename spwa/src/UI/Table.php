@@ -20,7 +20,7 @@ namespace Spwa\UI;
  *           ),
  *       )
  */
-class Table extends UIElement
+class Table extends UIElementContent
 {
     protected ?string $tableCaption = null;
     protected ?TableColgroup $tableColgroup = null;

@@ -7,6 +7,11 @@ namespace Spwa\UI;
  */
 class Form extends Container
 {
+    public function __construct()
+    {
+        parent::__construct('form');
+    }
+
     protected ?string $action = null;
     protected ?string $method = null;
     protected ?string $enctype = null;

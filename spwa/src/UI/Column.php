@@ -16,7 +16,7 @@ namespace Spwa\UI;
  *           UI::text("Subtitle")
  *       )
  */
-class Column extends UIElement
+class Column extends UIElementContent
 {
     public function __construct()
     {

@@ -7,6 +7,11 @@ namespace Spwa\UI;
  */
 class Select extends UIElement
 {
+    public function __construct()
+    {
+        parent::__construct('select');
+    }
+
     protected ?string $name = null;
     protected ?string $id = null;
     protected bool $required = false;

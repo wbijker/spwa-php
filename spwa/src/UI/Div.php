@@ -5,7 +5,7 @@ namespace Spwa\UI;
 /**
  * Generic div element.
  */
-class Div extends UIElement
+class Div extends UIElementContent
 {
     public function __construct()
     {

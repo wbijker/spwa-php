@@ -5,7 +5,7 @@ namespace Spwa\UI;
 /**
  * Table heading cell (th).
  */
-class TableHeading extends UIElement
+class TableHeading extends UIElementContent
 {
     public function __construct()
     {

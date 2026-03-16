@@ -7,6 +7,11 @@ namespace Spwa\UI;
  */
 class Fieldset extends Container
 {
+    public function __construct()
+    {
+        parent::__construct('fieldset');
+    }
+
     protected ?string $legend = null;
     protected bool $disabled = false;
     protected ?string $name = null;

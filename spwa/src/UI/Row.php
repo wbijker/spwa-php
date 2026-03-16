@@ -13,7 +13,7 @@ namespace Spwa\UI;
  *       ->alignMiddle()
  *       ->content(...)
  */
-class Row extends UIElement
+class Row extends UIElementContent
 {
     public function __construct()
     {

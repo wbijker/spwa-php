@@ -5,7 +5,7 @@ namespace Spwa\UI;
 /**
  * Table data cell (td).
  */
-class TableCell extends UIElement
+class TableCell extends UIElementContent
 {
     public function __construct()
     {

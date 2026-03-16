@@ -11,13 +11,11 @@ namespace Spwa\UI;
  *       ->top(Unit::px(10))
  *       ->left(Unit::px(20))
  */
-class Position extends UIElement
+class Position extends UIElementContent
 {
-    /** @var UIElement[] */
-    protected array $children = [];
-
     public function __construct(UIElement ...$children)
     {
+        parent::__construct('div');
         $this->children = $children;
         $this->addStyle('absolute', ['position' => 'absolute']);
     }

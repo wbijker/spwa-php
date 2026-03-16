@@ -2,19 +2,16 @@
 
 namespace Spwa\UI;
 
-use Spwa\VNode\VNode;
-
 /**
  * Label element.
  */
-class Label extends UIElement
+class Label extends UIElementContent
 {
     protected ?string $for = null;
-    /** @var (DomNode|VNode|string)[] */
-    protected array $children = [];
 
     public function __construct(?string $text = null)
     {
+        parent::__construct('label');
         if ($text !== null) {
             $this->children[] = $text;
         }
@@ -23,12 +20,6 @@ class Label extends UIElement
     public function for(string $id): static
     {
         $this->for = $id;
-        return $this;
-    }
-
-    public function content(DomNode|VNode|string ...$children): static
-    {
-        $this->children = array_merge($this->children, $children);
         return $this;
     }
 

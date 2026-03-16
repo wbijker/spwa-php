@@ -5,7 +5,7 @@ namespace Spwa\UI;
 /**
  * Semantic section element.
  */
-class Section extends UIElement
+class Section extends UIElementContent
 {
     public function __construct()
     {

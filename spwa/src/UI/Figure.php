@@ -10,10 +10,15 @@ use Spwa\VNode\VNode;
 class Figure extends UIElement
 {
     protected DomNode|VNode|string|null $content = null;
+
+    public function __construct()
+    {
+        parent::__construct('figure');
+    }
     protected ?string $caption = null;
     protected bool $captionAbove = false;
 
-    public function content(DomNode|VNode|string ...$children): static
+    public function content(DomNode|VNode|string|null ...$children): static
     {
         $this->content = $children[0] ?? null;
         return $this;

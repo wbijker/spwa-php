@@ -8,6 +8,11 @@ namespace Spwa\UI;
 class Iframe extends UIElement
 {
     protected ?string $src = null;
+
+    public function __construct()
+    {
+        parent::__construct('iframe');
+    }
     protected ?string $srcdoc = null;
     protected ?string $name = null;
     protected ?string $sandbox = null;

@@ -2,28 +2,19 @@
 
 namespace Spwa\UI;
 
-use Spwa\VNode\VNode;
-
 /**
  * List item element.
  */
-class Li extends UIElement
+class Li extends UIElementContent
 {
-    /** @var (DomNode|VNode|string)[] */
-    protected array $children = [];
     protected ?int $value = null;
 
     public function __construct(string|UIElement|null $content = null)
     {
+        parent::__construct('li');
         if ($content !== null) {
             $this->children[] = $content;
         }
-    }
-
-    public function content(DomNode|VNode|string ...$children): static
-    {
-        $this->children = array_merge($this->children, $children);
-        return $this;
     }
 
     public function value(int $value): static

@@ -7,6 +7,11 @@ namespace Spwa\UI;
  */
 class Ul extends UIElement
 {
+    public function __construct()
+    {
+        parent::__construct('ul');
+    }
+
     /** @var Li[] */
     protected array $items = [];
 

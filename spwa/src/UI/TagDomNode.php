@@ -171,10 +171,16 @@ class TagDomNode extends DomNode
     /**
      * Add child nodes or text.
      */
-    public function content(DomNode|string ...$children): static
+    public function content(DomNode|string|null ...$children): static
     {
         foreach ($children as $child) {
-            $this->children[] = $child instanceof DomNode ? $child : new TextDomNode($child);
+            if ($child === null) {
+                $this->children[] = new CommentDomNode();
+            } elseif ($child instanceof DomNode) {
+                $this->children[] = $child;
+            } else {
+                $this->children[] = new TextDomNode($child);
+            }
         }
         return $this;
     }
@@ -182,7 +188,7 @@ class TagDomNode extends DomNode
     /**
      * Alias for content().
      */
-    public function children(DomNode|string ...$children): static
+    public function children(DomNode|string|null ...$children): static
     {
         return $this->content(...$children);
     }

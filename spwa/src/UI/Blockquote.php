@@ -2,28 +2,19 @@
 
 namespace Spwa\UI;
 
-use Spwa\VNode\VNode;
-
 /**
  * Blockquote element.
  */
-class Blockquote extends UIElement
+class Blockquote extends UIElementContent
 {
     protected ?string $cite = null;
-    /** @var (DomNode|VNode|string)[] */
-    protected array $children = [];
 
     public function __construct(?string $content = null)
     {
+        parent::__construct('blockquote');
         if ($content !== null) {
             $this->children[] = $content;
         }
-    }
-
-    public function content(DomNode|VNode|string ...$children): static
-    {
-        $this->children = array_merge($this->children, $children);
-        return $this;
     }
 
     public function cite(string $cite): static

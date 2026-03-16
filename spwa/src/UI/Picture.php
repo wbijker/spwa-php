@@ -7,6 +7,11 @@ namespace Spwa\UI;
  */
 class Picture extends UIElement
 {
+    public function __construct()
+    {
+        parent::__construct('picture');
+    }
+
     /** @var Source[] */
     protected array $sources = [];
     protected ?Image $fallback = null;

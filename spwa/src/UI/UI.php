@@ -63,16 +63,6 @@ class UI
         return new Section();
     }
 
-    public static function article(): Article
-    {
-        return new Article();
-    }
-
-    public static function aside(): Aside
-    {
-        return new Aside();
-    }
-
     public static function nav(): Nav
     {
         return new Nav();
@@ -88,11 +78,6 @@ class UI
         return new Footer();
     }
 
-    public static function main(): Main
-    {
-        return new Main();
-    }
-
     public static function figure(): Figure
     {
         return new Figure();
@@ -106,16 +91,6 @@ class UI
     public static function dialog(): Dialog
     {
         return new Dialog();
-    }
-
-    public static function address(): Address
-    {
-        return new Address();
-    }
-
-    public static function time(string $content): Time
-    {
-        return new Time($content);
     }
 
     // ============================================================
@@ -147,14 +122,9 @@ class UI
         return new Button($label);
     }
 
-    public static function link(string $label, string $href): Link
+    public static function link(string $href, ?string $label = null): Link
     {
-        return new Link($label, $href);
-    }
-
-    public static function a(?string $href = null): Anchor
-    {
-        return new Anchor($href);
+        return new Link($href, $label);
     }
 
     public static function svg(): Svg
@@ -220,11 +190,6 @@ class UI
         return new Fieldset();
     }
 
-    public static function datalist(): Datalist
-    {
-        return new Datalist();
-    }
-
     public static function output(): Output
     {
         return new Output();
@@ -259,11 +224,6 @@ class UI
         return new Li($content);
     }
 
-    public static function dl(): Dl
-    {
-        return new Dl();
-    }
-
     public static function dt(string|UIElement|null $content = null): Dt
     {
         return new Dt($content);
@@ -272,11 +232,6 @@ class UI
     public static function dd(string|UIElement|null $content = null): Dd
     {
         return new Dd($content);
-    }
-
-    public static function menu(): Menu
-    {
-        return new Menu();
     }
 
     // ============================================================
@@ -337,96 +292,6 @@ class UI
         return new Blockquote($content);
     }
 
-    public static function q(string $content): Q
-    {
-        return new Q($content);
-    }
-
-    public static function cite(string $content): Cite
-    {
-        return new Cite($content);
-    }
-
-    public static function mark(string $content): Mark
-    {
-        return new Mark($content);
-    }
-
-    public static function del(string $content): Del
-    {
-        return new Del($content);
-    }
-
-    public static function ins(string $content): Ins
-    {
-        return new Ins($content);
-    }
-
-    public static function abbr(string $content): Abbr
-    {
-        return new Abbr($content);
-    }
-
-    public static function kbd(string $content): Kbd
-    {
-        return new Kbd($content);
-    }
-
-    public static function samp(string $content): Samp
-    {
-        return new Samp($content);
-    }
-
-    public static function var(string $content): VarElement
-    {
-        return new VarElement($content);
-    }
-
-    public static function small(string $content): Small
-    {
-        return new Small($content);
-    }
-
-    public static function sub(string $content): Sub
-    {
-        return new Sub($content);
-    }
-
-    public static function sup(string $content): Sup
-    {
-        return new Sup($content);
-    }
-
-    public static function strong(string $content): Strong
-    {
-        return new Strong($content);
-    }
-
-    public static function em(string $content): Em
-    {
-        return new Em($content);
-    }
-
-    public static function b(string $content): B
-    {
-        return new B($content);
-    }
-
-    public static function i(string $content): I
-    {
-        return new I($content);
-    }
-
-    public static function u(string $content): U
-    {
-        return new U($content);
-    }
-
-    public static function s(string $content): S
-    {
-        return new S($content);
-    }
-
     // ============================================================
     // Misc Elements
     // ============================================================
@@ -434,11 +299,6 @@ class UI
     public static function br(): Br
     {
         return new Br();
-    }
-
-    public static function wbr(): Wbr
-    {
-        return new Wbr();
     }
 
     public static function hr(): Hr
@@ -454,51 +314,6 @@ class UI
     public static function div(): Div
     {
         return new Div();
-    }
-
-    public static function template(): Template
-    {
-        return new Template();
-    }
-
-    public static function slot(): Slot
-    {
-        return new Slot();
-    }
-
-    public static function data(string $content, string $value): Data
-    {
-        return new Data($content, $value);
-    }
-
-    public static function bdi(string $content): Bdi
-    {
-        return new Bdi($content);
-    }
-
-    public static function bdo(string $content): Bdo
-    {
-        return new Bdo($content);
-    }
-
-    public static function ruby(string $base, string $annotation): Ruby
-    {
-        return new Ruby($base, $annotation);
-    }
-
-    public static function noscript(): Noscript
-    {
-        return new Noscript();
-    }
-
-    public static function embed(string $src): Embed
-    {
-        return new Embed($src);
-    }
-
-    public static function object(): ObjectElement
-    {
-        return new ObjectElement();
     }
 
     // ============================================================

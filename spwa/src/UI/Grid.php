@@ -10,7 +10,7 @@ namespace Spwa\UI;
  *       ->gap(Unit::base())
  *       ->content(...)
  */
-class Grid extends UIElement
+class Grid extends UIElementContent
 {
     public function __construct(int $columns = 1)
     {

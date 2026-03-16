@@ -2,27 +2,17 @@
 
 namespace Spwa\UI;
 
-use Spwa\VNode\VNode;
-
 /**
  * Description term element.
  */
-class Dt extends UIElement
+class Dt extends UIElementContent
 {
-    /** @var (DomNode|VNode|string)[] */
-    protected array $children = [];
-
     public function __construct(string|UIElement|null $content = null)
     {
+        parent::__construct('dt');
         if ($content !== null) {
             $this->children[] = $content;
         }
-    }
-
-    public function content(DomNode|VNode|string ...$children): static
-    {
-        $this->children = array_merge($this->children, $children);
-        return $this;
     }
 
     public function build(): DomNode

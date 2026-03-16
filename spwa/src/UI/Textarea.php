@@ -12,7 +12,7 @@ namespace Spwa\UI;
  *       ->rows(5)
  *       ->required()
  */
-class Textarea extends UIElement
+class Textarea extends UIElementContent
 {
     protected ?string $inputName = null;
     protected ?string $inputValue = null;

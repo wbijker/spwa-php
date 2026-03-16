@@ -7,6 +7,11 @@ namespace Spwa\UI;
  */
 class Meter extends UIElement
 {
+    public function __construct()
+    {
+        parent::__construct('meter');
+    }
+
     protected ?float $value = null;
     protected ?float $min = null;
     protected ?float $max = null;

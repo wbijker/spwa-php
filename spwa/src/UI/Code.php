@@ -9,6 +9,7 @@ class Code extends UIElement
 {
     public function __construct(protected string $content = '')
     {
+        parent::__construct('code');
     }
 
     public function build(): DomNode

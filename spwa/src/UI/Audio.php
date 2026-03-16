@@ -7,6 +7,11 @@ namespace Spwa\UI;
  */
 class Audio extends UIElement
 {
+    public function __construct()
+    {
+        parent::__construct('audio');
+    }
+
     protected ?string $src = null;
     protected bool $controls = true;
     protected bool $autoplay = false;

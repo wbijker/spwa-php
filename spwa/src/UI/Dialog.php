@@ -9,6 +9,11 @@ class Dialog extends Container
 {
     protected bool $open = false;
 
+    public function __construct()
+    {
+        parent::__construct('dialog');
+    }
+
     public function open(bool $open = true): static
     {
         $this->open = $open;

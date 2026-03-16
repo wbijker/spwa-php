@@ -7,6 +7,11 @@ namespace Spwa\UI;
  */
 class Nav extends Container
 {
+    public function __construct()
+    {
+        parent::__construct('nav');
+    }
+
     public function build(): DomNode
     {
         $node = $this->dom()->setTag('nav');

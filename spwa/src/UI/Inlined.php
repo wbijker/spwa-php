@@ -17,7 +17,7 @@ namespace Spwa\UI;
  *           UI::badge("Tag 3")
  *       )
  */
-class Inlined extends UIElement
+class Inlined extends UIElementContent
 {
     public function __construct()
     {

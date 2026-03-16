@@ -7,6 +7,11 @@ namespace Spwa\UI;
  */
 class Video extends UIElement
 {
+    public function __construct()
+    {
+        parent::__construct('video');
+    }
+
     protected ?string $src = null;
     protected ?string $poster = null;
     protected bool $controls = true;

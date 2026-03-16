@@ -248,10 +248,10 @@ class Showcase extends Component
                 UI::row()
                     ->gap(Unit::medium())
                     ->content(
-                        UI::link("Regular Link", "#")
+                        UI::link("#", "Regular Link")
                             ->color(Color::blue(600))
                             ->underline(),
-                        UI::link("Hover Underline", "#")
+                        UI::link("#", "Hover Underline")
                             ->color(Color::blue(600))
                             ->noUnderline()
                             ->hoverUnderline()

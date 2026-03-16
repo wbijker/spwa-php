@@ -11,7 +11,7 @@ namespace Spwa\UI;
  *       ->primary(UI::image("background.jpg"))
  *       ->layer(UI::text("Overlay text"))
  */
-class Layers extends UIElement
+class Layers extends UIElementContent
 {
     protected ?UIElement $primary = null;
     /** @var UIElement[] */
@@ -19,6 +19,7 @@ class Layers extends UIElement
 
     public function __construct()
     {
+        parent::__construct('div');
         $this->addStyle('relative', ['position' => 'relative']);
     }
 

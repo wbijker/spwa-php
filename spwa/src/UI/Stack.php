@@ -16,13 +16,14 @@ use Spwa\VNode\VNode;
  *           Stack::position(UI::text("Bottom-right"))->bottom(Unit::px(10))->right(Unit::px(10)),
  *       )
  */
-class Stack extends UIElement
+class Stack extends UIElementContent
 {
     /** @var Position[] */
     protected array $children = [];
 
     public function __construct()
     {
+        parent::__construct('div');
         $this->addStyle('relative', ['position' => 'relative']);
     }
 
@@ -37,7 +38,7 @@ class Stack extends UIElement
     /**
      * Add positioned children to the stack.
      */
-    public function content(DomNode|VNode|string ...$children): static
+    public function content(DomNode|VNode|string|null ...$children): static
     {
         foreach ($children as $child) {
             if ($child instanceof Position) {

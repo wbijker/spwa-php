@@ -7,6 +7,11 @@ namespace Spwa\UI;
  */
 class Canvas extends UIElement
 {
+    public function __construct()
+    {
+        parent::__construct('canvas');
+    }
+
     protected ?int $canvasWidth = null;
     protected ?int $canvasHeight = null;
 

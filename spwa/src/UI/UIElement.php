@@ -30,9 +30,6 @@ class UIElement extends Node
     /** @var TagDomNode */
     protected DomNode $domNode;
 
-    /** @var (DomNode|VNode|string)[] Children to be rendered */
-    protected array $children = [];
-
     /** @var Component|null The component that owns this element's events */
     protected ?Component $eventOwner = null;
 
@@ -41,37 +38,18 @@ class UIElement extends Node
         parent::__construct(new TagDomNode($tag));
     }
 
-    /**
-     * Get the domNode, initializing lazily if the constructor was skipped.
-     */
     protected function dom(): TagDomNode
     {
-        if (!isset($this->domNode)) {
-            $this->domNode = new TagDomNode('div');
-        }
         return $this->domNode;
     }
 
     /**
      * Build the DomNode for this element (without VNode lifecycle).
      * Subclasses override to provide custom DOM building.
-     * Base implementation builds from domNode and children.
      */
     public function build(): DomNode
     {
-        $domChildren = [];
-        foreach ($this->children as $child) {
-            if ($child instanceof UIElement) {
-                $domChildren[] = $child->build();
-            } elseif ($child instanceof DomNode) {
-                $domChildren[] = $child;
-            } elseif (is_string($child)) {
-                $domChildren[] = $child;
-            }
-        }
-
-        $this->dom()->content(...$domChildren);
-        return $this->domNode;
+        return $this->dom();
     }
 
     /**
@@ -83,37 +61,14 @@ class UIElement extends Node
     public function render(StateManager $state, ?VNode $parent = null, RenderPhase $phase = RenderPhase::Initial): DomNode
     {
         $this->parent = $parent;
-        // Only set path from parent if not already set (e.g., by setPath)
         if (empty($this->path)) {
             $this->path = $parent?->getPath() ?? [];
         }
 
-        // Find the owning Component by traversing up the parent chain
         $this->eventOwner = $this->findOwningComponent($parent);
-
-        // Set the event owner on the DOM node for all registered events
         if ($this->eventOwner !== null) {
             $this->dom()->setEventOwner($this->eventOwner);
         }
-
-        // Render VNode children now that we have StateManager
-        // Track child index for proper path assignment
-        $domChildren = [];
-        $index = 0;
-        foreach ($this->children as $child) {
-            if ($child instanceof VNode) {
-                // Set the child's path before rendering
-                $child->setPath([...$this->path, $index]);
-                $domChildren[] = $child->render($state, $this, $phase);
-            } elseif ($child instanceof DomNode) {
-                $domChildren[] = $child;
-            } elseif (is_string($child)) {
-                $domChildren[] = $child;
-            }
-            $index++;
-        }
-
-        $this->dom()->content(...$domChildren);
 
         return $this->dom()->assignPaths($this->path);
     }
@@ -121,7 +76,7 @@ class UIElement extends Node
     /**
      * Find the nearest Component ancestor.
      */
-    private function findOwningComponent(?VNode $node): ?Component
+    protected function findOwningComponent(?VNode $node): ?Component
     {
         while ($node !== null) {
             if ($node instanceof Component) {
@@ -365,14 +320,6 @@ class UIElement extends Node
     public function onError(callable $callback): static { return $this->on('error', $callback); }
     /** @param callable(ResizeEvent): void $callback */
     public function onResize(callable $callback): static { return $this->on('resize', $callback); }
-
-    public function content(DomNode|VNode|string|null ...$children): static
-    {
-        foreach ($children as $child) {
-            $this->children[] = $child ?? new CommentDomNode();
-        }
-        return $this;
-    }
 
     // ============================================================
     // Background

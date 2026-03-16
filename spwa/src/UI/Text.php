@@ -11,7 +11,7 @@ namespace Spwa\UI;
  *       ->weight(FontWeight::Bold)
  *       ->color(Color::blue(600))
  */
-class Text extends UIElement
+class Text extends UIElementContent
 {
     private string $tag = '';
 

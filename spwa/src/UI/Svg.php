@@ -16,6 +16,11 @@ namespace Spwa\UI;
 class Svg extends UIElement
 {
     protected ?string $viewBoxValue = null;
+
+    public function __construct()
+    {
+        parent::__construct('svg');
+    }
     protected ?string $widthAttr = null;
     protected ?string $heightAttr = null;
     protected ?string $fill = null;

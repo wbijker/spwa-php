@@ -9,6 +9,11 @@ use Spwa\VNode\VNode;
  */
 class Output extends UIElement
 {
+    public function __construct()
+    {
+        parent::__construct('output');
+    }
+
     protected ?string $name = null;
     protected ?string $for = null;
     protected DomNode|VNode|string|null $content = null;
@@ -25,7 +30,7 @@ class Output extends UIElement
         return $this;
     }
 
-    public function content(DomNode|VNode|string ...$children): static
+    public function content(DomNode|VNode|string|null ...$children): static
     {
         $this->content = $children[0] ?? null;
         return $this;

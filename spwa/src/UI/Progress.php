@@ -7,6 +7,11 @@ namespace Spwa\UI;
  */
 class Progress extends UIElement
 {
+    public function __construct()
+    {
+        parent::__construct('progress');
+    }
+
     protected ?float $value = null;
     protected ?float $max = null;
 
