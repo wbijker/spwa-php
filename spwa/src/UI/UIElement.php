@@ -366,9 +366,11 @@ class UIElement extends Node
     /** @param callable(ResizeEvent): void $callback */
     public function onResize(callable $callback): static { return $this->on('resize', $callback); }
 
-    public function content(DomNode|VNode|string ...$children): static
+    public function content(DomNode|VNode|string|null ...$children): static
     {
-        $this->children = array_merge($this->children, $children);
+        foreach ($children as $child) {
+            $this->children[] = $child ?? new CommentDomNode();
+        }
         return $this;
     }
 
