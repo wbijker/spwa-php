@@ -666,7 +666,7 @@ class CssStyle
      */
     private static function escapeClassName(string $class): string
     {
-        return preg_replace('/([.:[\]\/])/', '\\\\$1', $class);
+        return preg_replace('/([.:[\]\/()>,+~])/', '\\\\$1', $class);
     }
 
     /**

@@ -32,6 +32,29 @@ class Grid extends UIElementContent
     }
 
     /**
+     * Set columns using GridColumns with full modifier support (breakpoints, :has(), etc.).
+     *
+     * Usage:
+     *   ->cols(
+     *       GridColumns::count(1),
+     *       GridColumns::count(2)->sm(),
+     *       GridColumns::count(4)->lg()->has(
+     *           Selector::child()->lastChild()->nthChild('4n-1')->not(':nth-child(3n)')
+     *       ),
+     *   )
+     */
+    public function cols(GridColumns ...$values): static
+    {
+        foreach ($values as $value) {
+            $this->addStyle(
+                $value->toClass(),
+                ['grid-template-columns' => 'repeat(' . $value->getCount() . ', minmax(0, 1fr))']
+            );
+        }
+        return $this;
+    }
+
+    /**
      * Set gap between items.
      */
     public function gap(Unit ...$values): static

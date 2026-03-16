@@ -244,13 +244,13 @@ class StyleGenerator
     }
 
     /**
-     * Parse class name to extract breakpoint, color scheme, and pseudos.
+     * Parse class name to extract breakpoint, color scheme, pseudos, and relational selectors.
      *
      * @return array{mediaQuery: ?string, pseudoSelector: string, baseClass: string}
      */
     private function parseClassName(string $className): array
     {
-        $parts = explode(':', $className);
+        $parts = $this->splitClassParts($className);
         $baseClass = array_pop($parts);
 
         $mediaConditions = [];
@@ -263,6 +263,15 @@ class StyleGenerator
                 $mediaConditions[] = self::COLOR_SCHEMES[$part];
             } elseif (isset(self::PSEUDOS[$part])) {
                 $pseudoSelector .= self::PSEUDOS[$part];
+            } elseif (str_starts_with($part, 'has-[') && str_ends_with($part, ']')) {
+                $inner = substr($part, 5, -1);
+                $pseudoSelector .= ':has(' . $inner . ')';
+            } elseif (str_starts_with($part, 'nth-[') && str_ends_with($part, ']')) {
+                $inner = substr($part, 5, -1);
+                $pseudoSelector .= ':nth-child(' . $inner . ')';
+            } elseif (str_starts_with($part, 'not-[') && str_ends_with($part, ']')) {
+                $inner = substr($part, 5, -1);
+                $pseudoSelector .= ':not(' . $inner . ')';
             }
         }
 
@@ -276,6 +285,35 @@ class StyleGenerator
             'pseudoSelector' => $pseudoSelector,
             'baseClass' => $baseClass,
         ];
+    }
+
+    /**
+     * Split class name on : while respecting [...] brackets.
+     *
+     * @return string[]
+     */
+    private function splitClassParts(string $className): array
+    {
+        $parts = [];
+        $current = '';
+        $depth = 0;
+        $len = strlen($className);
+
+        for ($i = 0; $i < $len; $i++) {
+            $char = $className[$i];
+            if ($char === '[') $depth++;
+            elseif ($char === ']') $depth--;
+
+            if ($char === ':' && $depth === 0) {
+                if ($current !== '') $parts[] = $current;
+                $current = '';
+            } else {
+                $current .= $char;
+            }
+        }
+        if ($current !== '') $parts[] = $current;
+
+        return $parts;
     }
 
     /**
@@ -384,7 +422,9 @@ class StyleGenerator
   var S = {$compressed};
 
   function parseClass(cls) {
-    var parts = cls.split(':');
+    var parts=[];var cur='';var depth=0;
+    for(var j=0;j<cls.length;j++){var c=cls[j];if(c==='[')depth++;if(c===']')depth--;if(c===':'&&depth===0){if(cur)parts.push(cur);cur='';}else cur+=c;}
+    if(cur)parts.push(cur);
     var base = parts.pop();
     var media = [];
     var pseudo = '';
@@ -393,6 +433,9 @@ class StyleGenerator
       if (B[p]) media.push(B[p]);
       else if (C[p]) media.push(C[p]);
       else if (X[p]) pseudo += X[p];
+      else if(p.indexOf('has-[')===0) pseudo+=':has('+p.slice(5,-1)+')';
+      else if(p.indexOf('nth-[')===0) pseudo+=':nth-child('+p.slice(5,-1)+')';
+      else if(p.indexOf('not-[')===0) pseudo+=':not('+p.slice(5,-1)+')';
     }
     return {
       media: media.length ? '@media ' + media.join(' and ') : null,
@@ -406,7 +449,7 @@ class StyleGenerator
     var mediaMap = {};
     for (var cls in styles) {
       var parsed = parseClass(cls);
-      var selector = '.' + cls.replace(/([.:\[\]\/])/g, '\\\\$1') + parsed.pseudo;
+      var selector = '.' + cls.replace(/([.:\[\]\/()>,+~])/g, '\\\\$1') + parsed.pseudo;
       var props = styles[cls];
       var rules = [];
       for (var p in props) {
@@ -468,8 +511,8 @@ JS;
      */
     private function escapeClassName(string $class): string
     {
-        // Escape special CSS characters: . : [ ] /
-        return preg_replace('/([.:\[\]\/])/', '\\\\$1', $class);
+        // Escape special CSS characters: . : [ ] / ( ) > , + ~
+        return preg_replace('/([.:\[\]\/()>,+~])/', '\\\\$1', $class);
     }
 
     /**

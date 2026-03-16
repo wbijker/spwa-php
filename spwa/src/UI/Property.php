@@ -16,6 +16,9 @@ abstract class Property
     protected ?ColorScheme $colorScheme = null;
     /** @var Pseudo[] */
     protected array $pseudos = [];
+    protected ?string $hasSelector = null;
+    /** @var array<array{prefix: string, css: string}> */
+    protected array $customSelectors = [];
 
     /**
      * Create a modified clone.
@@ -178,6 +181,51 @@ abstract class Property
     }
 
     // ============================================================
+    // Relational & Parameterized Selectors
+    // ============================================================
+
+    /**
+     * :has() selector — conditionally apply style based on children.
+     *
+     * Usage:
+     *   ->has(Selector::child()->lastChild()->nthChild('4n-1'))
+     */
+    public function has(Selector $selector): static
+    {
+        return $this->derive(fn($p) => $p->hasSelector = $selector->toSelector());
+    }
+
+    /**
+     * :nth-child() selector with arbitrary expression.
+     *
+     * Usage:
+     *   ->nthChild('4n-1')
+     *   ->nthChild('3n')
+     */
+    public function nthChild(string $expr): static
+    {
+        return $this->derive(fn($p) => $p->customSelectors[] = [
+            'prefix' => 'nth-[' . $expr . ']',
+            'css' => ':nth-child(' . $expr . ')',
+        ]);
+    }
+
+    /**
+     * :not() selector — exclude matching elements.
+     *
+     * Usage:
+     *   ->not(Selector::nthChild('3n'))
+     */
+    public function not(Selector $selector): static
+    {
+        $s = $selector->toSelector();
+        return $this->derive(fn($p) => $p->customSelectors[] = [
+            'prefix' => 'not-[' . $s . ']',
+            'css' => ':not(' . $s . ')',
+        ]);
+    }
+
+    // ============================================================
     // Class Generation
     // ============================================================
 
@@ -194,6 +242,14 @@ abstract class Property
 
         if ($this->colorScheme !== null) {
             $parts[] = $this->colorScheme->value;
+        }
+
+        if ($this->hasSelector !== null) {
+            $parts[] = 'has-[' . $this->hasSelector . ']';
+        }
+
+        foreach ($this->customSelectors as $sel) {
+            $parts[] = $sel['prefix'];
         }
 
         foreach ($this->pseudos as $pseudo) {
@@ -232,6 +288,14 @@ abstract class Property
     public function getCssSelector(string $className): string
     {
         $selector = '.' . self::escapeClassName($className);
+
+        if ($this->hasSelector !== null) {
+            $selector .= ':has(' . $this->hasSelector . ')';
+        }
+
+        foreach ($this->customSelectors as $sel) {
+            $selector .= $sel['css'];
+        }
 
         foreach ($this->pseudos as $pseudo) {
             $selector .= self::getPseudoSelector($pseudo);
@@ -306,6 +370,8 @@ abstract class Property
     {
         return $this->breakpoint !== null
             || $this->colorScheme !== null
+            || $this->hasSelector !== null
+            || !empty($this->customSelectors)
             || !empty($this->pseudos);
     }
 
@@ -339,6 +405,6 @@ abstract class Property
      */
     public static function escapeClassName(string $class): string
     {
-        return preg_replace('/([.:\[\]\/])/', '\\\\$1', $class);
+        return preg_replace('/([.:\[\]\/()>,+~])/', '\\\\$1', $class);
     }
 }
