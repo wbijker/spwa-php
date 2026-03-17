@@ -128,10 +128,13 @@ abstract class Component extends VNode
     }
 
     /**
-     * Called before build() to determine if rendering should proceed.
+     * Compare this component instance against the old instance from the previous render.
      * Return false to skip rendering and return a NoOpDomNode.
+     * Override to implement custom comparison logic (e.g. comparing state).
+     *
+     * @param static $old The old component instance (same class, same path)
      */
-    protected function shouldRender(): bool
+    protected function compare(self $old): bool
     {
         return true;
     }
@@ -222,9 +225,12 @@ abstract class Component extends VNode
             $this->updated();
         }
 
-        // Lifecycle: shouldRender (only in Patch phase)
-        if ($phase === RenderPhase::Patch && !$this->shouldRender()) {
-            return new NoOpDomNode();
+        // Lifecycle: compare against old instance (only in Patch phase)
+        if ($phase === RenderPhase::Patch) {
+            $oldInstance = self::$oldRegistry[$pathKey] ?? null;
+            if ($oldInstance !== null && !$this->compare($oldInstance)) {
+                return new NoOpDomNode();
+            }
         }
 
         $child = $this->build();
