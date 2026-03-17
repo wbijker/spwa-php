@@ -58,6 +58,12 @@ class CookieStateManager extends StateManager
         $this->saveToCookie();
     }
 
+    public function removeState(string $path): void
+    {
+        unset($this->state[$path]);
+        $this->saveToCookie();
+    }
+
     public function getAll(): array
     {
         return $this->state;

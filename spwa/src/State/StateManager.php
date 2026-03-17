@@ -19,6 +19,12 @@ abstract class StateManager
     abstract public function saveState(string $path, array $state): void;
 
     /**
+     * Remove state for a given path.
+     * @param string $path
+     */
+    abstract public function removeState(string $path): void;
+
+    /**
      * Get all state.
      * @return array<string, array>
      */

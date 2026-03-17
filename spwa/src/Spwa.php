@@ -124,13 +124,19 @@ class Spwa
         (new DebugPanel($ui, $states))->emit();
         $debugJs = self::callsToJs(JsRuntime::drain());
 
+        // Collect custom CSS/JS registered by components
+        $customCss = implode("\n", $entry->getCustomCss());
+        $customJs = implode("\n", $entry->getCustomJs());
+
         $head = (new TagDomNode('head'))
             ->content(
                 (new TagDomNode('meta'))->attr('charset', 'UTF-8'),
                 (new TagDomNode('meta'))->attr('name', 'viewport')->attr('content', 'width=device-width, initial-scale=1.0'),
                 (new TagDomNode('title'))->rawContent(htmlspecialchars($entry->title())),
                 (new TagDomNode('style'))->attr('id', 'spwa-styles')->rawContent($generator->toStyle()),
+                (new TagDomNode('style'))->attr('id', 'spwa-custom-styles')->rawContent($customCss),
                 (new TagDomNode('script'))->attr('src', 'spwa.js')->rawContent(''),
+                (new TagDomNode('script'))->rawContent($customJs),
             );
 
         if ($stateJs !== null) {

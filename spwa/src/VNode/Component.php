@@ -20,6 +20,12 @@ abstract class Component extends VNode
     /** @var StateManager|null Per-component state manager override */
     private ?StateManager $stateManager = null;
 
+    /** @var StateManager|null The resolved state manager used during render */
+    private ?StateManager $resolvedManager = null;
+
+    /** @var bool Whether any state variable is bound to the component lifecycle */
+    private bool $hasBoundState = false;
+
     /** @var bool Whether initialize() has been called */
     protected bool $initialized = false;
 
@@ -32,13 +38,19 @@ abstract class Component extends VNode
     /** @var array<string, Component> Components rendered during the Patch (new) phase, keyed by state key */
     private static array $newRegistry = [];
 
+    /** @var App|null The current App instance, set during render */
+    private static ?App $currentApp = null;
+
     /**
      * Register a variable as state. Call in initialize().
      */
-    protected function useState(mixed &$ref, ?StateManager $stateManager = null): void
+    protected function useState(mixed &$ref, ?StateManager $stateManager = null, State $lifecycle = State::Bound): void
     {
         if ($stateManager !== null) {
             $this->stateManager = $stateManager;
+        }
+        if ($lifecycle === State::Bound) {
+            $this->hasBoundState = true;
         }
         $this->stateRefs[] = &$ref;
     }
@@ -128,6 +140,14 @@ abstract class Component extends VNode
     }
 
     /**
+     * Called during render to allow components to register custom JS/CSS with the App.
+     * Override to call $app->addJs() or $app->addCss().
+     */
+    protected function register(App $app): void
+    {
+    }
+
+    /**
      * Compare this component instance against the old instance from the previous render.
      * Return false to skip rendering and return a NoOpDomNode.
      * Override to implement custom comparison logic (e.g. comparing state).
@@ -193,6 +213,7 @@ abstract class Component extends VNode
 
         // Restore state (use per-component override if set)
         $resolved = $this->resolveStateManager($state);
+        $this->resolvedManager = $resolved;
         $pathKey = $this->getStateKey();
         $savedState = $resolved->getState($pathKey);
         $isNew = empty($savedState);
@@ -213,6 +234,16 @@ abstract class Component extends VNode
             if ($globalState !== null) {
                 $ref = $globalState;
             }
+        }
+
+        // Track current App instance for register() calls
+        if ($this instanceof App) {
+            self::$currentApp = $this;
+        }
+
+        // Lifecycle: register (allow components to inject JS/CSS)
+        if (self::$currentApp !== null) {
+            $this->register(self::$currentApp);
         }
 
         // Lifecycle: restored
@@ -255,8 +286,13 @@ abstract class Component extends VNode
     public static function processDeleted(): void
     {
         $deletedKeys = array_diff_key(self::$oldRegistry, self::$newRegistry);
-        foreach ($deletedKeys as $component) {
+        foreach ($deletedKeys as $key => $component) {
             $component->deleted();
+
+            // Remove bound state from storage
+            if ($component->hasBoundState && $component->resolvedManager !== null) {
+                $component->resolvedManager->removeState($key);
+            }
         }
         self::$oldRegistry = [];
         self::$newRegistry = [];
