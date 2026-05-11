@@ -25,6 +25,12 @@ abstract class StateManager
     abstract public function removeState(string $path): void;
 
     /**
+     * Drop all stored state. Used to recover from shape mismatches when
+     * restoring serialized state into incompatible code.
+     */
+    abstract public function clearAll(): void;
+
+    /**
      * Get all state.
      * @return array<string, array>
      */

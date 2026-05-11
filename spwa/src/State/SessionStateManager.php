@@ -36,6 +36,11 @@ class SessionStateManager extends StateManager
         unset($_SESSION[self::SESSION_KEY][$path]);
     }
 
+    public function clearAll(): void
+    {
+        $_SESSION[self::SESSION_KEY] = [];
+    }
+
     public function getAll(): array
     {
         return $_SESSION[self::SESSION_KEY];

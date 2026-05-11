@@ -42,6 +42,11 @@ class ClientStateManager extends StateManager
         unset($this->state[$path]);
     }
 
+    public function clearAll(): void
+    {
+        $this->state = [];
+    }
+
     public function getAll(): array
     {
         return $this->state;

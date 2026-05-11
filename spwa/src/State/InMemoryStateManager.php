@@ -35,6 +35,11 @@ class InMemoryStateManager extends StateManager
         unset($this->states[$path]);
     }
 
+    public function clearAll(): void
+    {
+        $this->states = [];
+    }
+
     /**
      * Get all state.
      * @return array<string, array>

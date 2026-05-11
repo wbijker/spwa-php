@@ -12,11 +12,12 @@ use Spwa\UI\UI;
 use Spwa\UI\UIElement;
 use Spwa\UI\Unit;
 use Spwa\VNode\App;
+use Spwa\VNode\State;
 use Spwa\VNode\VNode;
 
 class TodoApp extends App
 {
-    /** @var array<int, array{id: int, text: string, completed: bool}> */
+    /** @var Todo[] */
     private array $todos = [];
     private int $nextId = 1;
     private string $filter = 'all';
@@ -45,7 +46,7 @@ class TodoApp extends App
 //        return new SiteApp();
 
         $filtered = $this->getFilteredTodos();
-        $activeCount = count(array_filter($this->todos, fn($t) => !$t['completed']));
+        $activeCount = count(array_filter($this->todos, fn(Todo $t) => !$t->completed));
         $completedCount = count($this->todos) - $activeCount;
         $allCompleted = count($this->todos) > 0 && $activeCount === 0;
 
@@ -101,9 +102,9 @@ class TodoApp extends App
                 ->fontSize(FontSize::Large)
                 ->color($allCompleted ? Color::hex('#484848') : Color::hex('#e6e6e6'))
                 ->on('click', function () {
-                    $allActive = count(array_filter($this->todos, fn($t) => !$t['completed'])) > 0;
-                    foreach ($this->todos as &$todo) {
-                        $todo['completed'] = $allActive;
+                    $allActive = count(array_filter($this->todos, fn(Todo $t) => !$t->completed)) > 0;
+                    foreach ($this->todos as $todo) {
+                        $todo->completed = $allActive;
                     }
                 })
                 ->content('❯');
@@ -122,13 +123,10 @@ class TodoApp extends App
             ->weight(FontWeight::Light)
             ->color(Color::hex('#111'))
             ->on('change', function () {
+                echo "We are about to add a new todo with text: " . $this->inputText . "\n";
                 $text = trim($this->inputText);
                 if ($text !== '') {
-                    $this->todos[] = [
-                        'id' => $this->nextId++,
-                        'text' => $text,
-                        'completed' => false,
-                    ];
+                    $this->todos[] = new Todo($this->nextId++, $text, false);
                     $this->inputText = '';
                 }
             });
@@ -139,18 +137,21 @@ class TodoApp extends App
             ->content(...$children);
     }
 
+    /**
+     * @param Todo[] $todos
+     */
     private function buildList(array $todos): UIElement
     {
         $items = [];
         foreach ($todos as $todo) {
             $items[] = new TodoItem(
-                id: $todo['id'],
-                text: $todo['text'],
-                completed: $todo['completed'],
+                id: $todo->id,
+                text: $todo->text,
+                completed: $todo->completed,
                 onToggle: function (int $id) {
-                    foreach ($this->todos as &$t) {
-                        if ($t['id'] === $id) {
-                            $t['completed'] = !$t['completed'];
+                    foreach ($this->todos as $t) {
+                        if ($t->id === $id) {
+                            $t->completed = !$t->completed;
                             break;
                         }
                     }
@@ -158,7 +159,7 @@ class TodoApp extends App
                 onDestroy: function (int $id) {
                     $this->todos = array_values(array_filter(
                         $this->todos,
-                        fn($t) => $t['id'] !== $id
+                        fn(Todo $t) => $t->id !== $id
                     ));
                 },
             );
@@ -204,7 +205,7 @@ class TodoApp extends App
                         ->on('click', function () {
                             $this->todos = array_values(array_filter(
                                 $this->todos,
-                                fn($t) => !$t['completed']
+                                fn(Todo $t) => !$t->completed
                             ));
                         })
                     : UI::span()->minWidth(Unit::rem(8))
@@ -238,13 +239,13 @@ class TodoApp extends App
     }
 
     /**
-     * @return array<int, array{id: int, text: string, completed: bool}>
+     * @return Todo[]
      */
     private function getFilteredTodos(): array
     {
         return match ($this->filter) {
-            'active' => array_values(array_filter($this->todos, fn($t) => !$t['completed'])),
-            'completed' => array_values(array_filter($this->todos, fn($t) => $t['completed'])),
+            'active' => array_values(array_filter($this->todos, fn(Todo $t) => !$t->completed)),
+            'completed' => array_values(array_filter($this->todos, fn(Todo $t) => $t->completed)),
             default => $this->todos,
         };
     }

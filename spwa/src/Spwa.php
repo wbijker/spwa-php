@@ -27,6 +27,18 @@ class Spwa
     }
 
     /**
+     * Drop every state manager's stored state. Used to recover from a
+     * shape mismatch between serialized state and the current code.
+     * @param StateManager[] $states
+     */
+    private static function clearAllStates(array $states): void
+    {
+        foreach ($states as $state) {
+            $state->clearAll();
+        }
+    }
+
+    /**
      * @param StateManager[] $states
      */
     private static function handlePost(App $entry, StateManager $primaryState, array $states): void
@@ -47,25 +59,34 @@ class Spwa
         $value = $payload['value'] ?? null;
         $bindings = $payload['bindings'] ?? [];
 
-        // Render the old tree, execute event, save state
-        $oldApp = new ($entry::class)();
-        $oldUi = $oldApp->render($primaryState, null, RenderPhase::Initial);
+        // Render the old tree, execute event, save state. If the render or
+        // event handler crashes because serialized state no longer matches
+        // the current code's shape, clear all state and tell the client to
+        // reload — the fresh page will start from defaults.
+        try {
+            $oldApp = new ($entry::class)();
+            $oldUi = $oldApp->render($primaryState, null, RenderPhase::Initial);
 
-        // Hydrate bound input values from the frontend
-        if (!empty($bindings) && $oldUi instanceof TagDomNode) {
-            $oldUi->hydrateBindings($bindings);
+            if (!empty($bindings) && $oldUi instanceof TagDomNode) {
+                $oldUi->hydrateBindings($bindings);
+            }
+
+            $node = $oldUi->findByPath($path);
+            if ($node !== null) {
+                $node->executeEvent($event, $primaryState, $value);
+            }
+
+            $oldApp->finalize($primaryState);
+
+            $newApp = new ($entry::class)();
+            $newUi = $newApp->render($primaryState, null, RenderPhase::Patch);
+        } catch (\Throwable $e) {
+            self::clearAllStates($states);
+            ob_end_clean();
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'reload' => true]);
+            exit;
         }
-
-        $node = $oldUi->findByPath($path);
-        if ($node !== null) {
-            $node->executeEvent($event, $primaryState, $value);
-        }
-
-        $oldApp->finalize($primaryState);
-
-        // Render the new tree with updated state
-        $newApp = new ($entry::class)();
-        $newUi = $newApp->render($primaryState, null, RenderPhase::Patch);
 
         // Lifecycle: deleted (old tree components not in new tree)
         Component::processDeleted();
@@ -114,8 +135,17 @@ class Spwa
      */
     private static function handleGet(App $entry, StateManager $primaryState, array $states): void
     {
-        $ui = $entry->render($primaryState, null, RenderPhase::Initial);
-        $entry->finalize($primaryState);
+        // If restoring serialized state crashes the render, drop all state
+        // and retry from defaults. A second failure is propagated.
+        try {
+            $ui = $entry->render($primaryState, null, RenderPhase::Initial);
+            $entry->finalize($primaryState);
+        } catch (\Throwable $e) {
+            self::clearAllStates($states);
+            $entry = new ($entry::class)();
+            $ui = $entry->render($primaryState, null, RenderPhase::Initial);
+            $entry->finalize($primaryState);
+        }
 
         $generator = StyleGenerator::from($ui->collectStyles());
         $stateJs = self::getClientJs($states);

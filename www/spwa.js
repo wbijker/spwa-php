@@ -345,6 +345,13 @@ function callback(error, data) {
         return;
     }
 
+    // Server signaled it cleared its state (shape mismatch); reload the page
+    // so we start from a fresh server render.
+    if (data && data.reload) {
+        window.location.reload();
+        return;
+    }
+
     // Save state if client state management is enabled
     if (data.state) {
         SPWA.setAll(data.state);
