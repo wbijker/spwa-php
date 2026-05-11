@@ -339,7 +339,9 @@ class UIElement extends Node
 
     public function background(Color ...$colors): static
     {
-        $this->dom()->background(...$colors);
+        foreach ($colors as $color) {
+            $this->addStyle($color->withContext('bg'), ['background-color' => $color->getValue()]);
+        }
         return $this;
     }
 
@@ -349,7 +351,9 @@ class UIElement extends Node
 
     public function color(Color ...$colors): static
     {
-        $this->dom()->color(...$colors);
+        foreach ($colors as $color) {
+            $this->addStyle($color->withContext('text'), ['color' => $color->getValue()]);
+        }
         return $this;
     }
 
@@ -359,49 +363,52 @@ class UIElement extends Node
 
     public function bordered(int $width = 1): static
     {
-        $this->dom()->bordered($width);
+        $class = $width === 1 ? 'border' : 'border-' . $width;
+        $this->addStyle($class, ['border-width' => $width . 'px', 'border-style' => 'solid']);
         return $this;
     }
 
     public function borderColor(Color ...$colors): static
     {
-        $this->dom()->borderColor(...$colors);
+        foreach ($colors as $color) {
+            $this->addStyle($color->withContext('border'), ['border-color' => $color->getValue()]);
+        }
         return $this;
     }
 
     public function dashed(): static
     {
-        $this->dom()->dashed();
+        $this->addStyle('border-dashed', ['border-style' => 'dashed']);
         return $this;
     }
 
     public function dotted(): static
     {
-        $this->dom()->dotted();
+        $this->addStyle('border-dotted', ['border-style' => 'dotted']);
         return $this;
     }
 
     public function borderTop(int $width = 1): static
     {
-        $this->dom()->borderTop($width);
+        $this->addStyle('border-t-' . $width, ['border-top-width' => $width . 'px', 'border-top-style' => 'solid']);
         return $this;
     }
 
     public function borderBottom(int $width = 1): static
     {
-        $this->dom()->borderBottom($width);
+        $this->addStyle('border-b-' . $width, ['border-bottom-width' => $width . 'px', 'border-bottom-style' => 'solid']);
         return $this;
     }
 
     public function borderNone(): static
     {
-        $this->dom()->borderNone();
+        $this->addStyle('border-none', ['border' => 'none']);
         return $this;
     }
 
     public function outlineNone(): static
     {
-        $this->dom()->outlineNone();
+        $this->addStyle('outline-none', ['outline' => 'none']);
         return $this;
     }
 
@@ -411,67 +418,85 @@ class UIElement extends Node
 
     public function width(Unit ...$values): static
     {
-        $this->dom()->width(...$values);
+        foreach ($values as $value) {
+            $this->addStyle($value->withContext('w'), ['width' => $value->getCssValue()]);
+        }
         return $this;
     }
 
     public function height(Unit ...$values): static
     {
-        $this->dom()->height(...$values);
+        foreach ($values as $value) {
+            $this->addStyle($value->withContext('h'), ['height' => $value->getCssValue()]);
+        }
         return $this;
     }
 
     public function size(Unit ...$values): static
     {
-        $this->dom()->size(...$values);
+        foreach ($values as $value) {
+            $css = $value->getCssValue();
+            $this->addStyle($value->withContext('w'), ['width' => $css]);
+            $this->addStyle($value->withContext('h'), ['height' => $css]);
+        }
         return $this;
     }
 
     public function minWidth(Unit ...$values): static
     {
-        $this->dom()->minWidth(...$values);
+        foreach ($values as $value) {
+            $this->addStyle($value->withContext('min-w'), ['min-width' => $value->getCssValue()]);
+        }
         return $this;
     }
 
     public function maxWidth(Unit ...$values): static
     {
-        $this->dom()->maxWidth(...$values);
+        foreach ($values as $value) {
+            $this->addStyle($value->withContext('max-w'), ['max-width' => $value->getCssValue()]);
+        }
         return $this;
     }
 
     public function minHeight(Unit ...$values): static
     {
-        $this->dom()->minHeight(...$values);
+        foreach ($values as $value) {
+            $this->addStyle($value->withContext('min-h'), ['min-height' => $value->getCssValue()]);
+        }
         return $this;
     }
 
     public function maxHeight(Unit ...$values): static
     {
-        $this->dom()->maxHeight(...$values);
+        foreach ($values as $value) {
+            $this->addStyle($value->withContext('max-h'), ['max-height' => $value->getCssValue()]);
+        }
         return $this;
     }
 
     public function extend(): static
     {
-        $this->dom()->extend();
+        $this->addStyle('w-full', ['width' => '100%']);
+        $this->addStyle('h-full', ['height' => '100%']);
         return $this;
     }
 
     public function extendHorizontal(): static
     {
-        $this->dom()->extendHorizontal();
+        $this->addStyle('w-full', ['width' => '100%']);
         return $this;
     }
 
     public function extendVertical(): static
     {
-        $this->dom()->extendVertical();
+        $this->addStyle('h-full', ['height' => '100%']);
         return $this;
     }
 
     public function shrink(): static
     {
-        $this->dom()->shrink();
+        $this->addStyle('w-fit', ['width' => 'fit-content']);
+        $this->addStyle('h-fit', ['height' => 'fit-content']);
         return $this;
     }
 
@@ -481,43 +506,61 @@ class UIElement extends Node
 
     public function padding(Unit ...$values): static
     {
-        $this->dom()->padding(...$values);
+        foreach ($values as $value) {
+            $this->addStyle($value->withContext('p'), ['padding' => $value->getCssValue()]);
+        }
         return $this;
     }
 
     public function paddingHorizontal(Unit ...$values): static
     {
-        $this->dom()->paddingHorizontal(...$values);
+        foreach ($values as $value) {
+            $css = $value->getCssValue();
+            $this->addStyle($value->withContext('px'), ['padding-left' => $css, 'padding-right' => $css]);
+        }
         return $this;
     }
 
     public function paddingVertical(Unit ...$values): static
     {
-        $this->dom()->paddingVertical(...$values);
+        foreach ($values as $value) {
+            $css = $value->getCssValue();
+            $this->addStyle($value->withContext('py'), ['padding-top' => $css, 'padding-bottom' => $css]);
+        }
         return $this;
     }
 
     public function paddingTop(Unit ...$values): static
     {
-        $this->dom()->paddingTop(...$values);
+        foreach ($values as $value) {
+            $this->addStyle($value->withContext('pt'), ['padding-top' => $value->getCssValue()]);
+        }
         return $this;
     }
 
     public function margin(Unit ...$values): static
     {
-        $this->dom()->margin(...$values);
+        foreach ($values as $value) {
+            $this->addStyle($value->withContext('m'), ['margin' => $value->getCssValue()]);
+        }
         return $this;
     }
 
     public function marginHorizontal(Unit ...$values): static
     {
-        $this->dom()->marginHorizontal(...$values);
+        foreach ($values as $value) {
+            $css = $value->getCssValue();
+            $this->addStyle($value->withContext('mx'), ['margin-left' => $css, 'margin-right' => $css]);
+        }
         return $this;
     }
 
     public function marginVertical(Unit ...$values): static
     {
-        $this->dom()->marginVertical(...$values);
+        foreach ($values as $value) {
+            $css = $value->getCssValue();
+            $this->addStyle($value->withContext('my'), ['margin-top' => $css, 'margin-bottom' => $css]);
+        }
         return $this;
     }
 
@@ -527,13 +570,19 @@ class UIElement extends Node
 
     public function rounded(Unit ...$values): static
     {
-        $this->dom()->rounded(...$values);
+        if (empty($values)) {
+            $this->addStyle('rounded', ['border-radius' => '0.25rem']);
+        } else {
+            foreach ($values as $value) {
+                $this->addStyle($value->withContext('rounded'), ['border-radius' => $value->getCssValue()]);
+            }
+        }
         return $this;
     }
 
     public function roundedFull(): static
     {
-        $this->dom()->roundedFull();
+        $this->addStyle('rounded-full', ['border-radius' => '9999px']);
         return $this;
     }
 
@@ -543,7 +592,7 @@ class UIElement extends Node
 
     public function shadow(Shadow $size = Shadow::Medium): static
     {
-        $this->dom()->shadow($size);
+        $this->addStyle($size->toClass(), ['box-shadow' => $size->getCssValue()]);
         return $this;
     }
 
@@ -553,7 +602,7 @@ class UIElement extends Node
 
     public function opacity(int $value): static
     {
-        $this->dom()->opacity($value);
+        $this->addStyle('opacity-' . $value, ['opacity' => (string)($value / 100)]);
         return $this;
     }
 
@@ -563,13 +612,13 @@ class UIElement extends Node
 
     public function hidden(): static
     {
-        $this->dom()->hidden();
+        $this->addStyle('hidden', ['display' => 'none']);
         return $this;
     }
 
     public function visible(): static
     {
-        $this->dom()->visible();
+        $this->addStyle('visible', ['visibility' => 'visible']);
         return $this;
     }
 
@@ -579,19 +628,18 @@ class UIElement extends Node
 
     public function clipContent(): static
     {
-        $this->dom()->clipContent();
+        $this->addStyle('overflow-hidden', ['overflow' => 'hidden']);
         return $this;
     }
 
     public function overflow(): static
     {
-        $this->dom()->overflow();
-        return $this;
+        return $this->clipContent();
     }
 
     public function scrollable(): static
     {
-        $this->dom()->scrollable();
+        $this->addStyle('overflow-auto', ['overflow' => 'auto']);
         return $this;
     }
 
@@ -601,13 +649,13 @@ class UIElement extends Node
 
     public function fontSize(FontSize $size): static
     {
-        $this->dom()->fontSize($size);
+        $this->addStyle($size->toClass(), ['font-size' => $size->getCssValue()]);
         return $this;
     }
 
     public function weight(FontWeight $weight): static
     {
-        $this->dom()->weight($weight);
+        $this->addStyle($weight->toClass(), ['font-weight' => $weight->getCssValue()]);
         return $this;
     }
 
@@ -617,20 +665,20 @@ class UIElement extends Node
 
     public function cursor(Cursor ...$cursors): static
     {
-        $this->dom()->cursor(...$cursors);
+        foreach ($cursors as $cursor) {
+            $this->addStyle($cursor->toClass(), ['cursor' => $cursor->getCssValue()]);
+        }
         return $this;
     }
 
     public function clickable(): static
     {
-        $this->dom()->clickable();
-        return $this;
+        return $this->cursor(Cursor::Pointer);
     }
 
     public function notAllowed(): static
     {
-        $this->dom()->notAllowed();
-        return $this;
+        return $this->cursor(Cursor::NotAllowed);
     }
 
     // ============================================================
@@ -639,7 +687,8 @@ class UIElement extends Node
 
     public function animated(int $durationMs = 200): static
     {
-        $this->dom()->animated($durationMs);
+        $this->addStyle('transition', ['transition-property' => 'all', 'transition-timing-function' => 'cubic-bezier(0.4, 0, 0.2, 1)']);
+        $this->addStyle('duration-' . $durationMs, ['transition-duration' => $durationMs . 'ms']);
         return $this;
     }
 
@@ -649,25 +698,25 @@ class UIElement extends Node
 
     public function rotate(int $degrees): static
     {
-        $this->dom()->rotate($degrees);
+        $this->addStyle('rotate-' . $degrees, ['transform' => 'rotate(' . $degrees . 'deg)']);
         return $this;
     }
 
     public function scale(int $percent): static
     {
-        $this->dom()->scale($percent);
+        $this->addStyle('scale-' . $percent, ['transform' => 'scale(' . ($percent / 100) . ')']);
         return $this;
     }
 
     public function flipHorizontal(): static
     {
-        $this->dom()->flipHorizontal();
+        $this->addStyle('-scale-x-100', ['transform' => 'scaleX(-1)']);
         return $this;
     }
 
     public function flipVertical(): static
     {
-        $this->dom()->flipVertical();
+        $this->addStyle('-scale-y-100', ['transform' => 'scaleY(-1)']);
         return $this;
     }
 
@@ -677,7 +726,7 @@ class UIElement extends Node
 
     public function layer(int $index): static
     {
-        $this->dom()->layer($index);
+        $this->addStyle('z-' . $index, ['z-index' => (string)$index]);
         return $this;
     }
 
@@ -687,13 +736,13 @@ class UIElement extends Node
 
     public function grow(int $factor = 1): static
     {
-        $this->dom()->grow($factor);
+        $this->addStyle('grow-' . $factor, ['flex-grow' => (string)$factor]);
         return $this;
     }
 
     public function noShrink(): static
     {
-        $this->dom()->noShrink();
+        $this->addStyle('shrink-0', ['flex-shrink' => '0']);
         return $this;
     }
 
@@ -703,37 +752,45 @@ class UIElement extends Node
 
     public function relative(): static
     {
-        $this->dom()->relative();
+        $this->addStyle('relative', ['position' => 'relative']);
         return $this;
     }
 
     public function absolute(): static
     {
-        $this->dom()->absolute();
+        $this->addStyle('absolute', ['position' => 'absolute']);
         return $this;
     }
 
     public function offsetTop(Unit ...$values): static
     {
-        $this->dom()->offsetTop(...$values);
+        foreach ($values as $value) {
+            $this->addStyle($value->withContext('top'), ['top' => $value->getCssValue()]);
+        }
         return $this;
     }
 
     public function offsetLeft(Unit ...$values): static
     {
-        $this->dom()->offsetLeft(...$values);
+        foreach ($values as $value) {
+            $this->addStyle($value->withContext('left'), ['left' => $value->getCssValue()]);
+        }
         return $this;
     }
 
     public function offsetRight(Unit ...$values): static
     {
-        $this->dom()->offsetRight(...$values);
+        foreach ($values as $value) {
+            $this->addStyle($value->withContext('right'), ['right' => $value->getCssValue()]);
+        }
         return $this;
     }
 
     public function offsetBottom(Unit ...$values): static
     {
-        $this->dom()->offsetBottom(...$values);
+        foreach ($values as $value) {
+            $this->addStyle($value->withContext('bottom'), ['bottom' => $value->getCssValue()]);
+        }
         return $this;
     }
 }
