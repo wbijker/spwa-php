@@ -12,7 +12,6 @@ use Spwa\UI\UI;
 use Spwa\UI\UIElement;
 use Spwa\UI\Unit;
 use Spwa\VNode\App;
-use Spwa\VNode\State;
 use Spwa\VNode\VNode;
 
 class TodoApp extends App
@@ -35,7 +34,7 @@ class TodoApp extends App
 
     protected function initialize(): void
     {
-        $this->useState($this->todos);
+        $this->useState($this->todos, class: Todo::class);
         $this->useState($this->nextId);
         $this->useState($this->filter);
         $this->useState($this->inputText);

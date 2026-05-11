@@ -2,6 +2,7 @@
 
 namespace Spwa\VNode;
 
+use Spwa\State\State;
 use Spwa\State\StateManager;
 use Spwa\UI\DomNode;
 use Spwa\UI\NoOpDomNode;
@@ -11,7 +12,7 @@ use Spwa\UI\NoOpDomNode;
  */
 abstract class Component extends VNode
 {
-    /** @var array<int, mixed> References to state variables */
+    /** @var StateRef[] Registered state refs and their per-ref metadata */
     private array $stateRefs = [];
 
     /** @var array<string, mixed> References to global state variables keyed by path key */
@@ -43,16 +44,26 @@ abstract class Component extends VNode
 
     /**
      * Register a variable as state. Call in initialize().
+     *
+     * @param class-string<State>|null $class Optional. Subclass of `Spwa\State\State`
+     *   to coerce restored values through `Class::deserialize()`. If `$ref` is an
+     *   array at registration time, each element is formatted; otherwise the
+     *   value itself is formatted.
      */
-    protected function useState(mixed &$ref, ?StateManager $stateManager = null, State $lifecycle = State::Bound): void
+    protected function useState(
+        mixed &$ref,
+        ?StateManager $stateManager = null,
+        StateLifecycle $lifecycle = StateLifecycle::Bound,
+        ?string $class = null,
+    ): void
     {
         if ($stateManager !== null) {
             $this->stateManager = $stateManager;
         }
-        if ($lifecycle === State::Bound) {
+        if ($lifecycle === StateLifecycle::Bound) {
             $this->hasBoundState = true;
         }
-        $this->stateRefs[] = &$ref;
+        $this->stateRefs[] = new StateRef($ref, $class, is_array($ref));
     }
 
     /**
@@ -171,8 +182,8 @@ abstract class Component extends VNode
     protected function getState(): array
     {
         $state = [];
-        foreach ($this->stateRefs as $ref) {
-            $state[] = $ref;
+        foreach ($this->stateRefs as $entry) {
+            $state[] = $entry->ref;
         }
         return $state;
     }
@@ -190,8 +201,21 @@ abstract class Component extends VNode
             return;
         }
 
-        for ($i = 0; $i < count($this->stateRefs); $i++) {
-            $this->stateRefs[$i] = $values[$i];
+        foreach ($this->stateRefs as $i => $entry) {
+            $value = $values[$i];
+
+            if ($entry->class !== null && is_subclass_of($entry->class, State::class)) {
+                $class = $entry->class;
+                if ($entry->isArray) {
+                    $value = is_array($value)
+                        ? array_map(fn($v) => $class::deserialize($v), $value)
+                        : [];
+                } else {
+                    $value = $value === null ? null : $class::deserialize($value);
+                }
+            }
+
+            $entry->ref = $value;
         }
     }
 

@@ -2,7 +2,7 @@
 
 namespace Spwa\VNode;
 
-enum State
+enum StateLifecycle
 {
     /** State is destroyed when the component is destroyed. */
     case Bound;
