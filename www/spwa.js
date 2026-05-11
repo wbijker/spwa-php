@@ -352,6 +352,13 @@ function callback(error, data) {
         return;
     }
 
+    // Refresh the state-fingerprint we echo back to the server on the next
+    // request. This is set on initial page render and updated after each
+    // successful event.
+    if (data && typeof data.hash === 'string') {
+        window.__SPWA_HASH = data.hash;
+    }
+
     // Save state if client state management is enabled
     if (data.state) {
         SPWA.setAll(data.state);
@@ -399,6 +406,12 @@ function post(data, headers) {
         data.bindings = bindings;
     }
 
+    // Echo back the state-fingerprint from the last render. The backend uses
+    // this to detect out-of-band state changes and force a reload.
+    if (typeof window.__SPWA_HASH === 'string') {
+        data.hash = window.__SPWA_HASH;
+    }
+
     // Include client state if state management is enabled
     if (SPWA.isStateEnabled()) {
         var clientState = SPWA.getAll();
@@ -425,6 +438,9 @@ function postMultipart(data, files) {
     var bindings = collectBindings();
     if (bindings) {
         data.bindings = bindings;
+    }
+    if (typeof window.__SPWA_HASH === 'string') {
+        data.hash = window.__SPWA_HASH;
     }
     if (SPWA.isStateEnabled()) {
         var clientState = SPWA.getAll();

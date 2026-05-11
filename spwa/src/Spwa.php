@@ -39,6 +39,22 @@ class Spwa
     }
 
     /**
+     * Fingerprint the combined contents of every state manager.
+     * Used as a cheap optimistic-concurrency token: the frontend echoes
+     * back the hash from page render, the backend re-hashes the stored
+     * state before processing an event, and a mismatch forces a reload.
+     * @param StateManager[] $states
+     */
+    private static function computeStateHash(array $states): string
+    {
+        $combined = [];
+        foreach ($states as $i => $state) {
+            $combined[$i] = $state->getAll();
+        }
+        return sha1(serialize($combined));
+    }
+
+    /**
      * @param StateManager[] $states
      */
     private static function handlePost(App $entry, StateManager $primaryState, array $states): void
@@ -58,6 +74,18 @@ class Spwa
         $path = array_map('intval', explode(',', $pathStr));
         $value = $payload['value'] ?? null;
         $bindings = $payload['bindings'] ?? [];
+        $expectedHash = $payload['hash'] ?? null;
+
+        // Optimistic concurrency: the frontend echoes the hash it was
+        // rendered against. If the backend's current state hashes differently
+        // (e.g. another tab mutated it, or a deploy reshaped it), the frontend
+        // is operating on a stale tree — bail out and force a reload.
+        if ($expectedHash !== null && $expectedHash !== self::computeStateHash($states)) {
+            ob_end_clean();
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'reload' => true]);
+            exit;
+        }
 
         // Render the old tree, execute event, save state. If the render or
         // event handler crashes because serialized state no longer matches
@@ -118,6 +146,7 @@ class Spwa
             'js' => JsRuntime::dump(),
             'patches' => $patcher->getOperations(),
             'styles' => $deltaGenerator->toRaw(),
+            'hash' => self::computeStateHash($states),
         ];
 
         $clientState = self::getClientState($states);
@@ -158,11 +187,14 @@ class Spwa
         $customCss = implode("\n", $entry->getCustomCss());
         $customJs = implode("\n", $entry->getCustomJs());
 
+        $stateHash = self::computeStateHash($states);
+
         $head = (new TagDomNode('head'))
             ->content(
                 (new TagDomNode('meta'))->attr('charset', 'UTF-8'),
                 (new TagDomNode('meta'))->attr('name', 'viewport')->attr('content', 'width=device-width, initial-scale=1.0'),
                 (new TagDomNode('title'))->rawContent(htmlspecialchars($entry->title())),
+                (new TagDomNode('script'))->rawContent('window.__SPWA_HASH=' . json_encode($stateHash) . ';'),
                 (new TagDomNode('style'))->attr('id', 'spwa-styles')->rawContent($generator->toStyle()),
                 (new TagDomNode('style'))->attr('id', 'spwa-custom-styles')->rawContent($customCss),
                 (new TagDomNode('script'))->attr('src', 'spwa.js')->rawContent(''),
