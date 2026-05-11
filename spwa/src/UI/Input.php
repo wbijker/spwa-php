@@ -286,10 +286,7 @@ class Input extends UIElement
         return $this->type('range');
     }
 
-    /**
-     * Render to HTML string.
-     */
-    public function toHtml(): string
+    protected function applyAttributes(): void
     {
         $this->attr('type', $this->inputType);
 
@@ -356,7 +353,5 @@ class Input extends UIElement
         if ($this->isChecked && in_array($this->inputType, ['checkbox', 'radio'])) {
             $this->attr('checked', 'checked');
         }
-
-        return parent::toHtml();
     }
 }

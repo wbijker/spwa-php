@@ -199,11 +199,10 @@ class Textarea extends UIElementContent
         return $this;
     }
 
-    /**
-     * Render to HTML string.
-     */
-    public function toHtml(): string
+    protected function applyAttributes(): void
     {
+        $this->children = [];
+
         if ($this->inputName !== null) {
             $this->attr('name', $this->inputName);
         }
@@ -259,7 +258,5 @@ class Textarea extends UIElementContent
         if ($this->inputValue !== null) {
             $this->content($this->inputValue);
         }
-
-        return parent::toHtml();
     }
 }

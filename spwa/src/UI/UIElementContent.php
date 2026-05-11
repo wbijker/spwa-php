@@ -25,6 +25,8 @@ class UIElementContent extends UIElement
 
     public function build(): DomNode
     {
+        $this->applyAttributes();
+
         $domChildren = [];
         foreach ($this->children as $child) {
             if ($child instanceof UIElement) {
@@ -42,6 +44,8 @@ class UIElementContent extends UIElement
 
     public function render(StateManager $state, ?VNode $parent = null, RenderPhase $phase = RenderPhase::Initial): DomNode
     {
+        $this->applyAttributes();
+
         $this->parent = $parent;
         if (empty($this->path)) {
             $this->path = $parent?->getPath() ?? [];

@@ -122,11 +122,10 @@ class Table extends UIElementContent
         return new TableCol();
     }
 
-    /**
-     * Render to HTML string.
-     */
-    public function toHtml(): string
+    protected function applyAttributes(): void
     {
+        $this->children = [];
+
         if ($this->tableCaption !== null) {
             $this->content(DomNode::el('caption')->content($this->tableCaption));
         }
@@ -155,7 +154,5 @@ class Table extends UIElementContent
             }
             $this->content($tfoot);
         }
-
-        return parent::toHtml();
     }
 }

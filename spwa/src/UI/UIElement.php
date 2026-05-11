@@ -28,9 +28,6 @@ use Spwa\VNode\VNode;
  */
 class UIElement extends Node
 {
-    /** @var TagDomNode */
-    protected DomNode $domNode;
-
     /** @var Component|null The component that owns this element's events */
     protected ?Component $eventOwner = null;
 
@@ -45,11 +42,21 @@ class UIElement extends Node
     }
 
     /**
+     * Apply element-specific attributes to the underlying DOM node.
+     * Subclasses override to write HTML attributes (placeholder, type, etc.)
+     * derived from setter-stored state. Called before render() and build().
+     */
+    protected function applyAttributes(): void
+    {
+    }
+
+    /**
      * Build the DomNode for this element (without VNode lifecycle).
      * Subclasses override to provide custom DOM building.
      */
     public function build(): DomNode
     {
+        $this->applyAttributes();
         return $this->dom();
     }
 
@@ -61,6 +68,8 @@ class UIElement extends Node
      */
     public function render(StateManager $state, ?VNode $parent = null, RenderPhase $phase = RenderPhase::Initial): DomNode
     {
+        $this->applyAttributes();
+
         $this->parent = $parent;
         if (empty($this->path)) {
             $this->path = $parent?->getPath() ?? [];
