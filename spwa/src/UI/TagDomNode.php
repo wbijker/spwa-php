@@ -516,59 +516,59 @@ class TagDomNode extends DomNode
     }
 
     /**
-     * Keyed child comparison using key matching.
-     * Generates minimal insert/delete/update operations.
+     * Keyed child comparison.
+     *
+     * Each key maps to a FIFO queue of old indices. For each new child, accept
+     * the next old index only if it is strictly greater than the most recently
+     * matched old index; otherwise discard the candidate (it ends up deleted)
+     * and try the next. A new child that finds no usable candidate becomes a
+     * fresh insertion at its target position.
+     *
+     * The strictly-increasing rule lets the diff produce correct DOM order
+     * without emitting move operations: anything that would have to move
+     * backwards is instead delete+insert. State preservation suffers in those
+     * cases — that's the price of not implementing moves.
      */
     private function compareChildrenKeyed(TagDomNode $other, Patcher $patcher): void
     {
-        // Build key→index maps
-        $oldByKey = [];
+        $oldQueues = [];
         foreach ($other->children as $i => $child) {
-            $oldByKey[$child->getKey()] = $i;
+            $oldQueues[$child->getKey()][] = $i;
         }
 
-        $newByKey = [];
-        foreach ($this->children as $i => $child) {
-            $newByKey[$child->getKey()] = $i;
-        }
-
-        // Delete old children not present in new (reverse order for stable indices)
-        $toDelete = [];
-        foreach ($other->children as $i => $child) {
-            if (!isset($newByKey[$child->getKey()])) {
-                $toDelete[] = $i;
-            }
-        }
-        for ($i = count($toDelete) - 1; $i >= 0; $i--) {
-            $patcher->removeAt($this->path, $toDelete[$i]);
-        }
-
-        // Build the old key order after deletions
-        $oldKeysAfterDelete = [];
-        foreach ($other->children as $i => $child) {
-            $key = $child->getKey();
-            if (isset($newByKey[$key])) {
-                $oldKeysAfterDelete[] = $key;
-            }
-        }
-
-        // Walk new children: insert new keys, update existing ones
-        $oldPos = 0;
+        $matched = [];
+        $usedOld = [];
+        $lastMatched = -1;
         foreach ($this->children as $newIdx => $newChild) {
             $key = $newChild->getKey();
-
-            if (!isset($oldByKey[$key])) {
-                // New key — insert at this position
-                $patcher->insertAt($this->path, $newIdx, $newChild);
-            } else {
-                // Existing key — compare content in place
-                $oldChild = $other->children[$oldByKey[$key]];
-                // Re-assign path to the new position before comparing
-                $newChild->assignPaths([...$this->path, $newIdx]);
-                $oldChild->assignPaths([...$this->path, $newIdx]);
-                $newChild->compare($oldChild, $patcher);
-                $oldPos++;
+            while (!empty($oldQueues[$key]) && $oldQueues[$key][0] <= $lastMatched) {
+                array_shift($oldQueues[$key]);
             }
+            if (empty($oldQueues[$key])) {
+                $matched[$newIdx] = null;
+                continue;
+            }
+            $oldIdx = array_shift($oldQueues[$key]);
+            $matched[$newIdx] = $oldIdx;
+            $usedOld[$oldIdx] = true;
+            $lastMatched = $oldIdx;
+        }
+
+        for ($i = count($other->children) - 1; $i >= 0; $i--) {
+            if (!isset($usedOld[$i])) {
+                $patcher->removeAt($this->path, $i);
+            }
+        }
+
+        foreach ($this->children as $newIdx => $newChild) {
+            if ($matched[$newIdx] === null) {
+                $patcher->insertAt($this->path, $newIdx, $newChild);
+                continue;
+            }
+            $oldChild = $other->children[$matched[$newIdx]];
+            $newChild->assignPaths([...$this->path, $newIdx]);
+            $oldChild->assignPaths([...$this->path, $newIdx]);
+            $newChild->compare($oldChild, $patcher);
         }
     }
 }
