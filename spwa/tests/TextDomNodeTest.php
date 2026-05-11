@@ -14,7 +14,7 @@ class TextDomNodeTest extends TestCase
         $node = new TextDomNode('hello');
         $node->assignPaths([0]);
 
-        $this->assertEquals('<span data-path="0">hello</span>', $node->toHtml());
+        $this->assertEquals('<span>hello</span>', $node->toHtml());
     }
 
     public function testRendersEmptyStringAsEmptySpan(): void
@@ -22,7 +22,7 @@ class TextDomNodeTest extends TestCase
         $node = new TextDomNode('');
         $node->assignPaths([1, 2]);
 
-        $this->assertEquals('<span data-path="1,2"></span>', $node->toHtml());
+        $this->assertEquals('<span></span>', $node->toHtml());
     }
 
     public function testEscapesHtmlEntities(): void

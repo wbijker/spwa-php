@@ -71,7 +71,6 @@ class Input extends UIElement
     public function bind(string &$ref): static
     {
         $this->inputValue = $ref;
-        $this->dom()->attr('data-bind', 'true');
         $this->dom()->bindRef($ref);
         return $this;
     }

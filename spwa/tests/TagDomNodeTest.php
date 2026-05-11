@@ -14,7 +14,7 @@ class TagDomNodeTest extends TestCase
         $node = new TagDomNode('div');
         $node->assignPaths([]);
 
-        $this->assertEquals('<div data-path=""></div>', $node->toHtml());
+        $this->assertEquals('<div></div>', $node->toHtml());
     }
 
     public function testHtmlWithAttributes(): void
@@ -46,8 +46,8 @@ class TagDomNodeTest extends TestCase
         $node->assignPaths([]);
 
         $html = $node->toHtml();
-        $this->assertStringContainsString('<span data-path="0">hello</span>', $html);
-        $this->assertStringContainsString('<span data-path="1">world</span>', $html);
+        $this->assertStringContainsString('<span>hello</span>', $html);
+        $this->assertStringContainsString('<span>world</span>', $html);
     }
 
     public function testEmptyStringChildRendersAsEmptySpan(): void
@@ -57,7 +57,7 @@ class TagDomNodeTest extends TestCase
         $node->assignPaths([]);
 
         $html = $node->toHtml();
-        $this->assertStringContainsString('<span data-path="0"></span>', $html);
+        $this->assertStringContainsString('<span></span>', $html);
     }
 
     public function testNestedChildren(): void
@@ -69,7 +69,7 @@ class TagDomNodeTest extends TestCase
         $parent->assignPaths([]);
 
         $html = $parent->toHtml();
-        $this->assertStringContainsString('<span data-path="0">', $html);
-        $this->assertStringContainsString('<span data-path="0,0">text</span>', $html);
+        $this->assertStringContainsString('<span>', $html);
+        $this->assertStringContainsString('<span>text</span>', $html);
     }
 }

@@ -27,8 +27,7 @@ class TextDomNode extends DomNode
 
     public function toHtml(): string
     {
-        $pathAttr = $this->managed ? ' data-path="' . implode(',', $this->path) . '"' : '';
-        return "<span{$pathAttr}>" . htmlspecialchars($this->content) . "</span>";
+        return '<span>' . htmlspecialchars($this->content) . '</span>';
     }
 
     public function compare(DomNode $other, Patcher $patcher): void

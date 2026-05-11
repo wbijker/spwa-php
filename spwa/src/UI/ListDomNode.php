@@ -95,9 +95,6 @@ class ListDomNode extends TagDomNode
         // Build attributes
         $attrHtml = '';
 
-        // Add data-path attribute
-        $attrHtml .= ' data-path="' . implode(',', $this->path) . '"';
-
         if (!empty($allClasses)) {
             $attrHtml .= ' class="' . htmlspecialchars(implode(' ', array_unique($allClasses))) . '"';
         }

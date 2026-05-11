@@ -2,7 +2,6 @@
 
 namespace Spwa\Samples;
 
-use Spwa\Events\InputEvent;
 use Spwa\Samples\site\Pages\SiteApp;
 use Spwa\State\SessionStateManager;
 use Spwa\UI\Color;
@@ -21,6 +20,7 @@ class TodoApp extends App
     private array $todos = [];
     private int $nextId = 1;
     private string $filter = 'all';
+    private string $inputText = '';
 
     public function title(): string
     {
@@ -37,6 +37,7 @@ class TodoApp extends App
         $this->useState($this->todos);
         $this->useState($this->nextId);
         $this->useState($this->filter);
+        $this->useState($this->inputText);
     }
 
     protected function view(): VNode
@@ -112,6 +113,7 @@ class TodoApp extends App
             ->text()
             ->placeholder('What needs to be done?')
             ->autofocus()
+            ->bind($this->inputText)
             ->grow()
             ->padding(Unit::rem(1))
             ->borderNone()
@@ -119,14 +121,15 @@ class TodoApp extends App
             ->fontSize(FontSize::TwoXL)
             ->weight(FontWeight::Light)
             ->color(Color::hex('#111'))
-            ->on('change', function (InputEvent $e) {
-                $text = trim($e->value ?? '');
+            ->on('change', function () {
+                $text = trim($this->inputText);
                 if ($text !== '') {
                     $this->todos[] = [
                         'id' => $this->nextId++,
                         'text' => $text,
                         'completed' => false,
                     ];
+                    $this->inputText = '';
                 }
             });
 

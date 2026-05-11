@@ -192,8 +192,18 @@ class TagDomNode extends DomNode
 
     public function hydrateBinding(string $value): void
     {
-        if ($this->hasBoundRef) {
-            $this->boundRef = $value;
+        if (!$this->hasBoundRef) {
+            return;
+        }
+        $this->boundRef = $value;
+
+        // Sync the rendered value so the OLD tree matches what was on-screen.
+        // Without this, the diff against the NEW tree won't detect backend-driven
+        // resets (e.g. clearing an input after submit) and no patch is emitted.
+        if ($this->tag === 'textarea') {
+            $this->children = [new TextDomNode($value)];
+        } else {
+            $this->attributes['value'] = $value;
         }
     }
 
@@ -322,8 +332,8 @@ class TagDomNode extends DomNode
         // Build attributes
         $attrHtml = '';
 
-        if ($this->managed) {
-            $attrHtml .= ' data-path="' . implode(',', $this->path) . '"';
+        if ($this->managed && $this->hasBoundRef) {
+            $attrHtml .= ' data-bind';
         }
 
         if (!empty($allClasses)) {
@@ -335,10 +345,9 @@ class TagDomNode extends DomNode
         }
 
         if ($this->managed) {
-            $pathStr = implode(',', $this->path);
             foreach ($this->events as $event => $callback) {
                 $domEvent = self::DOM_EVENT_MAP[$event] ?? $event;
-                $attrHtml .= ' on' . $domEvent . "=\"handleEvent(event, '" . $event . "', '" . $pathStr . "', this)\"";
+                $attrHtml .= ' on' . $domEvent . "=\"handleEvent(event, '" . $event . "', this)\"";
             }
         }
 

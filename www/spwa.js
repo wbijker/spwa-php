@@ -254,6 +254,13 @@ function applyPatches(patches) {
                 const node = findNodeByPath(path);
                 if (node) {
                     node.setAttribute(patch.name, patch.value);
+                    // For form controls, the `value` attribute only sets the default;
+                    // the displayed value is the `.value` property once the user has typed.
+                    if (patch.name === 'value' && 'value' in node) {
+                        node.value = patch.value;
+                    } else if (patch.name === 'checked' && 'checked' in node) {
+                        node.checked = patch.value === 'checked' || patch.value === true;
+                    }
                 }
                 break;
             }
@@ -310,31 +317,20 @@ function applyPatches(patches) {
 }
 
 // --- Value bindings ---
-var boundValues = {};
-
 function initBindings() {
     document.querySelectorAll('[data-bind]').forEach(function(el) {
-        var path = el.getAttribute('data-path');
-        if (!path) return;
-        boundValues[path] = el.value;
-        if (!el._spwaBound) {
-            el._spwaBound = true;
-            el.addEventListener('input', function() {
-                boundValues[el.getAttribute('data-path')] = el.value;
-            });
-        }
+        if (el._spwaBound) return;
+        el._spwaBound = true;
+        // Path is computed at send time; we don't need to track per-element here.
     });
 }
 
 function collectBindings() {
-    // Refresh values from DOM before sending
+    var bindings = {};
     document.querySelectorAll('[data-bind]').forEach(function(el) {
-        var path = el.getAttribute('data-path');
-        if (path) {
-            boundValues[path] = el.value;
-        }
+        bindings[computePath(el)] = el.value;
     });
-    return Object.keys(boundValues).length > 0 ? boundValues : null;
+    return Object.keys(bindings).length > 0 ? bindings : null;
 }
 
 if (document.readyState === 'loading') {
@@ -375,7 +371,6 @@ function callback(error, data) {
     }
 
     // Re-initialize bindings after patches (new elements may have data-bind)
-    boundValues = {};
     initBindings();
 }
 
@@ -645,7 +640,20 @@ function extractEventData(evt, el) {
     return (el && el.value !== undefined) ? el.value : null;
 }
 
-function handleEvent(evt, event, path, el) {
+function computePath(el) {
+    var root = document.body.firstElementChild;
+    var indices = [];
+    while (el && el !== root) {
+        var parent = el.parentElement;
+        if (!parent) return '';
+        indices.unshift(Array.prototype.indexOf.call(parent.children, el));
+        el = parent;
+    }
+    return indices.join(',');
+}
+
+function handleEvent(evt, event, el) {
+    var path = computePath(el);
     var data = { event: event, path: path };
     // File upload — send as multipart form
     if (el && el.type === 'file' && el.files && el.files.length > 0) {
