@@ -45,12 +45,18 @@ class UIElementContent extends UIElement
 
     public function render(StateManager $state, ?VNode $parent = null, RenderPhase $phase = RenderPhase::Initial): DomNode
     {
-        $this->applyAttributes();
-
         $this->parent = $parent;
         if (empty($this->path)) {
             $this->path = $parent?->getPath() ?? [];
         }
+
+        // Frozen during a diff cycle: don't walk the subtree at all. See
+        // UIElement::render() for the rationale.
+        if ($this->dom()->isFrozen() && $phase !== RenderPhase::Initial) {
+            return $this->dom()->assignPaths($this->path);
+        }
+
+        $this->applyAttributes();
 
         $this->eventOwner = $this->findOwningComponent($parent);
         if ($this->eventOwner !== null) {

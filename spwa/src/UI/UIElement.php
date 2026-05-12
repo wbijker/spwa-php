@@ -69,12 +69,21 @@ class UIElement extends Node
      */
     public function render(StateManager $state, ?VNode $parent = null, RenderPhase $phase = RenderPhase::Initial): DomNode
     {
-        $this->applyAttributes();
-
         $this->parent = $parent;
         if (empty($this->path)) {
             $this->path = $parent?->getPath() ?? [];
         }
+
+        // Frozen during a diff cycle: skip the whole render. Both OLD (DiffOld)
+        // and NEW (Patch) get an empty-but-frozen TagDomNode; compare() then
+        // short-circuits and emits no patches. The frontend DOM keeps whatever
+        // was rendered on the initial GET. First-page render still runs in
+        // full because the HTML payload needs the real subtree.
+        if ($this->dom()->isFrozen() && $phase !== RenderPhase::Initial) {
+            return $this->dom()->assignPaths($this->path);
+        }
+
+        $this->applyAttributes();
 
         $this->eventOwner = $this->findOwningComponent($parent);
         if ($this->eventOwner !== null) {

@@ -93,7 +93,7 @@ class Spwa
         // reload — the fresh page will start from defaults.
         try {
             $oldApp = new ($entry::class)();
-            $oldUi = $oldApp->render($primaryState, null, RenderPhase::Initial);
+            $oldUi = $oldApp->render($primaryState, null, RenderPhase::DiffOld);
 
             if (!empty($bindings) && $oldUi instanceof TagDomNode) {
                 $oldUi->hydrateBindings($bindings);

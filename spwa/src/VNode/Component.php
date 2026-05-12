@@ -159,13 +159,24 @@ abstract class Component extends VNode
     }
 
     /**
-     * Compare this component instance against the old instance from the previous render.
-     * Return false to skip rendering and return a NoOpDomNode.
-     * Override to implement custom comparison logic (e.g. comparing state).
+     * Decide whether this component needs to be re-rendered in the current
+     * diff cycle. Receives the matching instance from the OLD render at the
+     * same path — typically you compare a few state fields and short-circuit
+     * when nothing relevant has changed.
      *
-     * @param static $old The old component instance (same class, same path)
+     * Return `false` to skip both rendering AND diffing for this subtree:
+     * the framework substitutes a NoOpDomNode whose compare() is a no-op, so
+     * the frontend DOM keeps the existing subtree from the previous render.
+     * Default is `true` (always render — same behavior the framework had
+     * before this hook existed).
+     *
+     * Only consulted in RenderPhase::Patch (NEW tree during a POST).
+     *
+     * @param static $old The OLD component instance at the same path —
+     *   always the same concrete class as `$this`, safe to narrow in
+     *   overrides via `@param MySubclass $old` in the docblock.
      */
-    protected function compare(self $old): bool
+    protected function shouldRender(Component $old): bool
     {
         return true;
     }
@@ -246,7 +257,7 @@ abstract class Component extends VNode
         }
 
         // Track component by phase for lifecycle diffing
-        if ($phase === RenderPhase::Initial) {
+        if ($phase === RenderPhase::Initial || $phase === RenderPhase::DiffOld) {
             self::$oldRegistry[$pathKey] = $this;
         } else {
             self::$newRegistry[$pathKey] = $this;
@@ -280,10 +291,11 @@ abstract class Component extends VNode
             $this->updated();
         }
 
-        // Lifecycle: compare against old instance (only in Patch phase)
+        // Memo hook — ask the component whether anything below it needs to
+        // be rebuilt this cycle. False here skips both build() and the diff.
         if ($phase === RenderPhase::Patch) {
             $oldInstance = self::$oldRegistry[$pathKey] ?? null;
-            if ($oldInstance !== null && !$this->compare($oldInstance)) {
+            if ($oldInstance !== null && !$this->shouldRender($oldInstance)) {
                 return new NoOpDomNode();
             }
         }

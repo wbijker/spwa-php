@@ -50,6 +50,11 @@ abstract class DomNode
         return $this;
     }
 
+    public function isFrozen(): bool
+    {
+        return $this->frozen;
+    }
+
     /**
      * Create an element node.
      */
