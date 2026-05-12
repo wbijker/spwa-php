@@ -176,7 +176,16 @@ class Spwa
             $entry->finalize($primaryState);
         }
 
-        $generator = StyleGenerator::from($ui->collectStyles());
+        // Render the optional loader overlay before collecting styles so its
+        // CSS lands in the same <style> block.
+        $loaderVNode = $entry->getLoader();
+        $loaderDom = $loaderVNode?->render($primaryState, null, RenderPhase::Initial);
+
+        $styles = $ui->collectStyles();
+        if ($loaderDom !== null) {
+            $styles = array_merge($styles, $loaderDom->collectStyles());
+        }
+        $generator = StyleGenerator::from($styles);
         $stateJs = self::getClientJs($states);
 
         // Debug panel → inline script for initial render
@@ -208,6 +217,17 @@ class Spwa
         $body = (new TagDomNode('body'))
             ->attr('style', 'margin: 0; font-family: system-ui, -apple-system, sans-serif;')
             ->content($ui);
+
+        // Optional loader overlay — sibling of the App root so it isn't part
+        // of the diff tree. Hidden by default; the frontend toggles its
+        // display while a request is in flight.
+        if ($loaderDom !== null) {
+            $loaderWrapper = (new TagDomNode('div'))
+                ->attr('data-spwa-loader', '')
+                ->attr('style', 'display:none')
+                ->content($loaderDom);
+            $body->content($loaderWrapper);
+        }
 
         $body->content((new TagDomNode('script'))->rawContent($debugJs));
 

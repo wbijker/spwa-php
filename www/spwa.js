@@ -371,6 +371,7 @@ function maybeReplay() {
     }
     // Bypass post() so we keep the original payload's bindings/value
     // (the new page has empty inputs that would otherwise overwrite them).
+    setBusy(true);
     __spwa_lastPayload = data;
     var xhr = new XMLHttpRequest();
     xhr.open("POST", window.location.href, true);
@@ -398,6 +399,8 @@ if (document.readyState === 'loading') {
 function callback(error, data) {
     if (error) {
         console.error("Error:", error);
+        // Don't leave the queue stuck behind a failed request.
+        drainQueue();
         return;
     }
 
@@ -418,6 +421,8 @@ function callback(error, data) {
                 sessionStorage.removeItem(SPWA_REPLAY_COUNT_KEY);
             }
         }
+        // A full reload supersedes anything queued — drop it.
+        __spwa_queue.length = 0;
         window.location.reload();
         return;
     }
@@ -460,70 +465,139 @@ function callback(error, data) {
 
     // Re-initialize bindings after patches (new elements may have data-bind)
     initBindings();
+
+    // DOM is now hydrated for this request — release the queue.
+    drainQueue();
+}
+
+// --- Request queue + loader visibility ---
+// Only one request may be in flight at a time. Anything that comes in while
+// busy is queued and dispatched after the current response has been applied
+// (patches + bindings re-init). A `[data-spwa-loader]` element on the page,
+// if present, is toggled to visible while a request is active.
+var __spwa_busy = false;
+var __spwa_queue = [];
+var __spwa_loaderEl = null;
+var __spwa_loaderTimer = null;
+
+function loaderEl() {
+    if (__spwa_loaderEl === null) {
+        __spwa_loaderEl = document.querySelector('[data-spwa-loader]') || false;
+    }
+    return __spwa_loaderEl || null;
+}
+
+function loaderDelay() {
+    // Override via `window.__SPWA_LOADER_DELAY = N` (milliseconds).
+    // Fast requests (< delay) complete without ever showing the loader,
+    // avoiding flashes. Default: 300ms — see UX notes in README.
+    var d = typeof window.__SPWA_LOADER_DELAY === 'number'
+        ? window.__SPWA_LOADER_DELAY
+        : 300;
+    return d >= 0 ? d : 0;
+}
+
+function setBusy(busy) {
+    __spwa_busy = busy;
+    var el = loaderEl();
+    if (!el) return;
+
+    if (busy) {
+        // Only schedule a show on the leading edge — once a debounce is
+        // pending we don't reset it for follow-up requests in the queue,
+        // so a sequence of small requests still triggers the loader if
+        // their total time exceeds the delay.
+        if (__spwa_loaderTimer === null && el.style.display === 'none') {
+            __spwa_loaderTimer = setTimeout(function () {
+                __spwa_loaderTimer = null;
+                if (__spwa_busy) el.style.display = 'block';
+            }, loaderDelay());
+        }
+    } else {
+        if (__spwa_loaderTimer !== null) {
+            clearTimeout(__spwa_loaderTimer);
+            __spwa_loaderTimer = null;
+        }
+        el.style.display = 'none';
+    }
 }
 
 function post(data, headers) {
+    if (__spwa_busy) {
+        __spwa_queue.push({ kind: 'json', data: data, headers: headers });
+        return;
+    }
+    setBusy(true);
+    sendJson(data, headers);
+}
+
+function postMultipart(data, files) {
+    if (__spwa_busy) {
+        __spwa_queue.push({ kind: 'multipart', data: data, files: files });
+        return;
+    }
+    setBusy(true);
+    sendMultipart(data, files);
+}
+
+function drainQueue() {
+    if (__spwa_queue.length === 0) {
+        setBusy(false);
+        return;
+    }
+    var next = __spwa_queue.shift();
+    if (next.kind === 'multipart') {
+        sendMultipart(next.data, next.files);
+    } else {
+        sendJson(next.data, next.headers);
+    }
+}
+
+function sendJson(data, headers) {
     var xhr = new XMLHttpRequest();
     xhr.open("POST", window.location.href, true);
     xhr.setRequestHeader("Content-Type", "application/json");
 
-    // Set custom headers
     for (var key in headers ?? {}) {
         if (headers.hasOwnProperty(key)) {
             xhr.setRequestHeader(key, headers[key]);
         }
     }
 
-    // Remember the request so callback() can stash it on `reload`.
     __spwa_lastPayload = data;
 
-    // Include bound input values
     var bindings = collectBindings();
     if (bindings) {
         data.bindings = bindings;
     }
-
-    // Echo back the state-fingerprint from the last render. The backend uses
-    // this to detect out-of-band state changes and force a reload.
     if (typeof window.__SPWA_HASH === 'string') {
         data.hash = window.__SPWA_HASH;
     }
-
-    // Include client state if state management is enabled
     if (SPWA.isStateEnabled()) {
         var clientState = SPWA.getAll();
-        if (clientState) {
-            data.state = clientState;
-        }
+        if (clientState) data.state = clientState;
     }
 
     xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4) { // 4 means request is done
-            if (xhr.status === 200) { // 200 means "OK"
-                callback(null, JSON.parse(xhr.responseText));
-            } else {
-                callback(new Error("Request failed: " + xhr.status));
-            }
+        if (xhr.readyState !== 4) return;
+        if (xhr.status === 200) {
+            callback(null, JSON.parse(xhr.responseText));
+        } else {
+            callback(new Error("Request failed: " + xhr.status));
         }
     };
-
     xhr.send(JSON.stringify(data));
 }
 
-function postMultipart(data, files) {
-    // Include bindings and state in the data payload
+function sendMultipart(data, files) {
     var bindings = collectBindings();
-    if (bindings) {
-        data.bindings = bindings;
-    }
+    if (bindings) data.bindings = bindings;
     if (typeof window.__SPWA_HASH === 'string') {
         data.hash = window.__SPWA_HASH;
     }
     if (SPWA.isStateEnabled()) {
         var clientState = SPWA.getAll();
-        if (clientState) {
-            data.state = clientState;
-        }
+        if (clientState) data.state = clientState;
     }
 
     var formData = new FormData();
@@ -534,14 +608,12 @@ function postMultipart(data, files) {
 
     var xhr = new XMLHttpRequest();
     xhr.open("POST", window.location.href, true);
-    // No Content-Type header — browser sets multipart boundary automatically
     xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4) {
-            if (xhr.status === 200) {
-                callback(null, JSON.parse(xhr.responseText));
-            } else {
-                callback(new Error("Request failed: " + xhr.status));
-            }
+        if (xhr.readyState !== 4) return;
+        if (xhr.status === 200) {
+            callback(null, JSON.parse(xhr.responseText));
+        } else {
+            callback(new Error("Request failed: " + xhr.status));
         }
     };
     xhr.send(formData);

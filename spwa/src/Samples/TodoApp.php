@@ -32,6 +32,26 @@ class TodoApp extends App
         return [new SessionStateManager()];
     }
 
+    protected function loader(): ?VNode
+    {
+        return UI::row()
+            ->fixed()
+            ->inset(Unit::px(0))
+            ->layer(9999)
+            ->alignCenter()
+            ->alignMiddle()
+            ->background(Color::black()->alpha(0.25))
+            ->content(
+                UI::text('Loading…')
+                    ->background(Color::white())
+                    ->padding(Unit::rem(0.75))
+                    ->paddingHorizontal(Unit::rem(1.25))
+                    ->rounded(Unit::rem(0.5))
+                    ->color(Color::hex('#333'))
+                    ->fontSize(FontSize::Small)
+            );
+    }
+
     protected function initialize(): void
     {
         $this->useState($this->todos, class: Todo::class);

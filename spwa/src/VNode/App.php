@@ -18,6 +18,27 @@ abstract class App extends Component
     abstract protected function view(): VNode;
 
     /**
+     * Optional overlay element shown while a server request is in flight.
+     *
+     * Rendered once on the initial page load as a sibling of the main app
+     * root, hidden with `display: none`. The frontend toggles it to
+     * `display: block` when a request is pending and back to `display: none`
+     * once the response has been applied. Return `null` to disable.
+     */
+    protected function loader(): ?VNode
+    {
+        return null;
+    }
+
+    /**
+     * Framework runtime accessor for the loader hook.
+     */
+    public function getLoader(): ?VNode
+    {
+        return $this->loader();
+    }
+
+    /**
      * Return the state managers used by this app.
      * @return StateManager[]
      */
