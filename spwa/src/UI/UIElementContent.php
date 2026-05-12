@@ -39,6 +39,7 @@ class UIElementContent extends UIElement
         }
 
         $this->dom()->content(...$domChildren);
+        $this->applyInvalidations();
         return $this->domNode;
     }
 
@@ -71,6 +72,7 @@ class UIElementContent extends UIElement
         }
 
         $this->dom()->content(...$domChildren);
+        $this->applyInvalidations();
 
         return $this->dom()->assignPaths($this->path);
     }

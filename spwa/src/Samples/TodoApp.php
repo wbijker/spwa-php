@@ -78,6 +78,7 @@ class TodoApp extends App
                         UI::text(date('Y-m-d H:i:s'))
                             ->fontSize(FontSize::Small)
                             ->color(Color::hex('#777'))
+                            ->invalidateText()
                     ),
 
                 // Main card

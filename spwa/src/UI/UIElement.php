@@ -57,6 +57,7 @@ class UIElement extends Node
     public function build(): DomNode
     {
         $this->applyAttributes();
+        $this->applyInvalidations();
         return $this->dom();
     }
 
@@ -79,6 +80,8 @@ class UIElement extends Node
         if ($this->eventOwner !== null) {
             $this->dom()->setEventOwner($this->eventOwner);
         }
+
+        $this->applyInvalidations();
 
         return $this->dom()->assignPaths($this->path);
     }
@@ -144,6 +147,45 @@ class UIElement extends Node
     {
         $this->dom()->markInvalidatedAttr($name);
         return $this;
+    }
+
+    /**
+     * Force-patch every text node directly inside this element on every
+     * diff. Element children are untouched — for those use ->invalidate()
+     * on the child itself, or ->invalidate() recursively on this element.
+     *
+     *   UI::text(date('H:i:s'))->invalidateText()
+     *   $el->content('label: ' . $value)->invalidateText()
+     *
+     * String children added via content() are only materialised into
+     * TextDomNodes during build()/render(), so the marking is deferred to
+     * the applyInvalidations() hook called after that step.
+     */
+    public function invalidateText(): static
+    {
+        $this->invalidateTextOnRender = true;
+        $this->applyInvalidations();
+        return $this;
+    }
+
+    /** @var bool Whether direct text children should be force-patched on each render */
+    protected bool $invalidateTextOnRender = false;
+
+    /**
+     * Idempotent post-children hook. Called once children are present on
+     * the underlying dom node so flags set before children materialise
+     * still take effect.
+     */
+    protected function applyInvalidations(): void
+    {
+        if (!$this->invalidateTextOnRender) {
+            return;
+        }
+        foreach ($this->dom()->getChildren() as $child) {
+            if ($child instanceof TextDomNode) {
+                $child->setInvalidated(true);
+            }
+        }
     }
 
     /**
