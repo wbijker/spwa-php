@@ -201,6 +201,14 @@ class TodoApp extends App
                         fn(Todo $t) => $t->id !== $id
                     ));
                 },
+                onSave: function (int $id, string $text) {
+                    foreach ($this->todos as $t) {
+                        if ($t->id === $id) {
+                            $t->text = $text;
+                            break;
+                        }
+                    }
+                },
             );
         }
 
