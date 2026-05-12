@@ -258,6 +258,11 @@ var SPWA = (function() {
                         // the displayed value is the `.value` property once the user has typed.
                         if (patch.name === 'value' && 'value' in node) {
                             node.value = patch.value;
+                            // Keep the localStorage draft in sync with the
+                            // server-pushed value (empty string → drop entry).
+                            if (node.hasAttribute && node.hasAttribute('data-bind')) {
+                                captureDraft(node);
+                            }
                         } else if (patch.name === 'checked' && 'checked' in node) {
                             node.checked = patch.value === 'checked' || patch.value === true;
                         }
@@ -327,7 +332,34 @@ var SPWA = (function() {
         document.querySelectorAll('[data-bind]').forEach(function(el) {
             if (el._spwaBound) return;
             el._spwaBound = true;
-            // Path is computed at send time; we don't need to track per-element here.
+
+            // Persist every keystroke to localStorage. If the tab is reloaded
+            // before the user submits, restoreDrafts() will repopulate it.
+            el.addEventListener('input', function () { captureDraft(el); });
+
+            // Browsers fire `change` on Enter only when the value differs
+            // from the value-at-focus. If the field was prefilled by us
+            // (autofocus, draft restore, server set_attribute), pressing
+            // Enter without typing would silently do nothing. Track the
+            // baseline and synthesise a change event ourselves in that case.
+            el.addEventListener('focus', function () {
+                el._spwaFocusValue = el.value;
+            });
+            el.addEventListener('keydown', function (e) {
+                if (e.key !== 'Enter') return;
+                var baseline = el._spwaFocusValue !== undefined
+                    ? el._spwaFocusValue
+                    : el.defaultValue;
+                if (el.value === baseline) {
+                    el.dispatchEvent(new Event('change'));
+                }
+            });
+
+            // If the element is already focused at attach time (autofocus
+            // fired before bootstrap), seed the baseline now.
+            if (document.activeElement === el) {
+                el._spwaFocusValue = el.value;
+            }
         });
     }
 
@@ -337,6 +369,60 @@ var SPWA = (function() {
             bindings[computePath(el)] = el.value;
         });
         return Object.keys(bindings).length > 0 ? bindings : null;
+    }
+
+    // --- Draft persistence for bound inputs (localStorage) ---
+    // Save the value of every bound input on the `input` event, keyed by its
+    // computed path. On page load, walk the bound inputs again and apply any
+    // saved draft. Drafts also follow server-driven value changes so a
+    // re-render that pushes value="" wipes the draft instead of resurrecting
+    // it on the next reload.
+    var SPWA_DRAFTS_KEY = '__spwa_drafts';
+
+    function loadDrafts() {
+        try {
+            var raw = localStorage.getItem(SPWA_DRAFTS_KEY);
+            return raw ? JSON.parse(raw) : {};
+        } catch (e) {
+            return {};
+        }
+    }
+
+    function saveDrafts(drafts) {
+        try {
+            if (Object.keys(drafts).length === 0) {
+                localStorage.removeItem(SPWA_DRAFTS_KEY);
+            } else {
+                localStorage.setItem(SPWA_DRAFTS_KEY, JSON.stringify(drafts));
+            }
+        } catch (e) { /* quota / disabled — give up silently */ }
+    }
+
+    function captureDraft(el) {
+        var path = computePath(el);
+        if (!path) return;
+        var drafts = loadDrafts();
+        if (el.value === '' || el.value == null) {
+            delete drafts[path];
+        } else {
+            drafts[path] = el.value;
+        }
+        saveDrafts(drafts);
+    }
+
+    function restoreDrafts() {
+        var drafts = loadDrafts();
+        if (Object.keys(drafts).length === 0) return;
+        document.querySelectorAll('[data-bind]').forEach(function(el) {
+            var path = computePath(el);
+            if (Object.prototype.hasOwnProperty.call(drafts, path)) {
+                el.value = drafts[path];
+                // Mirror the focus-baseline so a first Enter is recognized as
+                // a no-op-since-focus and the keydown handler synthesises a
+                // change event.
+                el._spwaFocusValue = el.value;
+            }
+        });
     }
 
     function maybeReplay() {
@@ -373,6 +459,9 @@ var SPWA = (function() {
 
     function bootstrap() {
         initBindings();
+        // Restore any drafts BEFORE a possible replay, so the replayed event
+        // sees the restored input value via collectBindings().
+        restoreDrafts();
         maybeReplay();
     }
 
