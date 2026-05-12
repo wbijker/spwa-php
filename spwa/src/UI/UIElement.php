@@ -853,6 +853,30 @@ class UIElement extends Node
         return $this;
     }
 
+    public function fixed(): static
+    {
+        $this->addStyle('fixed', ['position' => 'fixed']);
+        return $this;
+    }
+
+    public function sticky(): static
+    {
+        $this->addStyle('sticky', ['position' => 'sticky']);
+        return $this;
+    }
+
+    /**
+     * CSS `inset` shorthand: 1 unit = all four sides, 2 = vertical/horizontal,
+     * 3 = top/horizontal/bottom, 4 = top/right/bottom/left.
+     */
+    public function inset(Unit ...$values): static
+    {
+        $css = implode(' ', array_map(fn(Unit $v) => $v->getCssValue(), $values));
+        $class = 'inset-[' . str_replace(' ', '_', $css) . ']';
+        $this->addStyle($class, ['inset' => $css]);
+        return $this;
+    }
+
     public function offsetTop(Unit ...$values): static
     {
         foreach ($values as $value) {

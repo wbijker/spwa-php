@@ -16,12 +16,24 @@ class Color extends Property
     public function __construct(
         protected string $name,
         protected ?int $shade = null,
-        protected ?int $opacity = null
+        protected ?int $opacity = null,
+        protected ?float $alphaValue = null,
+        protected ?int $r = null,
+        protected ?int $g = null,
+        protected ?int $b = null,
     ) {
     }
 
     protected function base(): string
     {
+        if ($this->r !== null) {
+            $class = "rgb-{$this->r}-{$this->g}-{$this->b}";
+            if ($this->alphaValue !== null) {
+                $class .= '/a' . (int) round($this->alphaValue * 100);
+            }
+            return $class;
+        }
+
         $class = $this->name;
 
         if ($this->shade !== null) {
@@ -30,6 +42,12 @@ class Color extends Property
 
         if ($this->opacity !== null) {
             $class .= '/' . $this->opacity;
+        }
+
+        if ($this->alphaValue !== null) {
+            // /a25 etc. so each alpha gets its own class, even when the base
+            // color is shared. Suffix is informational; not parsed.
+            $class .= '/a' . (int) round($this->alphaValue * 100);
         }
 
         return $class;
@@ -57,6 +75,20 @@ class Color extends Property
     public function opacity(int $value): static
     {
         return $this->derive(fn($c) => $c->opacity = $value);
+    }
+
+    /**
+     * Set alpha channel on the resolved CSS color (0.0–1.0). The lookup
+     * still finds the base palette entry, then the hex/rgb is converted
+     * to `rgba(r, g, b, alpha)` in getValue().
+     *
+     *   Color::black()->alpha(0.25)         // → rgba(0, 0, 0, 0.25)
+     *   Color::red(500)->alpha(0.5)         // → rgba(239, 68, 68, 0.5)
+     *   Color::hex('#abcdef')->alpha(0.1)   // → rgba(171, 205, 239, 0.1)
+     */
+    public function alpha(float $value): static
+    {
+        return $this->derive(fn($c) => $c->alphaValue = $value);
     }
 
     /**
@@ -125,8 +157,54 @@ class Color extends Property
             'olive-50' => '#f7f8f3', 'olive-100' => '#eef0e4', 'olive-200' => '#dce1c9', 'olive-300' => '#c3cca4', 'olive-400' => '#a6b37b', 'olive-500' => '#8a9a5b', 'olive-600' => '#6d7b46', 'olive-700' => '#556139', 'olive-800' => '#464f31', 'olive-900' => '#3c432c', 'olive-950' => '#1f2316',
         ];
 
-        $key = $this->base();
-        return $colors[$key] ?? $key;
+        // Constructed directly from rgb channel values: emit as-is.
+        if ($this->r !== null) {
+            return $this->alphaValue !== null
+                ? "rgba({$this->r}, {$this->g}, {$this->b}, {$this->alphaValue})"
+                : "rgb({$this->r}, {$this->g}, {$this->b})";
+        }
+
+        // Look up using base palette key (no opacity / alpha modifiers).
+        $key = $this->name;
+        if ($this->shade !== null) {
+            $key .= '-' . $this->shade;
+        }
+        $resolved = $colors[$key] ?? $key;
+
+        // Apply alpha to a resolved hex palette entry.
+        if ($this->alphaValue !== null && str_starts_with($resolved, '#')) {
+            [$r, $g, $b] = self::hexChannels(substr($resolved, 1));
+            if ($r !== null) {
+                return "rgba($r, $g, $b, {$this->alphaValue})";
+            }
+        }
+
+        return $resolved;
+    }
+
+    /**
+     * Parse a hex body (no leading `#`) into [r, g, b] integer channels.
+     * Returns [null, null, null] for malformed input.
+     * @return array{0: ?int, 1: ?int, 2: ?int}
+     */
+    private static function hexChannels(string $hex): array
+    {
+        $len = strlen($hex);
+        if ($len === 3 || $len === 4) {
+            return [
+                hexdec($hex[0] . $hex[0]),
+                hexdec($hex[1] . $hex[1]),
+                hexdec($hex[2] . $hex[2]),
+            ];
+        }
+        if ($len === 6 || $len === 8) {
+            return [
+                hexdec(substr($hex, 0, 2)),
+                hexdec(substr($hex, 2, 2)),
+                hexdec(substr($hex, 4, 2)),
+            ];
+        }
+        return [null, null, null];
     }
 
     // ============================================================
@@ -305,10 +383,26 @@ class Color extends Property
     }
 
     /**
-     * Custom hex color value.
+     * Custom hex color value (e.g. "#abcdef", "#abc").
      */
     public static function hex(string $hex): static
     {
         return new static($hex);
+    }
+
+    /**
+     * Construct from RGB channel values (0–255 each). No alpha channel.
+     */
+    public static function rgb(int $r, int $g, int $b): static
+    {
+        return new static('rgb', null, null, null, $r, $g, $b);
+    }
+
+    /**
+     * Construct from RGBA channel values (0–255 RGB, 0.0–1.0 alpha).
+     */
+    public static function rgba(int $r, int $g, int $b, float $a): static
+    {
+        return new static('rgba', null, null, $a, $r, $g, $b);
     }
 }
