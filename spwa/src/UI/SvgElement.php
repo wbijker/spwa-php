@@ -15,15 +15,15 @@ abstract class SvgElement
     protected ?string $opacity = null;
     protected ?string $transform = null;
 
-    public function fill(string $color): static
+    public function fill(string|Color $color): static
     {
-        $this->fill = $color;
+        $this->fill = $color instanceof Color ? $color->getValue() : $color;
         return $this;
     }
 
-    public function stroke(string $color): static
+    public function stroke(string|Color $color): static
     {
-        $this->stroke = $color;
+        $this->stroke = $color instanceof Color ? $color->getValue() : $color;
         return $this;
     }
 

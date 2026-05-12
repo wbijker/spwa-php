@@ -59,18 +59,18 @@ class Svg extends UIElement
     /**
      * Set default fill color.
      */
-    public function fill(string $color): static
+    public function fill(string|Color $color): static
     {
-        $this->fill = $color;
+        $this->fill = $color instanceof Color ? $color->getValue() : $color;
         return $this;
     }
 
     /**
      * Set default stroke color.
      */
-    public function stroke(string $color): static
+    public function stroke(string|Color $color): static
     {
-        $this->stroke = $color;
+        $this->stroke = $color instanceof Color ? $color->getValue() : $color;
         return $this;
     }
 
@@ -156,10 +156,10 @@ class Svg extends UIElement
         return new SvgGroup();
     }
 
-    public function build(): DomNode
+    protected function applyAttributes(): void
     {
-        $node = $this->dom()->setTag('svg')
-            ->attr('xmlns', 'http://www.w3.org/2000/svg');
+        $node = $this->dom();
+        $node->attr('xmlns', 'http://www.w3.org/2000/svg');
 
         if ($this->viewBoxValue !== null) {
             $node->attr('viewBox', $this->viewBoxValue);
@@ -185,10 +185,12 @@ class Svg extends UIElement
             $node->attr('stroke-width', $this->strokeWidth);
         }
 
+        // Children are SvgElement objects (not VNodes), so attach their DomNodes
+        // directly. Reset first so a re-render produces a fresh, non-duplicated
+        // child set.
+        $node->clearChildren();
         foreach ($this->children as $child) {
             $node->children($child->toNode());
         }
-
-        return $node;
     }
 }

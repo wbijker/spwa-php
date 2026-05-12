@@ -52,6 +52,12 @@ class TodoApp extends App
         return UI::column()
             ->background(Color::hex('#f5f5f5'))
             ->content(
+                // Analog clock
+                UI::row()
+                    ->alignCenter()
+                    ->paddingVertical(Unit::rem(1.5))
+                    ->content(new Clock()),
+
                 // Title
                 UI::text('todos')
                     ->center()
@@ -60,6 +66,19 @@ class TodoApp extends App
                     ->color(Color::hex('#b83f45'))
                     ->opacity(20)
                     ->paddingVertical(Unit::rem(1)),
+
+                // Current date/time, aligned to the right edge of the card
+                UI::row()
+                    ->alignRight()
+                    ->maxWidth(Unit::px(550))
+                    ->width(Unit::full())
+                    ->marginHorizontal(Unit::auto())
+                    ->paddingVertical(Unit::rem(0.5))
+                    ->content(
+                        UI::text(date('Y-m-d H:i:s'))
+                            ->fontSize(FontSize::Small)
+                            ->color(Color::hex('#777'))
+                    ),
 
                 // Main card
                 UI::column()

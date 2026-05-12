@@ -251,6 +251,17 @@ class TagDomNode extends DomNode
     }
 
     /**
+     * Remove all children. Used when an element builds its children
+     * derivatively (e.g. an SVG node from a list of SvgElements) and must
+     * stay idempotent across re-renders.
+     */
+    public function clearChildren(): static
+    {
+        $this->children = [];
+        return $this;
+    }
+
+    /**
      * Add raw HTML content without wrapping in TextDomNode.
      */
     public function rawContent(string $content): static
