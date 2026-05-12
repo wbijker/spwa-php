@@ -178,6 +178,650 @@ var SPWA = (function() {
         post({ event: '', path: '', value: null });
     }
 
+    function resolveObject(path) {
+        const last = path.pop();
+        const resolved = path.reduce((acc, cur) => acc[cur], window);
+        return [resolved, last];
+    }
+
+    function executeJsDump(dump) {
+        for (const [mode, path, args] of dump) {
+            const [obj, bind] = resolveObject(path);
+            if (mode === 'invoke')
+                obj[bind](...args);
+            else if (mode === 'assign')
+                obj[bind] = args;
+        }
+    }
+
+    function findNodeByPath(path, includeTextNodes = false) {
+        // Start from body's first child (the root element)
+        let node = document.body.firstElementChild;
+        for (let i = 0; i < path.length; i++) {
+            if (!node) return null;
+            const index = path[i];
+            if (includeTextNodes) {
+                // Use childNodes to include text nodes
+                node = node.childNodes[index];
+            } else {
+                // Use children for elements only
+                node = node.children[index];
+            }
+        }
+        return node;
+    }
+
+    function applyPatches(patches) {
+        for (const patch of patches) {
+            const path = patch.path;
+
+            switch (patch.type) {
+                case 'replace_node': {
+                    const node = findNodeByPath(path);
+                    if (node) {
+                        const temp = document.createElement('div');
+                        temp.innerHTML = patch.html;
+                        node.replaceWith(temp.firstElementChild);
+                    }
+                    break;
+                }
+                case 'insert_node': {
+                    const parentPath = path.slice(0, -1);
+                    const index = path[path.length - 1];
+                    const parent = parentPath.length === 0
+                        ? document.body.firstElementChild
+                        : findNodeByPath(parentPath);
+                    if (parent) {
+                        const temp = document.createElement('div');
+                        temp.innerHTML = patch.html;
+                        const newNode = temp.firstElementChild;
+                        if (index >= parent.children.length) {
+                            parent.appendChild(newNode);
+                        } else {
+                            parent.insertBefore(newNode, parent.children[index]);
+                        }
+                    }
+                    break;
+                }
+                case 'delete_node': {
+                    const node = findNodeByPath(path);
+                    if (node) {
+                        node.remove();
+                    }
+                    break;
+                }
+                case 'set_attribute': {
+                    const node = findNodeByPath(path);
+                    if (node) {
+                        node.setAttribute(patch.name, patch.value);
+                        // For form controls, the `value` attribute only sets the default;
+                        // the displayed value is the `.value` property once the user has typed.
+                        if (patch.name === 'value' && 'value' in node) {
+                            node.value = patch.value;
+                        } else if (patch.name === 'checked' && 'checked' in node) {
+                            node.checked = patch.value === 'checked' || patch.value === true;
+                        }
+                    }
+                    break;
+                }
+                case 'remove_attribute': {
+                    const node = findNodeByPath(path);
+                    if (node) {
+                        node.removeAttribute(patch.name);
+                    }
+                    break;
+                }
+                case 'replace_text': {
+                    const node = findNodeByPath(path);
+                    if (node) {
+                        node.textContent = patch.text;
+                    }
+                    break;
+                }
+                case 'insert_at': {
+                    // Insert child at specific index in a list
+                    const parent = findNodeByPath(path);
+                    if (parent) {
+                        const temp = document.createElement('div');
+                        temp.innerHTML = patch.html;
+                        const newNode = temp.firstElementChild;
+                        const index = patch.index;
+                        if (index >= parent.children.length) {
+                            parent.appendChild(newNode);
+                        } else {
+                            parent.insertBefore(newNode, parent.children[index]);
+                        }
+                    }
+                    break;
+                }
+                case 'remove_at': {
+                    // Remove child at specific index in a list
+                    const parent = findNodeByPath(path);
+                    if (parent && parent.children[patch.index]) {
+                        parent.children[patch.index].remove();
+                    }
+                    break;
+                }
+                case 'update_at': {
+                    // Replace child at specific index in a list
+                    const parent = findNodeByPath(path);
+                    if (parent && parent.children[patch.index]) {
+                        const temp = document.createElement('div');
+                        temp.innerHTML = patch.html;
+                        parent.children[patch.index].replaceWith(temp.firstElementChild);
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    // --- Replay-after-reload constants (used by callback, maybeReplay, post) ---
+    var SPWA_REPLAY_KEY = '__spwa_replay';
+    var SPWA_REPLAY_COUNT_KEY = '__spwa_replay_count';
+    var SPWA_MAX_REPLAYS = 2;
+    var __spwa_lastPayload = null;
+
+    // --- Value bindings ---
+    function initBindings() {
+        document.querySelectorAll('[data-bind]').forEach(function(el) {
+            if (el._spwaBound) return;
+            el._spwaBound = true;
+            // Path is computed at send time; we don't need to track per-element here.
+        });
+    }
+
+    function collectBindings() {
+        var bindings = {};
+        document.querySelectorAll('[data-bind]').forEach(function(el) {
+            bindings[computePath(el)] = el.value;
+        });
+        return Object.keys(bindings).length > 0 ? bindings : null;
+    }
+
+    function maybeReplay() {
+        var stored = sessionStorage.getItem(SPWA_REPLAY_KEY);
+        if (!stored) return;
+        // Clear the payload immediately so a failure here doesn't loop;
+        // SPWA_REPLAY_COUNT_KEY stays until a successful response clears it.
+        sessionStorage.removeItem(SPWA_REPLAY_KEY);
+        var data;
+        try {
+            data = JSON.parse(stored);
+        } catch (e) {
+            return;
+        }
+        // Use the fresh hash from this render; the stashed one is stale.
+        if (typeof window.__SPWA_HASH === 'string') {
+            data.hash = window.__SPWA_HASH;
+        }
+        // Bypass post() so we keep the original payload's bindings/value
+        // (the new page has empty inputs that would otherwise overwrite them).
+        setBusy(true);
+        __spwa_lastPayload = data;
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", window.location.href, true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) callback(null, JSON.parse(xhr.responseText));
+                else callback(new Error("Request failed: " + xhr.status));
+            }
+        };
+        xhr.send(JSON.stringify(data));
+    }
+
+    function bootstrap() {
+        initBindings();
+        maybeReplay();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bootstrap);
+    } else {
+        bootstrap();
+    }
+
+    function callback(error, data) {
+        if (error) {
+            console.error("Error:", error);
+            // Don't leave the queue stuck behind a failed request.
+            drainQueue();
+            return;
+        }
+
+        // Server signaled it cleared its state (shape mismatch / hash mismatch);
+        // reload the page so we start from a fresh server render — then replay
+        // the original request once the new page is up. Capped at SPWA_MAX_REPLAYS
+        // to avoid an infinite loop if state keeps drifting.
+        if (data && data.reload) {
+            if (__spwa_lastPayload) {
+                var count = parseInt(sessionStorage.getItem(SPWA_REPLAY_COUNT_KEY) || '0', 10);
+                if (count < SPWA_MAX_REPLAYS) {
+                    try {
+                        sessionStorage.setItem(SPWA_REPLAY_KEY, JSON.stringify(__spwa_lastPayload));
+                        sessionStorage.setItem(SPWA_REPLAY_COUNT_KEY, String(count + 1));
+                    } catch (e) { /* quota / disabled storage — give up on replay */ }
+                } else {
+                    sessionStorage.removeItem(SPWA_REPLAY_KEY);
+                    sessionStorage.removeItem(SPWA_REPLAY_COUNT_KEY);
+                }
+            }
+            // A full reload supersedes anything queued — drop it.
+            __spwa_queue.length = 0;
+            window.location.reload();
+            return;
+        }
+
+        // A normal successful response — past any reload spiral. Clear counters.
+        sessionStorage.removeItem(SPWA_REPLAY_KEY);
+        sessionStorage.removeItem(SPWA_REPLAY_COUNT_KEY);
+
+        // Refresh the state-fingerprint we echo back to the server on the next
+        // request. This is set on initial page render and updated after each
+        // successful event.
+        if (data && typeof data.hash === 'string') {
+            window.__SPWA_HASH = data.hash;
+        }
+
+        // Save state if client state management is enabled
+        if (data.state) {
+            SPWA.setAll(data.state);
+        }
+
+        // Add new styles before applying patches
+        // Supports both raw (className => CSS string) and compressed formats
+        if (data.styles) {
+            SPWA.addRawStyles(data.styles);
+        }
+        if (data.compressedStyles) {
+            SPWA.addCompressedStyles(data.compressedStyles);
+        }
+
+        // Execute JS commands from server
+        if (data.js) {
+            executeJsDump(data.js);
+        }
+
+        // Apply DOM patches
+        if (data.patches && data.patches.length > 0) {
+            // console.log("Applying patches:", data.patches);
+            applyPatches(data.patches);
+        }
+
+        // Re-initialize bindings after patches (new elements may have data-bind)
+        initBindings();
+
+        // DOM is now hydrated for this request — release the queue.
+        drainQueue();
+    }
+
+    // --- Request queue + loader visibility ---
+    // Only one request may be in flight at a time. Anything that comes in while
+    // busy is queued and dispatched after the current response has been applied
+    // (patches + bindings re-init). A `[data-spwa-loader]` element on the page,
+    // if present, is toggled to visible while a request is active.
+    var __spwa_busy = false;
+    var __spwa_queue = [];
+    var __spwa_loaderEl = null;
+    var __spwa_loaderTimer = null;
+
+    function loaderEl() {
+        if (__spwa_loaderEl === null) {
+            __spwa_loaderEl = document.querySelector('[data-spwa-loader]') || false;
+        }
+        return __spwa_loaderEl || null;
+    }
+
+    function loaderDelay() {
+        // Override via `window.__SPWA_LOADER_DELAY = N` (milliseconds).
+        // Fast requests (< delay) complete without ever showing the loader,
+        // avoiding flashes. Default: 300ms — see UX notes in README.
+        var d = typeof window.__SPWA_LOADER_DELAY === 'number'
+            ? window.__SPWA_LOADER_DELAY
+            : 300;
+        return d >= 0 ? d : 0;
+    }
+
+    function setBusy(busy) {
+        __spwa_busy = busy;
+        var el = loaderEl();
+        if (!el) return;
+
+        if (busy) {
+            // Only schedule a show on the leading edge — once a debounce is
+            // pending we don't reset it for follow-up requests in the queue,
+            // so a sequence of small requests still triggers the loader if
+            // their total time exceeds the delay.
+            if (__spwa_loaderTimer === null && el.style.display === 'none') {
+                __spwa_loaderTimer = setTimeout(function () {
+                    __spwa_loaderTimer = null;
+                    if (__spwa_busy) el.style.display = 'block';
+                }, loaderDelay());
+            }
+        } else {
+            if (__spwa_loaderTimer !== null) {
+                clearTimeout(__spwa_loaderTimer);
+                __spwa_loaderTimer = null;
+            }
+            el.style.display = 'none';
+        }
+    }
+
+    function post(data, headers) {
+        if (__spwa_busy) {
+            __spwa_queue.push({ kind: 'json', data: data, headers: headers });
+            return;
+        }
+        setBusy(true);
+        sendJson(data, headers);
+    }
+
+    function postMultipart(data, files) {
+        if (__spwa_busy) {
+            __spwa_queue.push({ kind: 'multipart', data: data, files: files });
+            return;
+        }
+        setBusy(true);
+        sendMultipart(data, files);
+    }
+
+    function drainQueue() {
+        if (__spwa_queue.length === 0) {
+            setBusy(false);
+            return;
+        }
+        var next = __spwa_queue.shift();
+        if (next.kind === 'multipart') {
+            sendMultipart(next.data, next.files);
+        } else {
+            sendJson(next.data, next.headers);
+        }
+    }
+
+    function sendJson(data, headers) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", window.location.href, true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+
+        for (var key in headers ?? {}) {
+            if (headers.hasOwnProperty(key)) {
+                xhr.setRequestHeader(key, headers[key]);
+            }
+        }
+
+        __spwa_lastPayload = data;
+
+        var bindings = collectBindings();
+        if (bindings) {
+            data.bindings = bindings;
+        }
+        if (typeof window.__SPWA_HASH === 'string') {
+            data.hash = window.__SPWA_HASH;
+        }
+        if (SPWA.isStateEnabled()) {
+            var clientState = SPWA.getAll();
+            if (clientState) data.state = clientState;
+        }
+
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState !== 4) return;
+            if (xhr.status === 200) {
+                callback(null, JSON.parse(xhr.responseText));
+            } else {
+                callback(new Error("Request failed: " + xhr.status));
+            }
+        };
+        xhr.send(JSON.stringify(data));
+    }
+
+    function sendMultipart(data, files) {
+        var bindings = collectBindings();
+        if (bindings) data.bindings = bindings;
+        if (typeof window.__SPWA_HASH === 'string') {
+            data.hash = window.__SPWA_HASH;
+        }
+        if (SPWA.isStateEnabled()) {
+            var clientState = SPWA.getAll();
+            if (clientState) data.state = clientState;
+        }
+
+        var formData = new FormData();
+        formData.append('_spwa', JSON.stringify(data));
+        for (var i = 0; i < files.length; i++) {
+            formData.append('files[]', files[i]);
+        }
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", window.location.href, true);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState !== 4) return;
+            if (xhr.status === 200) {
+                callback(null, JSON.parse(xhr.responseText));
+            } else {
+                callback(new Error("Request failed: " + xhr.status));
+            }
+        };
+        xhr.send(formData);
+    }
+
+    function extractEventData(evt, el) {
+        if (!evt) {
+            // Fallback: just return element value
+            return (el && el.value !== undefined) ? el.value : null;
+        }
+
+        var type = evt.type;
+
+        // Form/input events — return element value or checked state
+        if (type === 'change' || type === 'input' || type === 'select' || type === 'invalid') {
+            if (el && (el.type === 'checkbox' || el.type === 'radio')) {
+                return { value: el.value, checked: el.checked };
+            }
+            return (el && el.value !== undefined) ? el.value : null;
+        }
+
+        // Focus/blur — return relatedTarget info
+        if (type === 'focus' || type === 'blur' || type === 'focusin' || type === 'focusout') {
+            return null;
+        }
+
+        // Submit/reset — prevent default, return null
+        if (type === 'submit' || type === 'reset') {
+            evt.preventDefault();
+            return null;
+        }
+
+        // Keyboard events
+        if (type === 'keydown' || type === 'keyup' || type === 'keypress') {
+            return {
+                key: evt.key,
+                code: evt.code,
+                altKey: evt.altKey,
+                ctrlKey: evt.ctrlKey,
+                shiftKey: evt.shiftKey,
+                metaKey: evt.metaKey,
+                repeat: evt.repeat
+            };
+        }
+
+        // Mouse events
+        if (type === 'click' || type === 'dblclick' || type === 'mousedown' || type === 'mouseup' ||
+            type === 'mouseover' || type === 'mouseout' || type === 'mouseenter' || type === 'mouseleave' ||
+            type === 'mousemove' || type === 'contextmenu') {
+            var mouseData = {
+                clientX: evt.clientX,
+                clientY: evt.clientY,
+                offsetX: evt.offsetX,
+                offsetY: evt.offsetY,
+                button: evt.button,
+                altKey: evt.altKey,
+                ctrlKey: evt.ctrlKey,
+                shiftKey: evt.shiftKey,
+                metaKey: evt.metaKey
+            };
+            if (type === 'contextmenu') {
+                evt.preventDefault();
+            }
+            // For click on form elements, also include value
+            if (el && el.value !== undefined) {
+                mouseData.value = el.value;
+            }
+            return mouseData;
+        }
+
+        // Pointer events
+        if (type.indexOf('pointer') === 0 || type === 'gotpointercapture' || type === 'lostpointercapture') {
+            return {
+                clientX: evt.clientX,
+                clientY: evt.clientY,
+                offsetX: evt.offsetX,
+                offsetY: evt.offsetY,
+                button: evt.button,
+                pointerId: evt.pointerId,
+                pointerType: evt.pointerType,
+                pressure: evt.pressure,
+                width: evt.width,
+                height: evt.height,
+                altKey: evt.altKey,
+                ctrlKey: evt.ctrlKey,
+                shiftKey: evt.shiftKey,
+                metaKey: evt.metaKey
+            };
+        }
+
+        // Touch events
+        if (type === 'touchstart' || type === 'touchend' || type === 'touchmove' || type === 'touchcancel') {
+            var touches = [];
+            var src = evt.touches || [];
+            for (var i = 0; i < src.length; i++) {
+                touches.push({ clientX: src[i].clientX, clientY: src[i].clientY, identifier: src[i].identifier });
+            }
+            var changedTouches = [];
+            var csrc = evt.changedTouches || [];
+            for (var j = 0; j < csrc.length; j++) {
+                changedTouches.push({ clientX: csrc[j].clientX, clientY: csrc[j].clientY, identifier: csrc[j].identifier });
+            }
+            return { touches: touches, changedTouches: changedTouches };
+        }
+
+        // Wheel events
+        if (type === 'wheel') {
+            return {
+                deltaX: evt.deltaX,
+                deltaY: evt.deltaY,
+                deltaZ: evt.deltaZ,
+                deltaMode: evt.deltaMode,
+                clientX: evt.clientX,
+                clientY: evt.clientY
+            };
+        }
+
+        // Scroll events
+        if (type === 'scroll') {
+            return {
+                scrollTop: el ? el.scrollTop : 0,
+                scrollLeft: el ? el.scrollLeft : 0,
+                scrollHeight: el ? el.scrollHeight : 0,
+                scrollWidth: el ? el.scrollWidth : 0
+            };
+        }
+
+        // Drag events
+        if (type === 'dragstart' || type === 'drag' || type === 'dragend' ||
+            type === 'dragenter' || type === 'dragleave' || type === 'dragover' || type === 'drop') {
+            if (type === 'dragover' || type === 'drop') {
+                evt.preventDefault();
+            }
+            var dragData = {
+                clientX: evt.clientX,
+                clientY: evt.clientY,
+                offsetX: evt.offsetX,
+                offsetY: evt.offsetY
+            };
+            if (evt.dataTransfer) {
+                try {
+                    dragData.text = evt.dataTransfer.getData('text/plain');
+                } catch(e) {}
+                dragData.types = Array.from(evt.dataTransfer.types || []);
+                dragData.dropEffect = evt.dataTransfer.dropEffect;
+                dragData.effectAllowed = evt.dataTransfer.effectAllowed;
+            }
+            return dragData;
+        }
+
+        // Clipboard events
+        if (type === 'copy' || type === 'cut' || type === 'paste') {
+            var clipData = {};
+            if (evt.clipboardData) {
+                try {
+                    clipData.text = evt.clipboardData.getData('text/plain');
+                } catch(e) {}
+            }
+            return clipData;
+        }
+
+        // Transition/animation events
+        if (type === 'transitionend' || type === 'transitionstart' || type === 'transitioncancel' ||
+            type === 'transitionrun') {
+            return { propertyName: evt.propertyName, elapsedTime: evt.elapsedTime, pseudoElement: evt.pseudoElement };
+        }
+        if (type === 'animationend' || type === 'animationstart' || type === 'animationiteration' ||
+            type === 'animationcancel') {
+            return { animationName: evt.animationName, elapsedTime: evt.elapsedTime, pseudoElement: evt.pseudoElement };
+        }
+
+        // Resize events
+        if (type === 'resize') {
+            return { width: el ? el.offsetWidth : 0, height: el ? el.offsetHeight : 0 };
+        }
+
+        // Media events
+        if (type === 'play' || type === 'pause' || type === 'ended' || type === 'timeupdate' ||
+            type === 'volumechange' || type === 'seeking' || type === 'seeked' ||
+            type === 'loadeddata' || type === 'loadedmetadata' || type === 'canplay' || type === 'canplaythrough' ||
+            type === 'waiting' || type === 'playing' || type === 'ratechange' || type === 'durationchange' ||
+            type === 'progress' || type === 'stalled' || type === 'suspend' || type === 'emptied' || type === 'abort') {
+            return {
+                currentTime: el ? el.currentTime : 0,
+                duration: el ? el.duration : 0,
+                paused: el ? el.paused : true,
+                volume: el ? el.volume : 1,
+                muted: el ? el.muted : false,
+                playbackRate: el ? el.playbackRate : 1,
+                ended: el ? el.ended : false,
+                readyState: el ? el.readyState : 0
+            };
+        }
+
+        // Default: return element value if available
+        return (el && el.value !== undefined) ? el.value : null;
+    }
+
+    function computePath(el) {
+        var root = document.body.firstElementChild;
+        var indices = [];
+        while (el && el !== root) {
+            var parent = el.parentElement;
+            if (!parent) return '';
+            indices.unshift(Array.prototype.indexOf.call(parent.children, el));
+            el = parent;
+        }
+        return indices.join(',');
+    }
+
+    function handleEvent(evt, event, el) {
+        var path = computePath(el);
+        var data = { event: event, path: path };
+        // File upload — send as multipart form
+        if (el && el.type === 'file' && el.files && el.files.length > 0) {
+            data.value = null;
+            postMultipart(data, el.files);
+            return;
+        }
+        data.value = extractEventData(evt, el);
+        post(data);
+    }
     return {
         addRawStyles: addRawStyles,
         addCompressedStyles: addCompressedStyles,
@@ -188,651 +832,7 @@ var SPWA = (function() {
         setAll: setAll,
         isStateEnabled: isStateEnabled,
         refresh: refresh,
-        tick: refresh
+        tick: refresh,
+        handleEvent: handleEvent
     };
 })();
-
-function resolveObject(path) {
-    const last = path.pop();
-    const resolved = path.reduce((acc, cur) => acc[cur], window);
-    return [resolved, last];
-}
-
-function executeJsDump(dump) {
-    for (const [mode, path, args] of dump) {
-        const [obj, bind] = resolveObject(path);
-        if (mode === 'invoke')
-            obj[bind](...args);
-        else if (mode === 'assign')
-            obj[bind] = args;
-    }
-}
-
-function findNodeByPath(path, includeTextNodes = false) {
-    // Start from body's first child (the root element)
-    let node = document.body.firstElementChild;
-    for (let i = 0; i < path.length; i++) {
-        if (!node) return null;
-        const index = path[i];
-        if (includeTextNodes) {
-            // Use childNodes to include text nodes
-            node = node.childNodes[index];
-        } else {
-            // Use children for elements only
-            node = node.children[index];
-        }
-    }
-    return node;
-}
-
-function applyPatches(patches) {
-    for (const patch of patches) {
-        const path = patch.path;
-
-        switch (patch.type) {
-            case 'replace_node': {
-                const node = findNodeByPath(path);
-                if (node) {
-                    const temp = document.createElement('div');
-                    temp.innerHTML = patch.html;
-                    node.replaceWith(temp.firstElementChild);
-                }
-                break;
-            }
-            case 'insert_node': {
-                const parentPath = path.slice(0, -1);
-                const index = path[path.length - 1];
-                const parent = parentPath.length === 0
-                    ? document.body.firstElementChild
-                    : findNodeByPath(parentPath);
-                if (parent) {
-                    const temp = document.createElement('div');
-                    temp.innerHTML = patch.html;
-                    const newNode = temp.firstElementChild;
-                    if (index >= parent.children.length) {
-                        parent.appendChild(newNode);
-                    } else {
-                        parent.insertBefore(newNode, parent.children[index]);
-                    }
-                }
-                break;
-            }
-            case 'delete_node': {
-                const node = findNodeByPath(path);
-                if (node) {
-                    node.remove();
-                }
-                break;
-            }
-            case 'set_attribute': {
-                const node = findNodeByPath(path);
-                if (node) {
-                    node.setAttribute(patch.name, patch.value);
-                    // For form controls, the `value` attribute only sets the default;
-                    // the displayed value is the `.value` property once the user has typed.
-                    if (patch.name === 'value' && 'value' in node) {
-                        node.value = patch.value;
-                    } else if (patch.name === 'checked' && 'checked' in node) {
-                        node.checked = patch.value === 'checked' || patch.value === true;
-                    }
-                }
-                break;
-            }
-            case 'remove_attribute': {
-                const node = findNodeByPath(path);
-                if (node) {
-                    node.removeAttribute(patch.name);
-                }
-                break;
-            }
-            case 'replace_text': {
-                const node = findNodeByPath(path);
-                if (node) {
-                    node.textContent = patch.text;
-                }
-                break;
-            }
-            case 'insert_at': {
-                // Insert child at specific index in a list
-                const parent = findNodeByPath(path);
-                if (parent) {
-                    const temp = document.createElement('div');
-                    temp.innerHTML = patch.html;
-                    const newNode = temp.firstElementChild;
-                    const index = patch.index;
-                    if (index >= parent.children.length) {
-                        parent.appendChild(newNode);
-                    } else {
-                        parent.insertBefore(newNode, parent.children[index]);
-                    }
-                }
-                break;
-            }
-            case 'remove_at': {
-                // Remove child at specific index in a list
-                const parent = findNodeByPath(path);
-                if (parent && parent.children[patch.index]) {
-                    parent.children[patch.index].remove();
-                }
-                break;
-            }
-            case 'update_at': {
-                // Replace child at specific index in a list
-                const parent = findNodeByPath(path);
-                if (parent && parent.children[patch.index]) {
-                    const temp = document.createElement('div');
-                    temp.innerHTML = patch.html;
-                    parent.children[patch.index].replaceWith(temp.firstElementChild);
-                }
-                break;
-            }
-        }
-    }
-}
-
-// --- Replay-after-reload constants (used by callback, maybeReplay, post) ---
-var SPWA_REPLAY_KEY = '__spwa_replay';
-var SPWA_REPLAY_COUNT_KEY = '__spwa_replay_count';
-var SPWA_MAX_REPLAYS = 2;
-var __spwa_lastPayload = null;
-
-// --- Value bindings ---
-function initBindings() {
-    document.querySelectorAll('[data-bind]').forEach(function(el) {
-        if (el._spwaBound) return;
-        el._spwaBound = true;
-        // Path is computed at send time; we don't need to track per-element here.
-    });
-}
-
-function collectBindings() {
-    var bindings = {};
-    document.querySelectorAll('[data-bind]').forEach(function(el) {
-        bindings[computePath(el)] = el.value;
-    });
-    return Object.keys(bindings).length > 0 ? bindings : null;
-}
-
-function maybeReplay() {
-    var stored = sessionStorage.getItem(SPWA_REPLAY_KEY);
-    if (!stored) return;
-    // Clear the payload immediately so a failure here doesn't loop;
-    // SPWA_REPLAY_COUNT_KEY stays until a successful response clears it.
-    sessionStorage.removeItem(SPWA_REPLAY_KEY);
-    var data;
-    try {
-        data = JSON.parse(stored);
-    } catch (e) {
-        return;
-    }
-    // Use the fresh hash from this render; the stashed one is stale.
-    if (typeof window.__SPWA_HASH === 'string') {
-        data.hash = window.__SPWA_HASH;
-    }
-    // Bypass post() so we keep the original payload's bindings/value
-    // (the new page has empty inputs that would otherwise overwrite them).
-    setBusy(true);
-    __spwa_lastPayload = data;
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", window.location.href, true);
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4) {
-            if (xhr.status === 200) callback(null, JSON.parse(xhr.responseText));
-            else callback(new Error("Request failed: " + xhr.status));
-        }
-    };
-    xhr.send(JSON.stringify(data));
-}
-
-function bootstrap() {
-    initBindings();
-    maybeReplay();
-}
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', bootstrap);
-} else {
-    bootstrap();
-}
-
-function callback(error, data) {
-    if (error) {
-        console.error("Error:", error);
-        // Don't leave the queue stuck behind a failed request.
-        drainQueue();
-        return;
-    }
-
-    // Server signaled it cleared its state (shape mismatch / hash mismatch);
-    // reload the page so we start from a fresh server render — then replay
-    // the original request once the new page is up. Capped at SPWA_MAX_REPLAYS
-    // to avoid an infinite loop if state keeps drifting.
-    if (data && data.reload) {
-        if (__spwa_lastPayload) {
-            var count = parseInt(sessionStorage.getItem(SPWA_REPLAY_COUNT_KEY) || '0', 10);
-            if (count < SPWA_MAX_REPLAYS) {
-                try {
-                    sessionStorage.setItem(SPWA_REPLAY_KEY, JSON.stringify(__spwa_lastPayload));
-                    sessionStorage.setItem(SPWA_REPLAY_COUNT_KEY, String(count + 1));
-                } catch (e) { /* quota / disabled storage — give up on replay */ }
-            } else {
-                sessionStorage.removeItem(SPWA_REPLAY_KEY);
-                sessionStorage.removeItem(SPWA_REPLAY_COUNT_KEY);
-            }
-        }
-        // A full reload supersedes anything queued — drop it.
-        __spwa_queue.length = 0;
-        window.location.reload();
-        return;
-    }
-
-    // A normal successful response — past any reload spiral. Clear counters.
-    sessionStorage.removeItem(SPWA_REPLAY_KEY);
-    sessionStorage.removeItem(SPWA_REPLAY_COUNT_KEY);
-
-    // Refresh the state-fingerprint we echo back to the server on the next
-    // request. This is set on initial page render and updated after each
-    // successful event.
-    if (data && typeof data.hash === 'string') {
-        window.__SPWA_HASH = data.hash;
-    }
-
-    // Save state if client state management is enabled
-    if (data.state) {
-        SPWA.setAll(data.state);
-    }
-
-    // Add new styles before applying patches
-    // Supports both raw (className => CSS string) and compressed formats
-    if (data.styles) {
-        SPWA.addRawStyles(data.styles);
-    }
-    if (data.compressedStyles) {
-        SPWA.addCompressedStyles(data.compressedStyles);
-    }
-
-    // Execute JS commands from server
-    if (data.js) {
-        executeJsDump(data.js);
-    }
-
-    // Apply DOM patches
-    if (data.patches && data.patches.length > 0) {
-        // console.log("Applying patches:", data.patches);
-        applyPatches(data.patches);
-    }
-
-    // Re-initialize bindings after patches (new elements may have data-bind)
-    initBindings();
-
-    // DOM is now hydrated for this request — release the queue.
-    drainQueue();
-}
-
-// --- Request queue + loader visibility ---
-// Only one request may be in flight at a time. Anything that comes in while
-// busy is queued and dispatched after the current response has been applied
-// (patches + bindings re-init). A `[data-spwa-loader]` element on the page,
-// if present, is toggled to visible while a request is active.
-var __spwa_busy = false;
-var __spwa_queue = [];
-var __spwa_loaderEl = null;
-var __spwa_loaderTimer = null;
-
-function loaderEl() {
-    if (__spwa_loaderEl === null) {
-        __spwa_loaderEl = document.querySelector('[data-spwa-loader]') || false;
-    }
-    return __spwa_loaderEl || null;
-}
-
-function loaderDelay() {
-    // Override via `window.__SPWA_LOADER_DELAY = N` (milliseconds).
-    // Fast requests (< delay) complete without ever showing the loader,
-    // avoiding flashes. Default: 300ms — see UX notes in README.
-    var d = typeof window.__SPWA_LOADER_DELAY === 'number'
-        ? window.__SPWA_LOADER_DELAY
-        : 300;
-    return d >= 0 ? d : 0;
-}
-
-function setBusy(busy) {
-    __spwa_busy = busy;
-    var el = loaderEl();
-    if (!el) return;
-
-    if (busy) {
-        // Only schedule a show on the leading edge — once a debounce is
-        // pending we don't reset it for follow-up requests in the queue,
-        // so a sequence of small requests still triggers the loader if
-        // their total time exceeds the delay.
-        if (__spwa_loaderTimer === null && el.style.display === 'none') {
-            __spwa_loaderTimer = setTimeout(function () {
-                __spwa_loaderTimer = null;
-                if (__spwa_busy) el.style.display = 'block';
-            }, loaderDelay());
-        }
-    } else {
-        if (__spwa_loaderTimer !== null) {
-            clearTimeout(__spwa_loaderTimer);
-            __spwa_loaderTimer = null;
-        }
-        el.style.display = 'none';
-    }
-}
-
-function post(data, headers) {
-    if (__spwa_busy) {
-        __spwa_queue.push({ kind: 'json', data: data, headers: headers });
-        return;
-    }
-    setBusy(true);
-    sendJson(data, headers);
-}
-
-function postMultipart(data, files) {
-    if (__spwa_busy) {
-        __spwa_queue.push({ kind: 'multipart', data: data, files: files });
-        return;
-    }
-    setBusy(true);
-    sendMultipart(data, files);
-}
-
-function drainQueue() {
-    if (__spwa_queue.length === 0) {
-        setBusy(false);
-        return;
-    }
-    var next = __spwa_queue.shift();
-    if (next.kind === 'multipart') {
-        sendMultipart(next.data, next.files);
-    } else {
-        sendJson(next.data, next.headers);
-    }
-}
-
-function sendJson(data, headers) {
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", window.location.href, true);
-    xhr.setRequestHeader("Content-Type", "application/json");
-
-    for (var key in headers ?? {}) {
-        if (headers.hasOwnProperty(key)) {
-            xhr.setRequestHeader(key, headers[key]);
-        }
-    }
-
-    __spwa_lastPayload = data;
-
-    var bindings = collectBindings();
-    if (bindings) {
-        data.bindings = bindings;
-    }
-    if (typeof window.__SPWA_HASH === 'string') {
-        data.hash = window.__SPWA_HASH;
-    }
-    if (SPWA.isStateEnabled()) {
-        var clientState = SPWA.getAll();
-        if (clientState) data.state = clientState;
-    }
-
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState !== 4) return;
-        if (xhr.status === 200) {
-            callback(null, JSON.parse(xhr.responseText));
-        } else {
-            callback(new Error("Request failed: " + xhr.status));
-        }
-    };
-    xhr.send(JSON.stringify(data));
-}
-
-function sendMultipart(data, files) {
-    var bindings = collectBindings();
-    if (bindings) data.bindings = bindings;
-    if (typeof window.__SPWA_HASH === 'string') {
-        data.hash = window.__SPWA_HASH;
-    }
-    if (SPWA.isStateEnabled()) {
-        var clientState = SPWA.getAll();
-        if (clientState) data.state = clientState;
-    }
-
-    var formData = new FormData();
-    formData.append('_spwa', JSON.stringify(data));
-    for (var i = 0; i < files.length; i++) {
-        formData.append('files[]', files[i]);
-    }
-
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", window.location.href, true);
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState !== 4) return;
-        if (xhr.status === 200) {
-            callback(null, JSON.parse(xhr.responseText));
-        } else {
-            callback(new Error("Request failed: " + xhr.status));
-        }
-    };
-    xhr.send(formData);
-}
-
-function extractEventData(evt, el) {
-    if (!evt) {
-        // Fallback: just return element value
-        return (el && el.value !== undefined) ? el.value : null;
-    }
-
-    var type = evt.type;
-
-    // Form/input events — return element value or checked state
-    if (type === 'change' || type === 'input' || type === 'select' || type === 'invalid') {
-        if (el && (el.type === 'checkbox' || el.type === 'radio')) {
-            return { value: el.value, checked: el.checked };
-        }
-        return (el && el.value !== undefined) ? el.value : null;
-    }
-
-    // Focus/blur — return relatedTarget info
-    if (type === 'focus' || type === 'blur' || type === 'focusin' || type === 'focusout') {
-        return null;
-    }
-
-    // Submit/reset — prevent default, return null
-    if (type === 'submit' || type === 'reset') {
-        evt.preventDefault();
-        return null;
-    }
-
-    // Keyboard events
-    if (type === 'keydown' || type === 'keyup' || type === 'keypress') {
-        return {
-            key: evt.key,
-            code: evt.code,
-            altKey: evt.altKey,
-            ctrlKey: evt.ctrlKey,
-            shiftKey: evt.shiftKey,
-            metaKey: evt.metaKey,
-            repeat: evt.repeat
-        };
-    }
-
-    // Mouse events
-    if (type === 'click' || type === 'dblclick' || type === 'mousedown' || type === 'mouseup' ||
-        type === 'mouseover' || type === 'mouseout' || type === 'mouseenter' || type === 'mouseleave' ||
-        type === 'mousemove' || type === 'contextmenu') {
-        var mouseData = {
-            clientX: evt.clientX,
-            clientY: evt.clientY,
-            offsetX: evt.offsetX,
-            offsetY: evt.offsetY,
-            button: evt.button,
-            altKey: evt.altKey,
-            ctrlKey: evt.ctrlKey,
-            shiftKey: evt.shiftKey,
-            metaKey: evt.metaKey
-        };
-        if (type === 'contextmenu') {
-            evt.preventDefault();
-        }
-        // For click on form elements, also include value
-        if (el && el.value !== undefined) {
-            mouseData.value = el.value;
-        }
-        return mouseData;
-    }
-
-    // Pointer events
-    if (type.indexOf('pointer') === 0 || type === 'gotpointercapture' || type === 'lostpointercapture') {
-        return {
-            clientX: evt.clientX,
-            clientY: evt.clientY,
-            offsetX: evt.offsetX,
-            offsetY: evt.offsetY,
-            button: evt.button,
-            pointerId: evt.pointerId,
-            pointerType: evt.pointerType,
-            pressure: evt.pressure,
-            width: evt.width,
-            height: evt.height,
-            altKey: evt.altKey,
-            ctrlKey: evt.ctrlKey,
-            shiftKey: evt.shiftKey,
-            metaKey: evt.metaKey
-        };
-    }
-
-    // Touch events
-    if (type === 'touchstart' || type === 'touchend' || type === 'touchmove' || type === 'touchcancel') {
-        var touches = [];
-        var src = evt.touches || [];
-        for (var i = 0; i < src.length; i++) {
-            touches.push({ clientX: src[i].clientX, clientY: src[i].clientY, identifier: src[i].identifier });
-        }
-        var changedTouches = [];
-        var csrc = evt.changedTouches || [];
-        for (var j = 0; j < csrc.length; j++) {
-            changedTouches.push({ clientX: csrc[j].clientX, clientY: csrc[j].clientY, identifier: csrc[j].identifier });
-        }
-        return { touches: touches, changedTouches: changedTouches };
-    }
-
-    // Wheel events
-    if (type === 'wheel') {
-        return {
-            deltaX: evt.deltaX,
-            deltaY: evt.deltaY,
-            deltaZ: evt.deltaZ,
-            deltaMode: evt.deltaMode,
-            clientX: evt.clientX,
-            clientY: evt.clientY
-        };
-    }
-
-    // Scroll events
-    if (type === 'scroll') {
-        return {
-            scrollTop: el ? el.scrollTop : 0,
-            scrollLeft: el ? el.scrollLeft : 0,
-            scrollHeight: el ? el.scrollHeight : 0,
-            scrollWidth: el ? el.scrollWidth : 0
-        };
-    }
-
-    // Drag events
-    if (type === 'dragstart' || type === 'drag' || type === 'dragend' ||
-        type === 'dragenter' || type === 'dragleave' || type === 'dragover' || type === 'drop') {
-        if (type === 'dragover' || type === 'drop') {
-            evt.preventDefault();
-        }
-        var dragData = {
-            clientX: evt.clientX,
-            clientY: evt.clientY,
-            offsetX: evt.offsetX,
-            offsetY: evt.offsetY
-        };
-        if (evt.dataTransfer) {
-            try {
-                dragData.text = evt.dataTransfer.getData('text/plain');
-            } catch(e) {}
-            dragData.types = Array.from(evt.dataTransfer.types || []);
-            dragData.dropEffect = evt.dataTransfer.dropEffect;
-            dragData.effectAllowed = evt.dataTransfer.effectAllowed;
-        }
-        return dragData;
-    }
-
-    // Clipboard events
-    if (type === 'copy' || type === 'cut' || type === 'paste') {
-        var clipData = {};
-        if (evt.clipboardData) {
-            try {
-                clipData.text = evt.clipboardData.getData('text/plain');
-            } catch(e) {}
-        }
-        return clipData;
-    }
-
-    // Transition/animation events
-    if (type === 'transitionend' || type === 'transitionstart' || type === 'transitioncancel' ||
-        type === 'transitionrun') {
-        return { propertyName: evt.propertyName, elapsedTime: evt.elapsedTime, pseudoElement: evt.pseudoElement };
-    }
-    if (type === 'animationend' || type === 'animationstart' || type === 'animationiteration' ||
-        type === 'animationcancel') {
-        return { animationName: evt.animationName, elapsedTime: evt.elapsedTime, pseudoElement: evt.pseudoElement };
-    }
-
-    // Resize events
-    if (type === 'resize') {
-        return { width: el ? el.offsetWidth : 0, height: el ? el.offsetHeight : 0 };
-    }
-
-    // Media events
-    if (type === 'play' || type === 'pause' || type === 'ended' || type === 'timeupdate' ||
-        type === 'volumechange' || type === 'seeking' || type === 'seeked' ||
-        type === 'loadeddata' || type === 'loadedmetadata' || type === 'canplay' || type === 'canplaythrough' ||
-        type === 'waiting' || type === 'playing' || type === 'ratechange' || type === 'durationchange' ||
-        type === 'progress' || type === 'stalled' || type === 'suspend' || type === 'emptied' || type === 'abort') {
-        return {
-            currentTime: el ? el.currentTime : 0,
-            duration: el ? el.duration : 0,
-            paused: el ? el.paused : true,
-            volume: el ? el.volume : 1,
-            muted: el ? el.muted : false,
-            playbackRate: el ? el.playbackRate : 1,
-            ended: el ? el.ended : false,
-            readyState: el ? el.readyState : 0
-        };
-    }
-
-    // Default: return element value if available
-    return (el && el.value !== undefined) ? el.value : null;
-}
-
-function computePath(el) {
-    var root = document.body.firstElementChild;
-    var indices = [];
-    while (el && el !== root) {
-        var parent = el.parentElement;
-        if (!parent) return '';
-        indices.unshift(Array.prototype.indexOf.call(parent.children, el));
-        el = parent;
-    }
-    return indices.join(',');
-}
-
-function handleEvent(evt, event, el) {
-    var path = computePath(el);
-    var data = { event: event, path: path };
-    // File upload — send as multipart form
-    if (el && el.type === 'file' && el.files && el.files.length > 0) {
-        data.value = null;
-        postMultipart(data, el.files);
-        return;
-    }
-    data.value = extractEventData(evt, el);
-    post(data);
-}

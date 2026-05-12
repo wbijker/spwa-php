@@ -367,7 +367,7 @@ class TagDomNode extends DomNode
         if ($this->managed) {
             foreach ($this->events as $event => $callback) {
                 $domEvent = self::DOM_EVENT_MAP[$event] ?? $event;
-                $attrHtml .= ' on' . $domEvent . "=\"handleEvent(event, '" . $event . "', this)\"";
+                $attrHtml .= ' on' . $domEvent . "=\"SPWA.handleEvent(event, '" . $event . "', this)\"";
             }
         }
 
