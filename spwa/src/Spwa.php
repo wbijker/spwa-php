@@ -3,6 +3,7 @@
 namespace Spwa;
 
 use Spwa\Debug\DebugPanel;
+use Spwa\Debug\Timings;
 use Spwa\Js\JsRuntime;
 use Spwa\State\StateManager;
 use Spwa\UI\StyleGenerator;
@@ -59,6 +60,7 @@ class Spwa
      */
     private static function handlePost(App $entry, StateManager $primaryState, array $states): void
     {
+        $t = new Timings();
         ob_start();
 
         // Parse payload from JSON or multipart form
@@ -75,6 +77,7 @@ class Spwa
         $value = $payload['value'] ?? null;
         $bindings = $payload['bindings'] ?? [];
         $expectedHash = $payload['hash'] ?? null;
+        $t->mark('parse_payload');
 
         // Optimistic concurrency: the frontend echoes the hash it was
         // rendered against. If the backend's current state hashes differently
@@ -86,6 +89,7 @@ class Spwa
             echo json_encode(['success' => false, 'reload' => true]);
             exit;
         }
+        $t->mark('verify_hash');
 
         // Render the old tree, execute event, save state. If the render or
         // event handler crashes because serialized state no longer matches
@@ -94,20 +98,25 @@ class Spwa
         try {
             $oldApp = new ($entry::class)();
             $oldUi = $oldApp->render($primaryState, null, RenderPhase::DiffOld);
+            $t->mark('render_old');
 
             if (!empty($bindings) && $oldUi instanceof TagDomNode) {
                 $oldUi->hydrateBindings($bindings);
             }
+            $t->mark('hydrate_bindings');
 
             $node = $oldUi->findByPath($path);
             if ($node !== null) {
                 $node->executeEvent($event, $primaryState, $value);
             }
+            $t->mark('execute_event');
 
             $oldApp->finalize($primaryState);
+            $t->mark('finalize_old');
 
             $newApp = new ($entry::class)();
             $newUi = $newApp->render($primaryState, null, RenderPhase::Patch);
+            $t->mark('render_new');
         } catch (\Throwable $e) {
             self::clearAllStates($states);
             ob_end_clean();
@@ -118,16 +127,19 @@ class Spwa
 
         // Lifecycle: deleted (old tree components not in new tree)
         Component::processDeleted();
+        $t->mark('process_deleted');
 
         // Diff
         $patcher = new Patcher();
         $newUi->compare($oldUi, $patcher);
+        $t->mark('diff');
 
         // Styles delta
         $oldStyles = $oldUi->collectStyles();
         $newStyles = $newUi->collectStyles();
         $deltaStyles = StyleGenerator::delta($oldStyles, $newStyles);
         $deltaGenerator = StyleGenerator::from($deltaStyles);
+        $t->mark('styles_delta');
 
         // Capture buffered output → console.log
         $output = ob_get_clean();
@@ -135,9 +147,12 @@ class Spwa
             JsRuntime::invoke(['console', 'log'], [$output]);
         }
 
+        $newHash = self::computeStateHash($states);
+        $t->mark('compute_hash');
+
         // Debug panel → console (prepended so it appears first)
         $appCalls = JsRuntime::drain();
-        (new DebugPanel($newUi, $states))->emit();
+        (new DebugPanel($newUi, $states, $t))->emit();
         $debugCalls = JsRuntime::drain();
         JsRuntime::prepend(array_merge($debugCalls, $appCalls));
 
@@ -146,7 +161,7 @@ class Spwa
             'js' => JsRuntime::dump(),
             'patches' => $patcher->getOperations(),
             'styles' => $deltaGenerator->toRaw(),
-            'hash' => self::computeStateHash($states),
+            'hash' => $newHash,
         ];
 
         $clientState = self::getClientState($states);
@@ -164,6 +179,8 @@ class Spwa
      */
     private static function handleGet(App $entry, StateManager $primaryState, array $states): void
     {
+        $t = new Timings();
+
         // If restoring serialized state crashes the render, drop all state
         // and retry from defaults. A second failure is propagated.
         try {
@@ -175,28 +192,34 @@ class Spwa
             $ui = $entry->render($primaryState, null, RenderPhase::Initial);
             $entry->finalize($primaryState);
         }
+        $t->mark('render');
 
         // Render the optional loader overlay before collecting styles so its
         // CSS lands in the same <style> block.
         $loaderVNode = $entry->getLoader();
         $loaderDom = $loaderVNode?->render($primaryState, null, RenderPhase::Initial);
+        $t->mark('render_loader');
 
         $styles = $ui->collectStyles();
         if ($loaderDom !== null) {
             $styles = array_merge($styles, $loaderDom->collectStyles());
         }
         $generator = StyleGenerator::from($styles);
-        $stateJs = self::getClientJs($states);
+        $t->mark('collect_styles');
 
-        // Debug panel → inline script for initial render
-        (new DebugPanel($ui, $states))->emit();
-        $debugJs = self::callsToJs(JsRuntime::drain());
+        $stateJs = self::getClientJs($states);
 
         // Collect custom CSS/JS registered by components
         $customCss = implode("\n", $entry->getCustomCss());
         $customJs = implode("\n", $entry->getCustomJs());
 
         $stateHash = self::computeStateHash($states);
+        $t->mark('compute_hash');
+
+        // Debug panel → inline script for initial render. Construct AFTER
+        // timings so far so they appear in the debug output.
+        (new DebugPanel($ui, $states, $t))->emit();
+        $debugJs = self::callsToJs(JsRuntime::drain());
 
         $head = (new TagDomNode('head'))
             ->content(

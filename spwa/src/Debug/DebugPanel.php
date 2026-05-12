@@ -13,10 +13,13 @@ class DebugPanel
     /** @var array{name: string, bytes: int, all: array<string, array>}[] */
     private array $stateInfo;
 
+    /** @var array<string, float>|null */
+    private ?array $timings;
+
     /**
      * @param StateManager[] $states
      */
-    public function __construct(DomNode $renderedUi, array $states)
+    public function __construct(DomNode $renderedUi, array $states, ?Timings $timings = null)
     {
         $this->nodeCount = $renderedUi->countNodes();
         $this->stateInfo = array_map(fn(StateManager $s) => [
@@ -24,6 +27,7 @@ class DebugPanel
             'bytes' => $s->bytes(),
             'all' => $s->getAll(),
         ], $states);
+        $this->timings = $timings?->all();
     }
 
     public function emit(): void
@@ -36,6 +40,17 @@ class DebugPanel
             'color:#94a3b8',
             'color:#e2e8f0;font-weight:600',
         );
+
+        if ($this->timings !== null && $this->timings !== []) {
+            $totalMs = round(array_sum($this->timings), 2);
+            Console::group(
+                '%cTimings%c ' . $totalMs . ' ms',
+                'color:#94a3b8',
+                'color:#e2e8f0;font-weight:600',
+            );
+            Console::dir($this->timings);
+            Console::groupEnd();
+        }
 
         foreach ($this->stateInfo as $info) {
             Console::log(
