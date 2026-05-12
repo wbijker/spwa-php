@@ -15,6 +15,9 @@ abstract class SvgElement
     protected ?string $opacity = null;
     protected ?string $transform = null;
 
+    /** @var array<string, true> Attribute names that should force-patch on every diff */
+    protected array $invalidatedAttrs = [];
+
     public function fill(string|Color $color): static
     {
         $this->fill = $color instanceof Color ? $color->getValue() : $color;
@@ -51,9 +54,24 @@ abstract class SvgElement
         return $this;
     }
 
-    public function transform(string $value): static
+    public function transform(string $value, bool $invalidate = false): static
     {
         $this->transform = $value;
+        if ($invalidate) {
+            $this->invalidatedAttrs['transform'] = true;
+        } else {
+            unset($this->invalidatedAttrs['transform']);
+        }
+        return $this;
+    }
+
+    /**
+     * Force-patch a single attribute on the rendered node regardless of how
+     * it was set. Mirrors UIElement::invalidateAttr() for SVG children.
+     */
+    public function invalidateAttr(string $name): static
+    {
+        $this->invalidatedAttrs[$name] = true;
         return $this;
     }
 
@@ -79,6 +97,12 @@ abstract class SvgElement
         }
         if ($this->transform !== null) {
             $node->attr('transform', $this->transform);
+        }
+
+        if ($node instanceof TagDomNode) {
+            foreach ($this->invalidatedAttrs as $name => $_) {
+                $node->markInvalidatedAttr($name);
+            }
         }
     }
 

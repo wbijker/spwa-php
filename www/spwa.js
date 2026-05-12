@@ -167,12 +167,14 @@ var SPWA = (function() {
     }
 
     /**
-     * Send an empty event to the server. The backend re-renders from current
-     * state, diffs against the previous tree, and patches the DOM with any
-     * differences — useful when external data may have changed without a
-     * user-triggered event.
+     * Fire an empty request at the server, run the response through the
+     * patcher. Used to pull in changes that aren't tied to a user event —
+     * external data, server-side state that drifted, time-dependent UI
+     * that's been marked invalidate()/invalidateAttr(). Same wire shape as
+     * any other event, so hash echo, replay-on-reload, and bindings all
+     * work transparently.
      */
-    function tick() {
+    function refresh() {
         post({ event: '', path: '', value: null });
     }
 
@@ -185,7 +187,8 @@ var SPWA = (function() {
         getAll: getAll,
         setAll: setAll,
         isStateEnabled: isStateEnabled,
-        tick: tick
+        refresh: refresh,
+        tick: refresh
     };
 })();
 

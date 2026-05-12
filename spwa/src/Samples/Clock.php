@@ -58,21 +58,21 @@ final class Clock extends Component
             ->stroke($ink)
             ->strokeWidth('6')
             ->strokeLinecap('round')
-            ->transform("rotate($hourAngle " . self::CENTER . ' ' . self::CENTER . ')');
+            ->transform("rotate($hourAngle " . self::CENTER . ' ' . self::CENTER . ')', invalidate: true);
 
         // Minute hand
         $children[] = Svg::line(self::CENTER, self::CENTER + 16, self::CENTER, self::CENTER - 68)
             ->stroke($ink)
             ->strokeWidth('4')
             ->strokeLinecap('round')
-            ->transform("rotate($minuteAngle " . self::CENTER . ' ' . self::CENTER . ')');
+            ->transform("rotate($minuteAngle " . self::CENTER . ' ' . self::CENTER . ')', invalidate: true);
 
         // Second hand
         $children[] = Svg::line(self::CENTER, self::CENTER + 22, self::CENTER, self::CENTER - 80)
             ->stroke($accent)
             ->strokeWidth('1.5')
             ->strokeLinecap('round')
-            ->transform("rotate($secondAngle " . self::CENTER . ' ' . self::CENTER . ')');
+            ->transform("rotate($secondAngle " . self::CENTER . ' ' . self::CENTER . ')', invalidate: true);
 
         // Center pin
         $children[] = Svg::circle(self::CENTER, self::CENTER, 5)->fill($ink);

@@ -34,7 +34,7 @@ class TextDomNode extends DomNode
     {
         if (!$other instanceof TextDomNode) {
             $patcher->replaceNode($this->path, $this);
-        } elseif ($this->content !== $other->content) {
+        } elseif ($this->invalidated || $this->content !== $other->content) {
             $patcher->replaceText($this->path, $this->content);
         }
     }

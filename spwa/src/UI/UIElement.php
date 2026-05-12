@@ -118,6 +118,46 @@ class UIElement extends Node
         return $this;
     }
 
+    /**
+     * Force this element — and recursively every attribute, class, text node,
+     * and child below it — to be patched on every diff. Use for trees whose
+     * server-side OLD/NEW renders happen in the same instant and agree on
+     * values (e.g. clock hands) while the frontend DOM holds stale values
+     * from earlier renders.
+     */
+    public function invalidate(bool $on = true): static
+    {
+        $this->dom()->setInvalidated($on);
+        return $this;
+    }
+
+    /**
+     * Force-patch a single attribute on this element, regardless of how it
+     * was set (via attr(), via a styling helper like color() / background()
+     * that ultimately writes the `class` attribute, etc.). The rest of the
+     * element diffs normally.
+     *
+     *   $el->color(Color::red())->invalidateAttr('class')
+     *   $el->attr('data-tick', $now)->invalidateAttr('data-tick')
+     */
+    public function invalidateAttr(string $name): static
+    {
+        $this->dom()->markInvalidatedAttr($name);
+        return $this;
+    }
+
+    /**
+     * Opposite of invalidate(): the diff walks past this element entirely.
+     * No attributes, classes, text, or children below it are compared, and
+     * no patches are emitted. The frontend DOM keeps whatever it had — use
+     * for static subtrees (headers, logos) to skip traversal cost.
+     */
+    public function frozen(bool $on = true): static
+    {
+        $this->dom()->setFrozen($on);
+        return $this;
+    }
+
     public function attrs(array $attributes): static
     {
         $this->dom()->attrs($attributes);

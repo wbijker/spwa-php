@@ -20,6 +20,37 @@ abstract class DomNode
     protected ?string $key = null;
 
     /**
+     * Force-patch flag. When true, the diff emits patches for this node
+     * (and — for elements — all of its attributes, classes, text, and
+     * descendants) regardless of whether OLD and NEW are equal. Used to
+     * keep the frontend DOM aligned with values that the server-vs-server
+     * diff can't detect changes in (time, randomness, externally-driven
+     * derivations).
+     */
+    protected bool $invalidated = false;
+
+    /**
+     * Skip-diff flag. When true, the diff bails out at this node — no
+     * attributes, classes, text, or children are compared, and no patches
+     * are emitted for this subtree. The frontend DOM keeps whatever it had
+     * from the previous render. Use for truly static UI (headers, logos,
+     * decorative content) to avoid traversal cost.
+     */
+    protected bool $frozen = false;
+
+    public function setInvalidated(bool $on = true): static
+    {
+        $this->invalidated = $on;
+        return $this;
+    }
+
+    public function setFrozen(bool $on = true): static
+    {
+        $this->frozen = $on;
+        return $this;
+    }
+
+    /**
      * Create an element node.
      */
     public static function el(string $tag): TagDomNode

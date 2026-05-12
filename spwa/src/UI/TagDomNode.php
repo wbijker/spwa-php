@@ -37,6 +37,15 @@ class TagDomNode extends DomNode
     /** @var string[] Collected class names */
     protected array $classes = [];
 
+    /** @var array<string, true> Attribute names that should be force-patched on every diff */
+    protected array $invalidatedAttrs = [];
+
+    public function markInvalidatedAttr(string $name): static
+    {
+        $this->invalidatedAttrs[$name] = true;
+        return $this;
+    }
+
     /** @var bool Whether this node has a bound value ref */
     private bool $hasBoundRef = false;
 
@@ -437,10 +446,24 @@ class TagDomNode extends DomNode
      */
     public function compare(DomNode $other, Patcher $patcher): void
     {
+        // Element opted out of diffing — its DOM is left exactly as it was
+        // on the frontend. We don't even walk into the subtree.
+        if ($this->frozen) {
+            return;
+        }
+
         // If other is not a TagDomNode or tag differs, replace entirely
         if (!$other instanceof TagDomNode || $this->tag !== $other->tag) {
             $patcher->replaceNode($this->path, $this);
             return;
+        }
+
+        // A whole-node invalidation propagates to every descendant so each
+        // attribute, class, and text below us is force-emitted too.
+        if ($this->invalidated) {
+            foreach ($this->children as $child) {
+                $child->setInvalidated(true);
+            }
         }
 
         // Compare attributes
@@ -448,7 +471,8 @@ class TagDomNode extends DomNode
         $otherAttrs = $other->attributes;
 
         foreach ($thisAttrs as $name => $value) {
-            if (!isset($otherAttrs[$name]) || $otherAttrs[$name] !== $value) {
+            $forced = $this->invalidated || isset($this->invalidatedAttrs[$name]);
+            if ($forced || !isset($otherAttrs[$name]) || $otherAttrs[$name] !== $value) {
                 $patcher->setAttribute($this->path, $name, $value);
             }
         }
@@ -462,7 +486,8 @@ class TagDomNode extends DomNode
         // Compare classes
         $thisClasses = $this->classes;
         $otherClasses = $other->classes;
-        if ($thisClasses !== $otherClasses) {
+        $classForced = $this->invalidated || isset($this->invalidatedAttrs['class']);
+        if ($classForced || $thisClasses !== $otherClasses) {
             $patcher->setAttribute($this->path, 'class', implode(' ', array_unique($thisClasses)));
         }
 
