@@ -166,6 +166,16 @@ var SPWA = (function() {
         return false;
     }
 
+    /**
+     * Send an empty event to the server. The backend re-renders from current
+     * state, diffs against the previous tree, and patches the DOM with any
+     * differences — useful when external data may have changed without a
+     * user-triggered event.
+     */
+    function tick() {
+        post({ event: '', path: '', value: null });
+    }
+
     return {
         addRawStyles: addRawStyles,
         addCompressedStyles: addCompressedStyles,
@@ -174,7 +184,8 @@ var SPWA = (function() {
         saveState: saveState,
         getAll: getAll,
         setAll: setAll,
-        isStateEnabled: isStateEnabled
+        isStateEnabled: isStateEnabled,
+        tick: tick
     };
 })();
 
@@ -316,6 +327,12 @@ function applyPatches(patches) {
     }
 }
 
+// --- Replay-after-reload constants (used by callback, maybeReplay, post) ---
+var SPWA_REPLAY_KEY = '__spwa_replay';
+var SPWA_REPLAY_COUNT_KEY = '__spwa_replay_count';
+var SPWA_MAX_REPLAYS = 2;
+var __spwa_lastPayload = null;
+
 // --- Value bindings ---
 function initBindings() {
     document.querySelectorAll('[data-bind]').forEach(function(el) {
@@ -333,10 +350,46 @@ function collectBindings() {
     return Object.keys(bindings).length > 0 ? bindings : null;
 }
 
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initBindings);
-} else {
+function maybeReplay() {
+    var stored = sessionStorage.getItem(SPWA_REPLAY_KEY);
+    if (!stored) return;
+    // Clear the payload immediately so a failure here doesn't loop;
+    // SPWA_REPLAY_COUNT_KEY stays until a successful response clears it.
+    sessionStorage.removeItem(SPWA_REPLAY_KEY);
+    var data;
+    try {
+        data = JSON.parse(stored);
+    } catch (e) {
+        return;
+    }
+    // Use the fresh hash from this render; the stashed one is stale.
+    if (typeof window.__SPWA_HASH === 'string') {
+        data.hash = window.__SPWA_HASH;
+    }
+    // Bypass post() so we keep the original payload's bindings/value
+    // (the new page has empty inputs that would otherwise overwrite them).
+    __spwa_lastPayload = data;
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", window.location.href, true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) callback(null, JSON.parse(xhr.responseText));
+            else callback(new Error("Request failed: " + xhr.status));
+        }
+    };
+    xhr.send(JSON.stringify(data));
+}
+
+function bootstrap() {
     initBindings();
+    maybeReplay();
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootstrap);
+} else {
+    bootstrap();
 }
 
 function callback(error, data) {
@@ -345,12 +398,30 @@ function callback(error, data) {
         return;
     }
 
-    // Server signaled it cleared its state (shape mismatch); reload the page
-    // so we start from a fresh server render.
+    // Server signaled it cleared its state (shape mismatch / hash mismatch);
+    // reload the page so we start from a fresh server render — then replay
+    // the original request once the new page is up. Capped at SPWA_MAX_REPLAYS
+    // to avoid an infinite loop if state keeps drifting.
     if (data && data.reload) {
+        if (__spwa_lastPayload) {
+            var count = parseInt(sessionStorage.getItem(SPWA_REPLAY_COUNT_KEY) || '0', 10);
+            if (count < SPWA_MAX_REPLAYS) {
+                try {
+                    sessionStorage.setItem(SPWA_REPLAY_KEY, JSON.stringify(__spwa_lastPayload));
+                    sessionStorage.setItem(SPWA_REPLAY_COUNT_KEY, String(count + 1));
+                } catch (e) { /* quota / disabled storage — give up on replay */ }
+            } else {
+                sessionStorage.removeItem(SPWA_REPLAY_KEY);
+                sessionStorage.removeItem(SPWA_REPLAY_COUNT_KEY);
+            }
+        }
         window.location.reload();
         return;
     }
+
+    // A normal successful response — past any reload spiral. Clear counters.
+    sessionStorage.removeItem(SPWA_REPLAY_KEY);
+    sessionStorage.removeItem(SPWA_REPLAY_COUNT_KEY);
 
     // Refresh the state-fingerprint we echo back to the server on the next
     // request. This is set on initial page render and updated after each
@@ -399,6 +470,9 @@ function post(data, headers) {
             xhr.setRequestHeader(key, headers[key]);
         }
     }
+
+    // Remember the request so callback() can stash it on `reload`.
+    __spwa_lastPayload = data;
 
     // Include bound input values
     var bindings = collectBindings();
