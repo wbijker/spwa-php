@@ -21,6 +21,56 @@ class Text extends UIElementContent
         $this->content($content);
     }
 
+    /**
+     * Multi-property setter — replaces a 5–7 step fluent chain with a single
+     * call. Each named argument matches an existing setter. Saves the method
+     * dispatch on every chain link; the inner addStyle work is unchanged.
+     *
+     *   UI::text('todos')->style(
+     *       align: 'center',
+     *       fontSize: FontSize::SixXL,
+     *       weight: FontWeight::Thin,
+     *       color: Color::red(700),
+     *       opacity: 20,
+     *       paddingY: Unit::rem(1),
+     *   );
+     */
+    public function props(
+        ?string $align = null,
+        ?FontSize $fontSize = null,
+        ?FontWeight $weight = null,
+        ?Color $color = null,
+        ?Color $background = null,
+        ?int $opacity = null,
+        ?Unit $padding = null,
+        ?Unit $paddingX = null,
+        ?Unit $paddingY = null,
+        ?Unit $margin = null,
+        ?Unit $marginX = null,
+        ?Unit $marginY = null,
+    ): static {
+        if ($align !== null) {
+            match ($align) {
+                'left' => $this->left(),
+                'center' => $this->center(),
+                'right' => $this->right(),
+                'justify' => $this->justify(),
+            };
+        }
+        if ($fontSize !== null) $this->fontSize($fontSize);
+        if ($weight !== null) $this->weight($weight);
+        if ($color !== null) $this->color($color);
+        if ($background !== null) $this->background($background);
+        if ($opacity !== null) $this->opacity($opacity);
+        if ($padding !== null) $this->padding($padding);
+        if ($paddingX !== null) $this->paddingHorizontal($paddingX);
+        if ($paddingY !== null) $this->paddingVertical($paddingY);
+        if ($margin !== null) $this->margin($margin);
+        if ($marginX !== null) $this->marginHorizontal($marginX);
+        if ($marginY !== null) $this->marginVertical($marginY);
+        return $this;
+    }
+
     // ============================================================
     // Font size
     // ============================================================

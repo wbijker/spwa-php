@@ -215,7 +215,10 @@ class Unit extends Property
      */
     public static function px(int $value): static
     {
-        return new static('[' . $value . 'px]');
+        /** @var array<string, static> */
+        static $cache = [];
+        $key = (string) $value;
+        return $cache[$key] ??= new static('[' . $value . 'px]');
     }
 
     /**
@@ -223,7 +226,10 @@ class Unit extends Property
      */
     public static function rem(float $value): static
     {
-        return new static('[' . $value . 'rem]');
+        /** @var array<string, static> */
+        static $cache = [];
+        $key = (string) $value;
+        return $cache[$key] ??= new static('[' . $value . 'rem]');
     }
 
     // ============================================================
@@ -243,7 +249,9 @@ class Unit extends Property
      */
     public static function full(): static
     {
-        return new static('full');
+        /** @var static|null */
+        static $instance = null;
+        return $instance ??= new static('full');
     }
 
     /**
@@ -295,7 +303,9 @@ class Unit extends Property
      */
     public static function auto(): static
     {
-        return new static('auto');
+        /** @var static|null */
+        static $instance = null;
+        return $instance ??= new static('auto');
     }
 
     /**

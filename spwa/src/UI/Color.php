@@ -24,14 +24,39 @@ class Color extends Property
     ) {
     }
 
+    /** @var string|null Memoized base() output — invariant for an immutable Color */
+    private ?string $baseCache = null;
+
+    /** @var array<string, string> Memoized withContext() results, keyed by context */
+    private array $contextCache = [];
+
+    /** @var string|null Memoized getValue() output */
+    private ?string $valueCache = null;
+
+    /**
+     * Reset the memoization caches when this Color is cloned — derive()
+     * (used by alpha(), hover(), opacity()…) produces a clone with a
+     * mutation, so the parent's caches no longer apply.
+     */
+    public function __clone(): void
+    {
+        $this->baseCache = null;
+        $this->contextCache = [];
+        $this->valueCache = null;
+    }
+
     protected function base(): string
     {
+        if ($this->baseCache !== null) {
+            return $this->baseCache;
+        }
+
         if ($this->r !== null) {
             $class = "rgb-{$this->r}-{$this->g}-{$this->b}";
             if ($this->alphaValue !== null) {
                 $class .= '/a' . (int) round($this->alphaValue * 100);
             }
-            return $class;
+            return $this->baseCache = $class;
         }
 
         $class = $this->name;
@@ -50,7 +75,7 @@ class Color extends Property
             $class .= '/a' . (int) round($this->alphaValue * 100);
         }
 
-        return $class;
+        return $this->baseCache = $class;
     }
 
     /**
@@ -66,7 +91,8 @@ class Color extends Property
      */
     public function withContext(string $context): string
     {
-        return $this->prefix() . $context . '-' . $this->base();
+        return $this->contextCache[$context]
+            ??= $this->prefix() . $context . '-' . $this->base();
     }
 
     /**
@@ -92,17 +118,16 @@ class Color extends Property
     }
 
     /**
-     * Get the CSS color value (hex, rgb, etc.).
+     * Palette lookup table. Class const so opcache stores it once at class
+     * load — no per-call array literal evaluation.
      */
-    public function getValue(): string
-    {
-        $colors = [
-            'transparent' => 'transparent',
-            'current' => 'currentColor',
-            'inherit' => 'inherit',
-            'white' => '#ffffff',
-            'black' => '#000000',
-            'gradient' => 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    private const COLORS = [
+        'transparent' => 'transparent',
+        'current' => 'currentColor',
+        'inherit' => 'inherit',
+        'white' => '#ffffff',
+        'black' => '#000000',
+        'gradient' => 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
             // Slate
             'slate-50' => '#f8fafc', 'slate-100' => '#f1f5f9', 'slate-200' => '#e2e8f0', 'slate-300' => '#cbd5e1', 'slate-400' => '#94a3b8', 'slate-500' => '#64748b', 'slate-600' => '#475569', 'slate-700' => '#334155', 'slate-800' => '#1e293b', 'slate-900' => '#0f172a', 'slate-950' => '#020617',
             // Gray
@@ -154,12 +179,21 @@ class Color extends Property
             // Mist (soft blue-gray)
             'mist-50' => '#f6f8fa', 'mist-100' => '#eef2f6', 'mist-200' => '#dde5ed', 'mist-300' => '#c4d1df', 'mist-400' => '#a5b7cc', 'mist-500' => '#8a9db6', 'mist-600' => '#7485a0', 'mist-700' => '#626f87', 'mist-800' => '#535c6f', 'mist-900' => '#474e5c', 'mist-950' => '#2d3139',
             // Olive (earthy green)
-            'olive-50' => '#f7f8f3', 'olive-100' => '#eef0e4', 'olive-200' => '#dce1c9', 'olive-300' => '#c3cca4', 'olive-400' => '#a6b37b', 'olive-500' => '#8a9a5b', 'olive-600' => '#6d7b46', 'olive-700' => '#556139', 'olive-800' => '#464f31', 'olive-900' => '#3c432c', 'olive-950' => '#1f2316',
-        ];
+        'olive-50' => '#f7f8f3', 'olive-100' => '#eef0e4', 'olive-200' => '#dce1c9', 'olive-300' => '#c3cca4', 'olive-400' => '#a6b37b', 'olive-500' => '#8a9a5b', 'olive-600' => '#6d7b46', 'olive-700' => '#556139', 'olive-800' => '#464f31', 'olive-900' => '#3c432c', 'olive-950' => '#1f2316',
+    ];
+
+    /**
+     * Get the CSS color value (hex, rgb, etc.).
+     */
+    public function getValue(): string
+    {
+        if ($this->valueCache !== null) {
+            return $this->valueCache;
+        }
 
         // Constructed directly from rgb channel values: emit as-is.
         if ($this->r !== null) {
-            return $this->alphaValue !== null
+            return $this->valueCache = $this->alphaValue !== null
                 ? "rgba({$this->r}, {$this->g}, {$this->b}, {$this->alphaValue})"
                 : "rgb({$this->r}, {$this->g}, {$this->b})";
         }
@@ -169,17 +203,17 @@ class Color extends Property
         if ($this->shade !== null) {
             $key .= '-' . $this->shade;
         }
-        $resolved = $colors[$key] ?? $key;
+        $resolved = self::COLORS[$key] ?? $key;
 
         // Apply alpha to a resolved hex palette entry.
         if ($this->alphaValue !== null && str_starts_with($resolved, '#')) {
             [$r, $g, $b] = self::hexChannels(substr($resolved, 1));
             if ($r !== null) {
-                return "rgba($r, $g, $b, {$this->alphaValue})";
+                return $this->valueCache = "rgba($r, $g, $b, {$this->alphaValue})";
             }
         }
 
-        return $resolved;
+        return $this->valueCache = $resolved;
     }
 
     /**
@@ -213,27 +247,32 @@ class Color extends Property
 
     public static function transparent(): static
     {
-        return new static('transparent');
+        static $instance = null;
+        return $instance ??= new static('transparent');
     }
 
     public static function current(): static
     {
-        return new static('current');
+        static $instance = null;
+        return $instance ??= new static('current');
     }
 
     public static function inherit(): static
     {
-        return new static('inherit');
+        static $instance = null;
+        return $instance ??= new static('inherit');
     }
 
     public static function white(): static
     {
-        return new static('white');
+        static $instance = null;
+        return $instance ??= new static('white');
     }
 
     public static function black(): static
     {
-        return new static('black');
+        static $instance = null;
+        return $instance ??= new static('black');
     }
 
     // ============================================================
@@ -242,112 +281,134 @@ class Color extends Property
 
     public static function slate(int $shade = 500): static
     {
-        return new static('slate', $shade);
+        static $cache = [];
+        return $cache[$shade] ??= new static('slate', $shade);
     }
 
     public static function gray(int $shade = 500): static
     {
-        return new static('gray', $shade);
+        static $cache = [];
+        return $cache[$shade] ??= new static('gray', $shade);
     }
 
     public static function zinc(int $shade = 500): static
     {
-        return new static('zinc', $shade);
+        static $cache = [];
+        return $cache[$shade] ??= new static('zinc', $shade);
     }
 
     public static function neutral(int $shade = 500): static
     {
-        return new static('neutral', $shade);
+        static $cache = [];
+        return $cache[$shade] ??= new static('neutral', $shade);
     }
 
     public static function stone(int $shade = 500): static
     {
-        return new static('stone', $shade);
+        static $cache = [];
+        return $cache[$shade] ??= new static('stone', $shade);
     }
 
     public static function red(int $shade = 500): static
     {
-        return new static('red', $shade);
+        static $cache = [];
+        return $cache[$shade] ??= new static('red', $shade);
     }
 
     public static function orange(int $shade = 500): static
     {
-        return new static('orange', $shade);
+        static $cache = [];
+        return $cache[$shade] ??= new static('orange', $shade);
     }
 
     public static function amber(int $shade = 500): static
     {
-        return new static('amber', $shade);
+        static $cache = [];
+        return $cache[$shade] ??= new static('amber', $shade);
     }
 
     public static function yellow(int $shade = 500): static
     {
-        return new static('yellow', $shade);
+        static $cache = [];
+        return $cache[$shade] ??= new static('yellow', $shade);
     }
 
     public static function lime(int $shade = 500): static
     {
-        return new static('lime', $shade);
+        static $cache = [];
+        return $cache[$shade] ??= new static('lime', $shade);
     }
 
     public static function green(int $shade = 500): static
     {
-        return new static('green', $shade);
+        static $cache = [];
+        return $cache[$shade] ??= new static('green', $shade);
     }
 
     public static function emerald(int $shade = 500): static
     {
-        return new static('emerald', $shade);
+        static $cache = [];
+        return $cache[$shade] ??= new static('emerald', $shade);
     }
 
     public static function teal(int $shade = 500): static
     {
-        return new static('teal', $shade);
+        static $cache = [];
+        return $cache[$shade] ??= new static('teal', $shade);
     }
 
     public static function cyan(int $shade = 500): static
     {
-        return new static('cyan', $shade);
+        static $cache = [];
+        return $cache[$shade] ??= new static('cyan', $shade);
     }
 
     public static function sky(int $shade = 500): static
     {
-        return new static('sky', $shade);
+        static $cache = [];
+        return $cache[$shade] ??= new static('sky', $shade);
     }
 
     public static function blue(int $shade = 500): static
     {
-        return new static('blue', $shade);
+        static $cache = [];
+        return $cache[$shade] ??= new static('blue', $shade);
     }
 
     public static function indigo(int $shade = 500): static
     {
-        return new static('indigo', $shade);
+        static $cache = [];
+        return $cache[$shade] ??= new static('indigo', $shade);
     }
 
     public static function violet(int $shade = 500): static
     {
-        return new static('violet', $shade);
+        static $cache = [];
+        return $cache[$shade] ??= new static('violet', $shade);
     }
 
     public static function purple(int $shade = 500): static
     {
-        return new static('purple', $shade);
+        static $cache = [];
+        return $cache[$shade] ??= new static('purple', $shade);
     }
 
     public static function fuchsia(int $shade = 500): static
     {
-        return new static('fuchsia', $shade);
+        static $cache = [];
+        return $cache[$shade] ??= new static('fuchsia', $shade);
     }
 
     public static function pink(int $shade = 500): static
     {
-        return new static('pink', $shade);
+        static $cache = [];
+        return $cache[$shade] ??= new static('pink', $shade);
     }
 
     public static function rose(int $shade = 500): static
     {
-        return new static('rose', $shade);
+        static $cache = [];
+        return $cache[$shade] ??= new static('rose', $shade);
     }
 
     // ============================================================
@@ -356,22 +417,26 @@ class Color extends Property
 
     public static function taupe(int $shade = 500): static
     {
-        return new static('taupe', $shade);
+        static $cache = [];
+        return $cache[$shade] ??= new static('taupe', $shade);
     }
 
     public static function mauve(int $shade = 500): static
     {
-        return new static('mauve', $shade);
+        static $cache = [];
+        return $cache[$shade] ??= new static('mauve', $shade);
     }
 
     public static function mist(int $shade = 500): static
     {
-        return new static('mist', $shade);
+        static $cache = [];
+        return $cache[$shade] ??= new static('mist', $shade);
     }
 
     public static function olive(int $shade = 500): static
     {
-        return new static('olive', $shade);
+        static $cache = [];
+        return $cache[$shade] ??= new static('olive', $shade);
     }
 
     /**
@@ -379,7 +444,8 @@ class Color extends Property
      */
     public static function gradient(): static
     {
-        return new static('gradient');
+        static $instance = null;
+        return $instance ??= new static('gradient');
     }
 
     /**
