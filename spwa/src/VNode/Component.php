@@ -167,8 +167,11 @@ abstract class Component extends VNode
      * Return `false` to skip both rendering AND diffing for this subtree:
      * the framework substitutes a NoOpDomNode whose compare() is a no-op, so
      * the frontend DOM keeps the existing subtree from the previous render.
-     * Default is `true` (always render — same behavior the framework had
-     * before this hook existed).
+     *
+     * Default delegates to `hasChanged($old)` — render iff any subclass
+     * state or prop value differs from the OLD instance. Override if your
+     * component depends on inputs the framework can't see (wall clock,
+     * RNG, external data).
      *
      * Only consulted in RenderPhase::Patch (NEW tree during a POST).
      *
@@ -178,7 +181,56 @@ abstract class Component extends VNode
      */
     protected function shouldRender(Component $old): bool
     {
-        return true;
+        return $this->hasChanged($old);
+    }
+
+    /** @var string|null Serialized snapshot of state/props at the moment render() entered build() */
+    private ?string $stateSnapshot = null;
+
+    /**
+     * True when any state/prop value on a subclass of Component differs
+     * from `$old`. Comparison is done against a SNAPSHOT taken at render
+     * time (before any event handler runs) — so in-place mutation of
+     * state objects is correctly detected.
+     *
+     * Walks the class hierarchy from this component's class up to (but
+     * not including) Component itself, collecting every declared instance
+     * property except closures (which are never reliably comparable) and
+     * the snapshot field itself. The collected values are `serialize()`d
+     * into a string snapshot; hasChanged compares the two snapshot
+     * strings.
+     */
+    public function hasChanged(Component $old): bool
+    {
+        if ($old::class !== static::class) {
+            return true;
+        }
+        // No snapshot on either side → can't decide; render to be safe.
+        if ($this->stateSnapshot === null || $old->stateSnapshot === null) {
+            return true;
+        }
+        return $this->stateSnapshot !== $old->stateSnapshot;
+    }
+
+    /**
+     * Capture the values of every state/prop declared on subclasses of
+     * Component as a single serialized string. Closures are excluded.
+     */
+    private function captureStateSnapshot(): string
+    {
+        $values = [];
+        for ($rc = new \ReflectionClass(static::class); $rc !== false && $rc->getName() !== self::class; $rc = $rc->getParentClass()) {
+            foreach ($rc->getProperties() as $prop) {
+                if ($prop->isStatic()) continue;
+                if ($prop->getDeclaringClass()->getName() !== $rc->getName()) continue;
+
+                $v = $prop->getValue($this);
+                if ($v instanceof \Closure) continue;
+
+                $values[$rc->getName() . '::' . $prop->getName()] = $v;
+            }
+        }
+        return serialize($values);
     }
 
     /**
@@ -255,6 +307,11 @@ abstract class Component extends VNode
         if (!$isNew) {
             $this->setState($savedState);
         }
+
+        // Snapshot state right after restore — this captures the "input"
+        // to render() before any event handler can mutate it. shouldRender
+        // compares NEW's snapshot vs OLD's snapshot to detect real change.
+        $this->stateSnapshot = $this->captureStateSnapshot();
 
         // Track component by phase for lifecycle diffing
         if ($phase === RenderPhase::Initial || $phase === RenderPhase::DiffOld) {

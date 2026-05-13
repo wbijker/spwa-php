@@ -4,6 +4,7 @@ namespace Spwa\Samples;
 
 use Spwa\Samples\site\Pages\SiteApp;
 use Spwa\State\ApcuStateManager;
+use Spwa\State\SessionStateManager;
 use Spwa\UI\Color;
 use Spwa\UI\FontSize;
 use Spwa\UI\FontWeight;
