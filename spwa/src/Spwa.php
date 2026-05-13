@@ -17,8 +17,12 @@ class Spwa
 {
     public static function run(App $entry): void
     {
+        // Pull state managers ONCE; do not call states() again. Many managers
+        // are now stateful within a request (in-process caches), so two
+        // instances created from separate states() calls would have divergent
+        // caches and the request would see inconsistent data.
         $states = $entry->states();
-        $primaryState = $entry->getDefaultState();
+        $primaryState = $states[0];
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             self::handlePost($entry, $primaryState, $states);

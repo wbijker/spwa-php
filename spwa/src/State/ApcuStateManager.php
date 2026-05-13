@@ -22,6 +22,9 @@ class ApcuStateManager extends StateManager
 
     private string $key;
 
+    /** @var array<string, array>|null In-process cache to avoid repeated apcu_fetch in one request */
+    private ?array $cache = null;
+
     public function __construct(?string $userToken = null, private int $ttl = 86400)
     {
         if (!function_exists('apcu_fetch') || !apcu_enabled()) {
@@ -62,6 +65,7 @@ class ApcuStateManager extends StateManager
     public function clearAll(): void
     {
         apcu_delete($this->key);
+        $this->cache = [];
     }
 
     public function getAll(): array
@@ -84,8 +88,11 @@ class ApcuStateManager extends StateManager
      */
     private function load(): array
     {
-        $value = apcu_fetch($this->key, $success);
-        return $success && is_array($value) ? $value : [];
+        if ($this->cache === null) {
+            $value = apcu_fetch($this->key, $success);
+            $this->cache = $success && is_array($value) ? $value : [];
+        }
+        return $this->cache;
     }
 
     /**
@@ -94,5 +101,6 @@ class ApcuStateManager extends StateManager
     private function store(array $state): void
     {
         apcu_store($this->key, $state, $this->ttl);
+        $this->cache = $state;
     }
 }

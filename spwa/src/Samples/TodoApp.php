@@ -3,7 +3,7 @@
 namespace Spwa\Samples;
 
 use Spwa\Samples\site\Pages\SiteApp;
-use Spwa\State\SessionStateManager;
+use Spwa\State\ApcuStateManager;
 use Spwa\UI\Color;
 use Spwa\UI\FontSize;
 use Spwa\UI\FontWeight;
@@ -47,7 +47,7 @@ class TodoApp extends App
                     ->padding(Unit::rem(0.75))
                     ->paddingHorizontal(Unit::rem(1.25))
                     ->rounded(Unit::rem(0.5))
-                    ->color(Color::hex('#333'))
+                    ->color(Color::gray(700))
                     ->fontSize(FontSize::Small)
             );
     }
@@ -70,7 +70,7 @@ class TodoApp extends App
         $allCompleted = count($this->todos) > 0 && $activeCount === 0;
 
         return UI::column()
-            ->background(Color::hex('#f5f5f5'))
+            ->background(Color::neutral(100))
             ->content(
                 // Analog clock
                 UI::row()
@@ -83,7 +83,7 @@ class TodoApp extends App
                     ->center()
                     ->fontSize(FontSize::SixXL)
                     ->weight(FontWeight::Thin)
-                    ->color(Color::hex('#b83f45'))
+                    ->color(Color::red(700))
                     ->opacity(20)
                     ->paddingVertical(Unit::rem(1)),
 
@@ -97,7 +97,7 @@ class TodoApp extends App
                     ->content(
                         UI::text(date('Y-m-d H:i:s'))
                             ->fontSize(FontSize::Small)
-                            ->color(Color::hex('#777'))
+                            ->color(Color::neutral(500))
                             ->invalidateText()
                     ),
 
@@ -122,10 +122,10 @@ class TodoApp extends App
                     ->content(
                         UI::text('Double-click to edit a todo')
                             ->fontSize(FontSize::Small)
-                            ->color(Color::hex('#777')),
+                            ->color(Color::neutral(500)),
                         UI::text('Part of TodoMVC')
                             ->fontSize(FontSize::Small)
-                            ->color(Color::hex('#777'))
+                            ->color(Color::neutral(500))
                     )
             );
     }
@@ -139,7 +139,7 @@ class TodoApp extends App
                 ->clickable()
                 ->padding(Unit::rem(0.7))
                 ->fontSize(FontSize::Large)
-                ->color($allCompleted ? Color::hex('#484848') : Color::hex('#e6e6e6'))
+                ->color($allCompleted ? Color::neutral(700) : Color::neutral(200))
                 ->on('click', function () {
                     $allActive = count(array_filter($this->todos, fn(Todo $t) => !$t->completed)) > 0;
                     foreach ($this->todos as $todo) {
@@ -160,7 +160,7 @@ class TodoApp extends App
             ->outlineNone()
             ->fontSize(FontSize::TwoXL)
             ->weight(FontWeight::Light)
-            ->color(Color::hex('#111'))
+            ->color(Color::neutral(900))
             ->on('change', function () {
                 echo "We are about to add a new todo with text: " . $this->inputText . "\n";
                 $text = trim($this->inputText);
@@ -226,9 +226,9 @@ class TodoApp extends App
             ->paddingHorizontal(Unit::rem(1))
             ->paddingVertical(Unit::rem(0.6))
             ->borderTop()
-            ->borderColor(Color::hex('#ededed'))
+            ->borderColor(Color::neutral(200))
             ->fontSize(FontSize::Small)
-            ->color(Color::hex('#777'))
+            ->color(Color::neutral(500))
             ->content(
                 UI::text($itemsLabel)
                     ->minWidth(Unit::rem(8)),
@@ -247,7 +247,7 @@ class TodoApp extends App
                         ->borderNone()
                         ->background(Color::transparent())
                         ->fontSize(FontSize::Small)
-                        ->color(Color::hex('#777'))
+                        ->color(Color::neutral(500))
                         ->minWidth(Unit::rem(8))
                         ->on('click', function () {
                             $this->todos = array_values(array_filter(
@@ -279,7 +279,7 @@ class TodoApp extends App
         if ($isActive) {
             $btn = $btn
                 ->bordered()
-                ->borderColor(Color::hex('rgba(175, 47, 47, 0.2)'));
+                ->borderColor(Color::red(700)->alpha(0.2));
         }
 
         return $btn;
