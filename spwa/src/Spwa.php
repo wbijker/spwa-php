@@ -4,7 +4,10 @@ namespace Spwa;
 
 use Spwa\Debug\DebugPanel;
 use Spwa\Debug\Timings;
+use Spwa\Error\DefaultErrorPage;
+use Spwa\Error\ErrorInfo;
 use Spwa\Js\JsRuntime;
+use Spwa\State\InMemoryStateManager;
 use Spwa\State\StateManager;
 use Spwa\UI\StyleGenerator;
 use Spwa\UI\TagDomNode;
@@ -13,23 +16,212 @@ use Spwa\VNode\Component;
 use Spwa\VNode\Patcher;
 use Spwa\VNode\PortalTarget;
 use Spwa\VNode\RenderPhase;
+use Spwa\VNode\VNode;
+use Throwable;
 
 class Spwa
 {
-    public static function run(App $entry): void
-    {
-        // Pull state managers ONCE; do not call states() again. Many managers
-        // are now stateful within a request (in-process caches), so two
-        // instances created from separate states() calls would have divergent
-        // caches and the request would see inconsistent data.
-        $states = $entry->states();
-        $primaryState = $states[0];
+    /** @var App|null The current app instance, kept so the shutdown handler can call its error() method. */
+    private static ?App $current = null;
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            self::handlePost($entry, $primaryState, $states);
-        } else {
-            self::handleGet($entry, $primaryState, $states);
+    /** @var bool Set once an error has been rendered so the shutdown handler doesn't render twice. */
+    private static bool $errorRendered = false;
+
+    /**
+     * Entry point. Accepts either an instantiated App or its class
+     * name. Passing the class name is preferred: it lets Spwa install
+     * its error traps BEFORE the App is constructed, so a parse error
+     * or constructor crash in the App's own file is caught and shown
+     * as an error page instead of leaking xdebug's HTML.
+     *
+     * @param App|class-string<App> $entry
+     */
+    public static function run(App|string $entry): void
+    {
+        self::installErrorTraps();
+
+        try {
+            if (is_string($entry)) {
+                $entry = new $entry();
+            }
+            self::$current = $entry;
+
+            // Pull state managers ONCE; do not call states() again. Many managers
+            // are now stateful within a request (in-process caches), so two
+            // instances created from separate states() calls would have divergent
+            // caches and the request would see inconsistent data.
+            $states = $entry->states();
+            $primaryState = $states[0];
+
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                self::handlePost($entry, $primaryState, $states);
+            } else {
+                self::handleGet($entry, $primaryState, $states);
+            }
+        } catch (Throwable $e) {
+            self::renderError(ErrorInfo::fromThrowable($e));
         }
+    }
+
+    /**
+     * Install error/exception/shutdown traps so every flavor of PHP
+     * error lands in {@see renderError} instead of xdebug's default
+     * HTML or a half-rendered page. Also starts an output buffer so
+     * any error markup written by the SAPI (e.g. xdebug) can be
+     * discarded before we emit our own.
+     */
+    private static function installErrorTraps(): void
+    {
+        // Don't let PHP/xdebug emit its own HTML. We render everything.
+        @ini_set('display_errors', '0');
+        @ini_set('html_errors', '0');
+
+        // Output buffer so xdebug's pretty error HTML (and any partial
+        // app output written before the crash) can be discarded.
+        ob_start();
+
+        // Fatal-class errors thrown at runtime become exceptions so
+        // the normal catch path in run() / handleGet() / handlePost()
+        // picks them up. Non-fatal errors are returned to PHP's
+        // default handler so they don't break otherwise-fine pages.
+        set_error_handler(function (int $errno, string $msg, string $file, int $line) {
+            if ((error_reporting() & $errno) === 0) {
+                return false;
+            }
+            if (in_array($errno, [E_USER_ERROR, E_RECOVERABLE_ERROR], true)) {
+                throw new \ErrorException($msg, 0, $errno, $file, $line);
+            }
+            return false;
+        });
+
+        // Backstop for anything that escapes our try/catch.
+        set_exception_handler(function (Throwable $e) {
+            self::renderError(ErrorInfo::fromThrowable($e));
+        });
+
+        // Parse errors, out-of-memory, and other unrecoverables that
+        // never reach an exception handler still surface here.
+        register_shutdown_function(function () {
+            if (self::$errorRendered) {
+                return;
+            }
+            $err = error_get_last();
+            if ($err !== null && ErrorInfo::isFatal($err['type'])) {
+                self::renderError(ErrorInfo::fromLastError($err));
+            }
+        });
+    }
+
+    /**
+     * Render an error page (HTML for GET, JSON reload for POST). Safe
+     * to call from any point in the request — clears any buffered
+     * partial output first so xdebug's HTML doesn't bleed through.
+     */
+    private static function renderError(ErrorInfo $info): void
+    {
+        if (self::$errorRendered) {
+            return;
+        }
+        self::$errorRendered = true;
+
+        // Drop any buffered output (including xdebug's error HTML).
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
+        $isPost = ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST';
+
+        // For a POST, the frontend expects JSON. Asking it to reload
+        // bounces us back to GET, which re-renders the error page
+        // through the HTML path below.
+        if ($isPost) {
+            if (!headers_sent()) {
+                header('Content-Type: application/json');
+                http_response_code(500);
+            }
+            echo json_encode(['success' => false, 'reload' => true]);
+            return;
+        }
+
+        if (!headers_sent()) {
+            header('Content-Type: text/html; charset=utf-8');
+            http_response_code(500);
+        }
+
+        // Try the app's error() method; fall back to DefaultErrorPage
+        // directly if no app exists yet (e.g. parse error during
+        // construction) or if error() itself throws.
+        $errorView = null;
+        if (self::$current !== null) {
+            try {
+                $errorView = self::$current->error($info);
+            } catch (Throwable) {
+                $errorView = null;
+            }
+        }
+        if (!$errorView instanceof VNode) {
+            $errorView = new DefaultErrorPage($info);
+        }
+
+        try {
+            $state = new InMemoryStateManager();
+            $dom = $errorView->render($state, null, RenderPhase::Initial);
+            $styles = $dom->collectStyles();
+            $css = StyleGenerator::from($styles)->toStyle();
+
+            $head = (new TagDomNode('head'))->content(
+                (new TagDomNode('meta'))->attr('charset', 'UTF-8'),
+                (new TagDomNode('meta'))->attr('name', 'viewport')->attr('content', 'width=device-width, initial-scale=1.0'),
+                (new TagDomNode('title'))->rawContent('Error'),
+                (new TagDomNode('style'))->rawContent($css),
+            );
+            $body = (new TagDomNode('body'))
+                ->attr('style', 'margin:0')
+                ->content($dom)
+                ->content((new TagDomNode('script'))->rawContent(self::hmrScript()));
+            $document = (new TagDomNode('html'))
+                ->attr('lang', 'en')
+                ->content($head, $body);
+
+            echo '<!DOCTYPE html>' . $document->toHtml();
+        } catch (Throwable) {
+            // Absolute last resort: build the default page directly
+            // and emit it without going through render/collectStyles.
+            $bare = new DefaultErrorPage($info);
+            $dom = $bare->render(new InMemoryStateManager(), null, RenderPhase::Initial);
+            echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Error</title></head><body style="margin:0">'
+               . $dom->toHtml()
+               . '<script>' . self::hmrScript() . '</script>'
+               . '</body></html>';
+        }
+    }
+
+    /**
+     * Inline HMR polling — same semantics as the IIFE at the bottom of
+     * spwa.js, but emitted directly into the error page so a fix to
+     * the offending file triggers a reload without the user touching
+     * the browser. Inlined (rather than `<script src="/spwa.js">`)
+     * because spwa.js's bootstrap() runs maybeReplay() which would
+     * re-fire the failed POST against the still-broken backend.
+     */
+    private static function hmrScript(): string
+    {
+        return <<<'JS'
+(function () {
+    var ctl;
+    function poll() {
+        if (ctl) ctl.abort();
+        ctl = new AbortController();
+        fetch('/hmr.php', { signal: ctl.signal, cache: 'no-store' })
+            .then(function (r) { return r.json(); })
+            .then(function (j) { if (j && j.changed) location.reload(); })
+            .catch(function () {});
+    }
+    window.addEventListener('beforeunload', function () { if (ctl) ctl.abort(); });
+    poll();
+    setInterval(poll, 60000);
+})();
+JS;
     }
 
     /**

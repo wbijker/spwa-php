@@ -2,6 +2,8 @@
 
 namespace Spwa\VNode;
 
+use Spwa\Error\DefaultErrorPage;
+use Spwa\Error\ErrorInfo;
 use Spwa\State\StateManager;
 use Spwa\UI\UIElement;
 
@@ -89,5 +91,16 @@ abstract class App extends Component
     protected function build(): VNode
     {
         return $this->view();
+    }
+
+    /**
+     * Render an error page when an unrecoverable error occurs during a
+     * request. Override to customize the look or to log/notify before
+     * returning a view. The default returns a centered modern card with
+     * the type, message, location, and (if available) stack trace.
+     */
+    public function error(ErrorInfo $info): VNode
+    {
+        return new DefaultErrorPage($info);
     }
 }

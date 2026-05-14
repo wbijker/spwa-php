@@ -5,4 +5,4 @@ use Spwa\Spwa;
 
 require 'vendor/autoload.php';
 
-Spwa::run(new TodoApp());
+Spwa::run(TodoApp::class);
