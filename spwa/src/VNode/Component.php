@@ -168,10 +168,13 @@ abstract class Component extends VNode
      * the framework substitutes a NoOpDomNode whose compare() is a no-op, so
      * the frontend DOM keeps the existing subtree from the previous render.
      *
-     * Default delegates to `hasChanged($old)` — render iff any subclass
-     * state or prop value differs from the OLD instance. Override if your
-     * component depends on inputs the framework can't see (wall clock,
-     * RNG, external data).
+     * Default is `true` — re-render every cycle. A `false` default would be
+     * unsound for any parent component: a descendant's local state can
+     * change (e.g. via its own event handler) without touching the parent's
+     * state, and the parent never sees it. Skipping the parent here would
+     * also skip the descendant's build, so the change would never reach the
+     * DOM. Opt in to memoization on leaf components by overriding this and
+     * returning `hasChanged($old)`.
      *
      * Only consulted in RenderPhase::Patch (NEW tree during a POST).
      *
@@ -181,7 +184,7 @@ abstract class Component extends VNode
      */
     protected function shouldRender(Component $old): bool
     {
-        return $this->hasChanged($old);
+        return true;
     }
 
     /** @var string|null Serialized snapshot of state/props at the moment render() entered build() */
