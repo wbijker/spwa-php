@@ -11,6 +11,7 @@ use Spwa\UI\TagDomNode;
 use Spwa\VNode\App;
 use Spwa\VNode\Component;
 use Spwa\VNode\Patcher;
+use Spwa\VNode\PortalTarget;
 use Spwa\VNode\RenderPhase;
 
 class Spwa
@@ -100,6 +101,7 @@ class Spwa
         // the current code's shape, clear all state and tell the client to
         // reload — the fresh page will start from defaults.
         try {
+            PortalTarget::reset();
             $oldApp = new ($entry::class)();
             $oldUi = $oldApp->render($primaryState, null, RenderPhase::DiffOld);
             $t->mark('render_old');
@@ -118,6 +120,7 @@ class Spwa
             $oldApp->finalize($primaryState);
             $t->mark('finalize_old');
 
+            PortalTarget::reset();
             $newApp = new ($entry::class)();
             $newUi = $newApp->render($primaryState, null, RenderPhase::Patch);
             $t->mark('render_new');
@@ -188,10 +191,12 @@ class Spwa
         // If restoring serialized state crashes the render, drop all state
         // and retry from defaults. A second failure is propagated.
         try {
+            PortalTarget::reset();
             $ui = $entry->render($primaryState, null, RenderPhase::Initial);
             $entry->finalize($primaryState);
         } catch (\Throwable $e) {
             self::clearAllStates($states);
+            PortalTarget::reset();
             $entry = new ($entry::class)();
             $ui = $entry->render($primaryState, null, RenderPhase::Initial);
             $entry->finalize($primaryState);
