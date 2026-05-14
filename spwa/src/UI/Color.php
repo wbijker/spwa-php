@@ -118,68 +118,55 @@ class Color extends Property
     }
 
     /**
-     * Palette lookup table. Class const so opcache stores it once at class
-     * load — no per-call array literal evaluation.
+     * Non-palette keywords + pure black/white. Resolved directly
+     * without going through the OKLCH formula.
      */
-    private const COLORS = [
+    private const SPECIAL = [
         'transparent' => 'transparent',
-        'current' => 'currentColor',
-        'inherit' => 'inherit',
-        'white' => '#ffffff',
-        'black' => '#000000',
-        'gradient' => 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            // Slate
-            'slate-50' => '#f8fafc', 'slate-100' => '#f1f5f9', 'slate-200' => '#e2e8f0', 'slate-300' => '#cbd5e1', 'slate-400' => '#94a3b8', 'slate-500' => '#64748b', 'slate-600' => '#475569', 'slate-700' => '#334155', 'slate-800' => '#1e293b', 'slate-900' => '#0f172a', 'slate-950' => '#020617',
-            // Gray
-            'gray-50' => '#f9fafb', 'gray-100' => '#f3f4f6', 'gray-200' => '#e5e7eb', 'gray-300' => '#d1d5db', 'gray-400' => '#9ca3af', 'gray-500' => '#6b7280', 'gray-600' => '#4b5563', 'gray-700' => '#374151', 'gray-800' => '#1f2937', 'gray-900' => '#111827', 'gray-950' => '#030712',
-            // Zinc
-            'zinc-50' => '#fafafa', 'zinc-100' => '#f4f4f5', 'zinc-200' => '#e4e4e7', 'zinc-300' => '#d4d4d8', 'zinc-400' => '#a1a1aa', 'zinc-500' => '#71717a', 'zinc-600' => '#52525b', 'zinc-700' => '#3f3f46', 'zinc-800' => '#27272a', 'zinc-900' => '#18181b', 'zinc-950' => '#09090b',
-            // Neutral
-            'neutral-50' => '#fafafa', 'neutral-100' => '#f5f5f5', 'neutral-200' => '#e5e5e5', 'neutral-300' => '#d4d4d4', 'neutral-400' => '#a3a3a3', 'neutral-500' => '#737373', 'neutral-600' => '#525252', 'neutral-700' => '#404040', 'neutral-800' => '#262626', 'neutral-900' => '#171717', 'neutral-950' => '#0a0a0a',
-            // Stone
-            'stone-50' => '#fafaf9', 'stone-100' => '#f5f5f4', 'stone-200' => '#e7e5e4', 'stone-300' => '#d6d3d1', 'stone-400' => '#a8a29e', 'stone-500' => '#78716c', 'stone-600' => '#57534e', 'stone-700' => '#44403c', 'stone-800' => '#292524', 'stone-900' => '#1c1917', 'stone-950' => '#0c0a09',
-            // Red
-            'red-50' => '#fef2f2', 'red-100' => '#fee2e2', 'red-200' => '#fecaca', 'red-300' => '#fca5a5', 'red-400' => '#f87171', 'red-500' => '#ef4444', 'red-600' => '#dc2626', 'red-700' => '#b91c1c', 'red-800' => '#991b1b', 'red-900' => '#7f1d1d', 'red-950' => '#450a0a',
-            // Orange
-            'orange-50' => '#fff7ed', 'orange-100' => '#ffedd5', 'orange-200' => '#fed7aa', 'orange-300' => '#fdba74', 'orange-400' => '#fb923c', 'orange-500' => '#f97316', 'orange-600' => '#ea580c', 'orange-700' => '#c2410c', 'orange-800' => '#9a3412', 'orange-900' => '#7c2d12', 'orange-950' => '#431407',
-            // Amber
-            'amber-50' => '#fffbeb', 'amber-100' => '#fef3c7', 'amber-200' => '#fde68a', 'amber-300' => '#fcd34d', 'amber-400' => '#fbbf24', 'amber-500' => '#f59e0b', 'amber-600' => '#d97706', 'amber-700' => '#b45309', 'amber-800' => '#92400e', 'amber-900' => '#78350f', 'amber-950' => '#451a03',
-            // Yellow
-            'yellow-50' => '#fefce8', 'yellow-100' => '#fef9c3', 'yellow-200' => '#fef08a', 'yellow-300' => '#fde047', 'yellow-400' => '#facc15', 'yellow-500' => '#eab308', 'yellow-600' => '#ca8a04', 'yellow-700' => '#a16207', 'yellow-800' => '#854d0e', 'yellow-900' => '#713f12', 'yellow-950' => '#422006',
-            // Lime
-            'lime-50' => '#f7fee7', 'lime-100' => '#ecfccb', 'lime-200' => '#d9f99d', 'lime-300' => '#bef264', 'lime-400' => '#a3e635', 'lime-500' => '#84cc16', 'lime-600' => '#65a30d', 'lime-700' => '#4d7c0f', 'lime-800' => '#3f6212', 'lime-900' => '#365314', 'lime-950' => '#1a2e05',
-            // Green
-            'green-50' => '#f0fdf4', 'green-100' => '#dcfce7', 'green-200' => '#bbf7d0', 'green-300' => '#86efac', 'green-400' => '#4ade80', 'green-500' => '#22c55e', 'green-600' => '#16a34a', 'green-700' => '#15803d', 'green-800' => '#166534', 'green-900' => '#14532d', 'green-950' => '#052e16',
-            // Emerald
-            'emerald-50' => '#ecfdf5', 'emerald-100' => '#d1fae5', 'emerald-200' => '#a7f3d0', 'emerald-300' => '#6ee7b7', 'emerald-400' => '#34d399', 'emerald-500' => '#10b981', 'emerald-600' => '#059669', 'emerald-700' => '#047857', 'emerald-800' => '#065f46', 'emerald-900' => '#064e3b', 'emerald-950' => '#022c22',
-            // Teal
-            'teal-50' => '#f0fdfa', 'teal-100' => '#ccfbf1', 'teal-200' => '#99f6e4', 'teal-300' => '#5eead4', 'teal-400' => '#2dd4bf', 'teal-500' => '#14b8a6', 'teal-600' => '#0d9488', 'teal-700' => '#0f766e', 'teal-800' => '#115e59', 'teal-900' => '#134e4a', 'teal-950' => '#042f2e',
-            // Cyan
-            'cyan-50' => '#ecfeff', 'cyan-100' => '#cffafe', 'cyan-200' => '#a5f3fc', 'cyan-300' => '#67e8f9', 'cyan-400' => '#22d3ee', 'cyan-500' => '#06b6d4', 'cyan-600' => '#0891b2', 'cyan-700' => '#0e7490', 'cyan-800' => '#155e75', 'cyan-900' => '#164e63', 'cyan-950' => '#083344',
-            // Sky
-            'sky-50' => '#f0f9ff', 'sky-100' => '#e0f2fe', 'sky-200' => '#bae6fd', 'sky-300' => '#7dd3fc', 'sky-400' => '#38bdf8', 'sky-500' => '#0ea5e9', 'sky-600' => '#0284c7', 'sky-700' => '#0369a1', 'sky-800' => '#075985', 'sky-900' => '#0c4a6e', 'sky-950' => '#082f49',
-            // Blue
-            'blue-50' => '#eff6ff', 'blue-100' => '#dbeafe', 'blue-200' => '#bfdbfe', 'blue-300' => '#93c5fd', 'blue-400' => '#60a5fa', 'blue-500' => '#3b82f6', 'blue-600' => '#2563eb', 'blue-700' => '#1d4ed8', 'blue-800' => '#1e40af', 'blue-900' => '#1e3a8a', 'blue-950' => '#172554',
-            // Indigo
-            'indigo-50' => '#eef2ff', 'indigo-100' => '#e0e7ff', 'indigo-200' => '#c7d2fe', 'indigo-300' => '#a5b4fc', 'indigo-400' => '#818cf8', 'indigo-500' => '#6366f1', 'indigo-600' => '#4f46e5', 'indigo-700' => '#4338ca', 'indigo-800' => '#3730a3', 'indigo-900' => '#312e81', 'indigo-950' => '#1e1b4b',
-            // Violet
-            'violet-50' => '#f5f3ff', 'violet-100' => '#ede9fe', 'violet-200' => '#ddd6fe', 'violet-300' => '#c4b5fd', 'violet-400' => '#a78bfa', 'violet-500' => '#8b5cf6', 'violet-600' => '#7c3aed', 'violet-700' => '#6d28d9', 'violet-800' => '#5b21b6', 'violet-900' => '#4c1d95', 'violet-950' => '#2e1065',
-            // Purple
-            'purple-50' => '#faf5ff', 'purple-100' => '#f3e8ff', 'purple-200' => '#e9d5ff', 'purple-300' => '#d8b4fe', 'purple-400' => '#c084fc', 'purple-500' => '#a855f7', 'purple-600' => '#9333ea', 'purple-700' => '#7e22ce', 'purple-800' => '#6b21a8', 'purple-900' => '#581c87', 'purple-950' => '#3b0764',
-            // Fuchsia
-            'fuchsia-50' => '#fdf4ff', 'fuchsia-100' => '#fae8ff', 'fuchsia-200' => '#f5d0fe', 'fuchsia-300' => '#f0abfc', 'fuchsia-400' => '#e879f9', 'fuchsia-500' => '#d946ef', 'fuchsia-600' => '#c026d3', 'fuchsia-700' => '#a21caf', 'fuchsia-800' => '#86198f', 'fuchsia-900' => '#701a75', 'fuchsia-950' => '#4a044e',
-            // Pink
-            'pink-50' => '#fdf2f8', 'pink-100' => '#fce7f3', 'pink-200' => '#fbcfe8', 'pink-300' => '#f9a8d4', 'pink-400' => '#f472b6', 'pink-500' => '#ec4899', 'pink-600' => '#db2777', 'pink-700' => '#be185d', 'pink-800' => '#9d174d', 'pink-900' => '#831843', 'pink-950' => '#500724',
-            // Rose
-            'rose-50' => '#fff1f2', 'rose-100' => '#ffe4e6', 'rose-200' => '#fecdd3', 'rose-300' => '#fda4af', 'rose-400' => '#fb7185', 'rose-500' => '#f43f5e', 'rose-600' => '#e11d48', 'rose-700' => '#be123c', 'rose-800' => '#9f1239', 'rose-900' => '#881337', 'rose-950' => '#4c0519',
-            // Taupe (warm gray-brown)
-            'taupe-50' => '#faf9f7', 'taupe-100' => '#f5f3f0', 'taupe-200' => '#e8e4de', 'taupe-300' => '#d5cfc5', 'taupe-400' => '#b8af9f', 'taupe-500' => '#9a8f7d', 'taupe-600' => '#7d7264', 'taupe-700' => '#665c50', 'taupe-800' => '#544b42', 'taupe-900' => '#473f38', 'taupe-950' => '#26221e',
-            // Mauve (dusty purple-pink)
-            'mauve-50' => '#fdf4f8', 'mauve-100' => '#fce8f1', 'mauve-200' => '#fad0e3', 'mauve-300' => '#f6a9cb', 'mauve-400' => '#ef75a8', 'mauve-500' => '#e54a87', 'mauve-600' => '#d32a66', 'mauve-700' => '#b31d4e', 'mauve-800' => '#951b43', 'mauve-900' => '#7d1b3c', 'mauve-950' => '#4c0920',
-            // Mist (soft blue-gray)
-            'mist-50' => '#f6f8fa', 'mist-100' => '#eef2f6', 'mist-200' => '#dde5ed', 'mist-300' => '#c4d1df', 'mist-400' => '#a5b7cc', 'mist-500' => '#8a9db6', 'mist-600' => '#7485a0', 'mist-700' => '#626f87', 'mist-800' => '#535c6f', 'mist-900' => '#474e5c', 'mist-950' => '#2d3139',
-            // Olive (earthy green)
-        'olive-50' => '#f7f8f3', 'olive-100' => '#eef0e4', 'olive-200' => '#dce1c9', 'olive-300' => '#c3cca4', 'olive-400' => '#a6b37b', 'olive-500' => '#8a9a5b', 'olive-600' => '#6d7b46', 'olive-700' => '#556139', 'olive-800' => '#464f31', 'olive-900' => '#3c432c', 'olive-950' => '#1f2316',
+        'current'     => 'currentColor',
+        'inherit'     => 'inherit',
+        'white'       => '#ffffff',
+        'black'       => '#000000',
+        'gradient'    => 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    ];
+
+    /**
+     * Precomputed hex values for the standard Tailwind stops (50..900).
+     * Originally generated from an OKLCH formula keyed by per-family
+     * hue + chroma + a shared lightness curve. The formula has been
+     * removed; tune values directly here.
+     *
+     * Shades outside this set resolve to `name-shade` and surface as
+     * broken CSS — by design, so typos and out-of-range shades are
+     * visible.
+     */
+    private const SHADES = [
+        "red"     => [50=>"#fef2f2", 100=>"#ffe2e2", 200=>"#ffc9c9", 300=>"#ffa2a2", 400=>"#ff636b", 500=>"#fa2945", 600=>"#e7002b", 700=>"#c1001f", 800=>"#9f051a", 900=>"#82171a"],
+        "orange"  => [50=>"#fbf4ec", 100=>"#f8e7d3", 200=>"#f5d2ae", 300=>"#f4b06f", 400=>"#f27b00", 500=>"#ee5000", 600=>"#de2d00", 700=>"#bb1f00", 800=>"#9b1c00", 900=>"#801f00"],
+        "amber"   => [50=>"#f7f6ed", 100=>"#f0ead6", 200=>"#e6d8b2", 300=>"#dbbd75", 400=>"#cf9400", 500=>"#c97600", 600=>"#bb5e00", 700=>"#9f4b00", 800=>"#863d00", 900=>"#703400"],
+        "yellow"  => [50=>"#f6f6ef", 100=>"#ebebda", 200=>"#dddbbb", 300=>"#cac386", 400=>"#b6a028", 500=>"#ab8700", 600=>"#9e7200", 700=>"#875c00", 800=>"#724b00", 900=>"#613f00"],
+        "lime"    => [50=>"#f2f7f1", 100=>"#e1efde", 200=>"#c9e2c1", 300=>"#a7ce91", 400=>"#7ab342", 500=>"#65a000", 600=>"#5b8b00", 700=>"#527200", 800=>"#4a5d00", 900=>"#434d00"],
+        "green"   => [50=>"#f0f8f2", 100=>"#ddefe2", 200=>"#c0e4ca", 300=>"#92d2a3", 400=>"#45ba6a", 500=>"#00a940", 600=>"#009620", 700=>"#007c13", 800=>"#006711", 900=>"#165514"],
+        "emerald" => [50=>"#eff8f4", 100=>"#d9f0e7", 200=>"#b8e5d3", 300=>"#7fd5b3", 400=>"#00be88", 500=>"#00ae6b", 600=>"#009c56", 700=>"#008144", 800=>"#006b37", 900=>"#005930"],
+        "teal"    => [50=>"#eff8f7", 100=>"#d9efed", 200=>"#b7e4de", 300=>"#7cd3c8", 400=>"#00bbab", 500=>"#00ab97", 600=>"#009984", 700=>"#007f6c", 800=>"#006958", 900=>"#005849"],
+        "cyan"    => [50=>"#eef8f8", 100=>"#d8efef", 200=>"#b6e3e4", 300=>"#79d1d6", 400=>"#00b9c4", 500=>"#00a8b9", 600=>"#0095a9", 700=>"#007b8e", 800=>"#006676", 900=>"#005563"],
+        "sky"     => [50=>"#eef8fa", 100=>"#d6eff5", 200=>"#b2e3ef", 300=>"#70d0e8", 400=>"#00b6e1", 500=>"#00a3db", 600=>"#008fcb", 700=>"#0077ab", 800=>"#00628d", 900=>"#005274"],
+        "blue"    => [50=>"#f0f6fe", 100=>"#dcebff", 200=>"#bfdbff", 300=>"#92c2ff", 400=>"#519cff", 500=>"#297fff", 600=>"#1d68ff", 700=>"#2155dc", 800=>"#2447b3", 900=>"#253e91"],
+        "indigo"  => [50=>"#f2f5ff", 100=>"#e2e9ff", 200=>"#ccd7ff", 300=>"#aabbff", 400=>"#8090ff", 500=>"#6a71ff", 600=>"#5c5aff", 700=>"#4d4ada", 800=>"#413fb2", 900=>"#383890"],
+        "violet"  => [50=>"#f5f4fe", 100=>"#e8e7ff", 200=>"#d7d3ff", 300=>"#bfb4ff", 400=>"#a384ff", 500=>"#9461ff", 600=>"#8548f9", 700=>"#703bcf", 800=>"#5e33a9", 900=>"#4f3088"],
+        "purple"  => [50=>"#f8f3fc", 100=>"#f0e5fb", 200=>"#e4cff9", 300=>"#d5acf9", 400=>"#c179f9", 500=>"#b353f6", 600=>"#a239e5", 700=>"#862fbf", 800=>"#6f2b9d", 900=>"#5c2a7f"],
+        "fuchsia" => [50=>"#faf3fa", 100=>"#f5e3f6", 200=>"#efccf0", 300=>"#e5a7ea", 400=>"#d770e2", 500=>"#cc46db", 600=>"#b929ca", 700=>"#9a22a9", 800=>"#7e228b", 900=>"#682472"],
+        "pink"    => [50=>"#fdf2f6", 100=>"#fde2ea", 200=>"#fcc9db", 300=>"#fba1c3", 400=>"#f663a5", 500=>"#ee2d92", 600=>"#db0081", 700=>"#b7006c", 800=>"#960a5a", 900=>"#7b184c"],
+        "rose"    => [50=>"#fef2f2", 100=>"#ffe2e2", 200=>"#ffc9cb", 300=>"#ffa1a8", 400=>"#ff6278", 500=>"#f9275c", 600=>"#e5004b", 700=>"#bf003f", 800=>"#9d0137", 900=>"#811531"],
+        "slate"   => [50=>"#f5f5f6", 100=>"#e8eaed", 200=>"#d5d9de", 300=>"#bac1ca", 400=>"#96a1af", 500=>"#808c9e", 600=>"#6e7a8d", 700=>"#5b6575", 800=>"#4c5461", 900=>"#414751"],
+        "gray"    => [50=>"#f5f5f6", 100=>"#e9eaeb", 200=>"#d8d9dc", 300=>"#bec0c5", 400=>"#9ca0a7", 500=>"#878b94", 600=>"#757982", 700=>"#61656c", 800=>"#51545a", 900=>"#45474b"],
+        "zinc"    => [50=>"#f5f5f6", 100=>"#eaeaea", 200=>"#d9d9da", 300=>"#c0c0c2", 400=>"#9f9fa3", 500=>"#8b8b8f", 600=>"#79797e", 700=>"#646468", 800=>"#535356", 900=>"#464649"],
+        "neutral" => [50=>"#f5f5f5", 100=>"#eaeaea", 200=>"#d9d9d9", 300=>"#c0c0c0", 400=>"#9f9f9f", 500=>"#8b8b8b", 600=>"#797979", 700=>"#656565", 800=>"#535353", 900=>"#464646"],
+        "stone"   => [50=>"#f6f5f5", 100=>"#eae9e9", 200=>"#dad9d7", 300=>"#c3bfbd", 400=>"#a49e9b", 500=>"#908a86", 600=>"#7e7874", 700=>"#696360", 800=>"#575350", 900=>"#494644"],
+        "taupe"   => [50=>"#f6f5f4", 100=>"#ede9e7", 200=>"#ded7d4", 300=>"#cabeb6", 400=>"#af9b8f", 500=>"#9d8677", 600=>"#8b7465", 700=>"#736053", 800=>"#5f5045", 900=>"#4f443b"],
+        "mauve"   => [50=>"#f8f4f6", 100=>"#f1e6eb", 200=>"#e7d3dc", 300=>"#d9b4c5", 400=>"#c68ba8", 500=>"#b87296", 600=>"#a55f85", 700=>"#894f6f", 800=>"#71425c", 900=>"#5e394e"],
+        "mist"    => [50=>"#f4f6f7", 100=>"#e6eaed", 200=>"#d3dae0", 300=>"#b5c2cd", 400=>"#8ea3b4", 500=>"#758fa3", 600=>"#637d92", 700=>"#526879", 800=>"#455664", 900=>"#3b4854"],
+        "olive"   => [50=>"#f5f6f2", 100=>"#e9ebe2", 200=>"#d8dbcb", 300=>"#c0c4a6", 400=>"#9fa574", 500=>"#8c9154", 600=>"#7b7f40", 700=>"#666934", 800=>"#55572d", 900=>"#484929"],
     ];
 
     /**
@@ -198,14 +185,20 @@ class Color extends Property
                 : "rgb({$this->r}, {$this->g}, {$this->b})";
         }
 
-        // Look up using base palette key (no opacity / alpha modifiers).
-        $key = $this->name;
-        if ($this->shade !== null) {
-            $key .= '-' . $this->shade;
+        if (isset(self::SPECIAL[$this->name])) {
+            $resolved = self::SPECIAL[$this->name];
+        } elseif ($this->shade !== null && isset(self::SHADES[$this->name][$this->shade])) {
+            $resolved = self::SHADES[$this->name][$this->shade];
+        } else {
+            // Free-form (e.g. Color::hex('#abc')), unknown family, or
+            // an out-of-range shade — emit as-is so typos surface as
+            // broken CSS.
+            $resolved = $this->shade !== null
+                ? $this->name . '-' . $this->shade
+                : $this->name;
         }
-        $resolved = self::COLORS[$key] ?? $key;
 
-        // Apply alpha to a resolved hex palette entry.
+        // Apply alpha to a resolved hex.
         if ($this->alphaValue !== null && str_starts_with($resolved, '#')) {
             [$r, $g, $b] = self::hexChannels(substr($resolved, 1));
             if ($r !== null) {

@@ -71,7 +71,8 @@ class TodoApp extends App
         $allCompleted = count($this->todos) > 0 && $activeCount === 0;
 
         return UI::column()
-            ->background(Color::neutral(100))
+            ->extend(true)
+            ->background(Color::gray(50))
             ->content(
                 // Analog clock
                 UI::row()

@@ -565,10 +565,10 @@ class UIElement extends Node
         return $this;
     }
 
-    public function extend(): static
+    public function extend(bool $screen = false): static
     {
-        $this->addStyle('w-full', ['width' => '100%']);
-        $this->addStyle('h-full', ['height' => '100%']);
+        $this->addStyle('w-full', ['width' => $screen ? '100vw' : '100%']);
+        $this->addStyle('h-full', ['height' => $screen ? '100vh' : '100%']);
         return $this;
     }
 
