@@ -925,3 +925,19 @@ var SPWA = (function() {
         handleEvent: handleEvent
     };
 })();
+
+// Dev-only HMR: long-poll /hmr.php; on a detected .php change, reload.
+(function () {
+    var ctl;
+    function poll() {
+        if (ctl) ctl.abort();
+        ctl = new AbortController();
+        fetch('/hmr.php', { signal: ctl.signal, cache: 'no-store' })
+            .then(function (r) { return r.json(); })
+            .then(function (j) { if (j && j.changed) location.reload(); })
+            .catch(function () { /* aborted or network error */ });
+    }
+    window.addEventListener('beforeunload', function () { if (ctl) ctl.abort(); });
+    poll();
+    setInterval(poll, 60_000);
+})();
