@@ -41,18 +41,9 @@ abstract class App extends Component
     }
 
     /**
-     * Return the state managers used by this app.
-     * @return StateManager[]
+     * Return the state manager used by this app.
      */
-    abstract public function states(): array;
-
-    /**
-     * Get the primary (first) state manager.
-     */
-    public function getDefaultState(): StateManager
-    {
-        return $this->states()[0];
-    }
+    abstract public function state(): StateManager;
 
     /**
      * Add a custom JavaScript snippet.

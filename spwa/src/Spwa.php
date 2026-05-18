@@ -46,17 +46,16 @@ class Spwa
             }
             self::$current = $entry;
 
-            // Pull state managers ONCE; do not call states() again. Many managers
-            // are now stateful within a request (in-process caches), so two
-            // instances created from separate states() calls would have divergent
-            // caches and the request would see inconsistent data.
-            $states = $entry->states();
-            $primaryState = $states[0];
+            // Pull the state manager ONCE; do not call state() again.
+            // Many managers are stateful within a request (in-process
+            // caches), so two instances would have divergent caches and
+            // the request would see inconsistent data.
+            $state = $entry->state();
 
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                self::handlePost($entry, $primaryState, $states);
+                self::handlePost($entry, $state);
             } else {
-                self::handleGet($entry, $primaryState, $states);
+                self::handleGet($entry, $state);
             }
         } catch (Throwable $e) {
             self::renderError(ErrorInfo::fromThrowable($e));
@@ -225,37 +224,17 @@ JS;
     }
 
     /**
-     * Drop every state manager's stored state. Used to recover from a
-     * shape mismatch between serialized state and the current code.
-     * @param StateManager[] $states
+     * Fingerprint the stored state. Used as a cheap optimistic-
+     * concurrency token: the frontend echoes back the hash from page
+     * render, the backend re-hashes the stored state before processing
+     * an event, and a mismatch forces a reload.
      */
-    private static function clearAllStates(array $states): void
+    private static function computeStateHash(StateManager $state): string
     {
-        foreach ($states as $state) {
-            $state->clearAll();
-        }
+        return sha1(serialize($state->getAll()));
     }
 
-    /**
-     * Fingerprint the combined contents of every state manager.
-     * Used as a cheap optimistic-concurrency token: the frontend echoes
-     * back the hash from page render, the backend re-hashes the stored
-     * state before processing an event, and a mismatch forces a reload.
-     * @param StateManager[] $states
-     */
-    private static function computeStateHash(array $states): string
-    {
-        $combined = [];
-        foreach ($states as $i => $state) {
-            $combined[$i] = $state->getAll();
-        }
-        return sha1(serialize($combined));
-    }
-
-    /**
-     * @param StateManager[] $states
-     */
-    private static function handlePost(App $entry, StateManager $primaryState, array $states): void
+    private static function handlePost(App $entry, StateManager $state): void
     {
         $t = new Timings();
         ob_start();
@@ -280,7 +259,7 @@ JS;
         // rendered against. If the backend's current state hashes differently
         // (e.g. another tab mutated it, or a deploy reshaped it), the frontend
         // is operating on a stale tree — bail out and force a reload.
-        if ($expectedHash !== null && $expectedHash !== self::computeStateHash($states)) {
+        if ($expectedHash !== null && $expectedHash !== self::computeStateHash($state)) {
             ob_end_clean();
             header('Content-Type: application/json');
             echo json_encode(['success' => false, 'reload' => true]);
@@ -295,7 +274,7 @@ JS;
         try {
             PortalTarget::reset();
             $oldApp = new ($entry::class)();
-            $oldUi = $oldApp->render($primaryState, null, RenderPhase::DiffOld);
+            $oldUi = $oldApp->render($state, null, RenderPhase::DiffOld);
             $t->mark('render_old');
 
             if (!empty($bindings) && $oldUi instanceof TagDomNode) {
@@ -305,19 +284,19 @@ JS;
 
             $node = $oldUi->findByPath($path);
             if ($node !== null) {
-                $node->executeEvent($event, $primaryState, $value);
+                $node->executeEvent($event, $state, $value);
             }
             $t->mark('execute_event');
 
-            $oldApp->finalize($primaryState);
+            $oldApp->finalize($state);
             $t->mark('finalize_old');
 
             PortalTarget::reset();
             $newApp = new ($entry::class)();
-            $newUi = $newApp->render($primaryState, null, RenderPhase::Patch);
+            $newUi = $newApp->render($state, null, RenderPhase::Patch);
             $t->mark('render_new');
         } catch (\Throwable $e) {
-            self::clearAllStates($states);
+            $state->clearAll();
             ob_end_clean();
             header('Content-Type: application/json');
             echo json_encode(['success' => false, 'reload' => true]);
@@ -346,12 +325,12 @@ JS;
             JsRuntime::invoke(['console', 'log'], [$output]);
         }
 
-        $newHash = self::computeStateHash($states);
+        $newHash = self::computeStateHash($state);
         $t->mark('compute_hash');
 
         // Debug panel → console (prepended so it appears first)
         $appCalls = JsRuntime::drain();
-        (new DebugPanel($newUi, $states, $t))->emit();
+        (new DebugPanel($newUi, $state, $t))->emit();
         $debugCalls = JsRuntime::drain();
         JsRuntime::prepend(array_merge($debugCalls, $appCalls));
 
@@ -363,7 +342,7 @@ JS;
             'hash' => $newHash,
         ];
 
-        $clientState = self::getClientState($states);
+        $clientState = $state->getClientState();
         if ($clientState !== null) {
             $response['state'] = $clientState;
         }
@@ -373,10 +352,7 @@ JS;
         exit;
     }
 
-    /**
-     * @param StateManager[] $states
-     */
-    private static function handleGet(App $entry, StateManager $primaryState, array $states): void
+    private static function handleGet(App $entry, StateManager $state): void
     {
         $t = new Timings();
 
@@ -384,21 +360,21 @@ JS;
         // and retry from defaults. A second failure is propagated.
         try {
             PortalTarget::reset();
-            $ui = $entry->render($primaryState, null, RenderPhase::Initial);
-            $entry->finalize($primaryState);
+            $ui = $entry->render($state, null, RenderPhase::Initial);
+            $entry->finalize($state);
         } catch (\Throwable $e) {
-            self::clearAllStates($states);
+            $state->clearAll();
             PortalTarget::reset();
             $entry = new ($entry::class)();
-            $ui = $entry->render($primaryState, null, RenderPhase::Initial);
-            $entry->finalize($primaryState);
+            $ui = $entry->render($state, null, RenderPhase::Initial);
+            $entry->finalize($state);
         }
         $t->mark('render');
 
         // Render the optional loader overlay before collecting styles so its
         // CSS lands in the same <style> block.
         $loaderVNode = $entry->getLoader();
-        $loaderDom = $loaderVNode?->render($primaryState, null, RenderPhase::Initial);
+        $loaderDom = $loaderVNode?->render($state, null, RenderPhase::Initial);
         $t->mark('render_loader');
 
         $styles = $ui->collectStyles();
@@ -408,18 +384,18 @@ JS;
         $generator = StyleGenerator::from($styles);
         $t->mark('collect_styles');
 
-        $stateJs = self::getClientJs($states);
+        $stateJs = $state->getClientJs();
 
         // Collect custom CSS/JS registered by components
         $customCss = implode("\n", $entry->getCustomCss());
         $customJs = implode("\n", $entry->getCustomJs());
 
-        $stateHash = self::computeStateHash($states);
+        $stateHash = self::computeStateHash($state);
         $t->mark('compute_hash');
 
         // Debug panel → inline script for initial render. Construct AFTER
         // timings so far so they appear in the debug output.
-        (new DebugPanel($ui, $states, $t))->emit();
+        (new DebugPanel($ui, $state, $t))->emit();
         $debugJs = self::callsToJs(JsRuntime::drain());
 
         $head = (new TagDomNode('head'))
@@ -463,21 +439,6 @@ JS;
     }
 
     /**
-     * @param StateManager[] $states
-     */
-    private static function getClientJs(array $states): ?string
-    {
-        $js = '';
-        foreach ($states as $manager) {
-            $managerJs = $manager->getClientJs();
-            if ($managerJs !== null) {
-                $js .= $managerJs . "\n";
-            }
-        }
-        return $js === '' ? null : $js;
-    }
-
-    /**
      * Convert raw JsRuntime call entries to inline JavaScript.
      */
     private static function callsToJs(array $calls): string
@@ -491,20 +452,5 @@ JS;
             }
         }
         return $js;
-    }
-
-    /**
-     * @param StateManager[] $states
-     */
-    private static function getClientState(array $states): ?array
-    {
-        $result = [];
-        foreach ($states as $manager) {
-            $clientState = $manager->getClientState();
-            if ($clientState !== null) {
-                $result[] = $clientState;
-            }
-        }
-        return empty($result) ? null : array_merge(...$result);
     }
 }

@@ -16,17 +16,14 @@ class DebugPanel
     /** @var array<string, float>|null */
     private ?array $timings;
 
-    /**
-     * @param StateManager[] $states
-     */
-    public function __construct(DomNode $renderedUi, array $states, ?Timings $timings = null)
+    public function __construct(DomNode $renderedUi, StateManager $state, ?Timings $timings = null)
     {
         $this->nodeCount = $renderedUi->countNodes();
-        $this->stateInfo = array_map(fn(StateManager $s) => [
-            'name' => $s->name(),
-            'bytes' => $s->bytes(),
-            'all' => $s->getAll(),
-        ], $states);
+        $this->stateInfo = [[
+            'name' => $state->name(),
+            'bytes' => $state->bytes(),
+            'all' => $state->getAll(),
+        ]];
         $this->timings = $timings?->all();
     }
 
