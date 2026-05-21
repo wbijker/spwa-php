@@ -1178,4 +1178,887 @@ class UIElement extends Node
         $this->addStyle($prefix . $value->withContext('bottom'), ['bottom' => $value->getCssValue()]);
         return $this;
     }
+
+    // ============================================================
+    // Display
+    // ============================================================
+
+    public function block(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'block', ['display' => 'block']);
+        return $this;
+    }
+
+    public function inlineBlock(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'inline-block', ['display' => 'inline-block']);
+        return $this;
+    }
+
+    public function inline(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'inline', ['display' => 'inline']);
+        return $this;
+    }
+
+    public function flex(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'flex', ['display' => 'flex']);
+        return $this;
+    }
+
+    public function inlineFlex(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'inline-flex', ['display' => 'inline-flex']);
+        return $this;
+    }
+
+    public function grid(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'grid', ['display' => 'grid']);
+        return $this;
+    }
+
+    public function inlineGrid(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'inline-grid', ['display' => 'inline-grid']);
+        return $this;
+    }
+
+    public function table(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'table', ['display' => 'table']);
+        return $this;
+    }
+
+    public function contents(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'contents', ['display' => 'contents']);
+        return $this;
+    }
+
+    // ============================================================
+    // Aspect ratio
+    // ============================================================
+
+    public function aspectSquare(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'aspect-square', ['aspect-ratio' => '1 / 1']);
+        return $this;
+    }
+
+    public function aspectVideo(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'aspect-video', ['aspect-ratio' => '16 / 9']);
+        return $this;
+    }
+
+    public function aspectAuto(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'aspect-auto', ['aspect-ratio' => 'auto']);
+        return $this;
+    }
+
+    public function aspectRatio(int $width, int $height, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . "aspect-[{$width}/{$height}]", ['aspect-ratio' => "$width / $height"]);
+        return $this;
+    }
+
+    // ============================================================
+    // Object fit / position
+    // ============================================================
+
+    public function objectCover(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'object-cover', ['object-fit' => 'cover']);
+        return $this;
+    }
+
+    public function objectContain(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'object-contain', ['object-fit' => 'contain']);
+        return $this;
+    }
+
+    public function objectFill(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'object-fill', ['object-fit' => 'fill']);
+        return $this;
+    }
+
+    public function objectNone(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'object-none', ['object-fit' => 'none']);
+        return $this;
+    }
+
+    public function objectScaleDown(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'object-scale-down', ['object-fit' => 'scale-down']);
+        return $this;
+    }
+
+    public function objectCenter(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'object-center', ['object-position' => 'center']);
+        return $this;
+    }
+
+    public function objectTop(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'object-top', ['object-position' => 'top']);
+        return $this;
+    }
+
+    public function objectBottom(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'object-bottom', ['object-position' => 'bottom']);
+        return $this;
+    }
+
+    public function objectLeft(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'object-left', ['object-position' => 'left']);
+        return $this;
+    }
+
+    public function objectRight(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'object-right', ['object-position' => 'right']);
+        return $this;
+    }
+
+    // ============================================================
+    // Isolation & blending
+    // ============================================================
+
+    public function isolate(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'isolate', ['isolation' => 'isolate']);
+        return $this;
+    }
+
+    public function isolationAuto(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'isolation-auto', ['isolation' => 'auto']);
+        return $this;
+    }
+
+    public function mixBlend(string $mode, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'mix-blend-' . $mode, ['mix-blend-mode' => $mode]);
+        return $this;
+    }
+
+    // ============================================================
+    // Spacing — single-side variants
+    // ============================================================
+
+    public function paddingRight(Unit $value, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('pr'), ['padding-right' => $value->getCssValue()]);
+        return $this;
+    }
+
+    public function paddingBottom(Unit $value, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('pb'), ['padding-bottom' => $value->getCssValue()]);
+        return $this;
+    }
+
+    public function paddingLeft(Unit $value, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('pl'), ['padding-left' => $value->getCssValue()]);
+        return $this;
+    }
+
+    public function marginTop(Unit $value, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('mt'), ['margin-top' => $value->getCssValue()]);
+        return $this;
+    }
+
+    public function marginRight(Unit $value, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('mr'), ['margin-right' => $value->getCssValue()]);
+        return $this;
+    }
+
+    public function marginBottom(Unit $value, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('mb'), ['margin-bottom' => $value->getCssValue()]);
+        return $this;
+    }
+
+    public function marginLeft(Unit $value, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('ml'), ['margin-left' => $value->getCssValue()]);
+        return $this;
+    }
+
+    // ============================================================
+    // Borders — single-side variants
+    // ============================================================
+
+    public function borderLeft(int $width = 1, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'border-l-' . $width, ['border-left-width' => $width . 'px', 'border-left-style' => 'solid']);
+        return $this;
+    }
+
+    public function borderRight(int $width = 1, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'border-r-' . $width, ['border-right-width' => $width . 'px', 'border-right-style' => 'solid']);
+        return $this;
+    }
+
+    // ============================================================
+    // Rounded — per-corner / per-side
+    // ============================================================
+
+    public function roundedTop(?Unit $value = null, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        if ($value === null) {
+            $this->addStyle($prefix . 'rounded-t', ['border-top-left-radius' => '0.25rem', 'border-top-right-radius' => '0.25rem']);
+        } else {
+            $css = $value->getCssValue();
+            $this->addStyle($prefix . $value->withContext('rounded-t'), ['border-top-left-radius' => $css, 'border-top-right-radius' => $css]);
+        }
+        return $this;
+    }
+
+    public function roundedBottom(?Unit $value = null, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        if ($value === null) {
+            $this->addStyle($prefix . 'rounded-b', ['border-bottom-left-radius' => '0.25rem', 'border-bottom-right-radius' => '0.25rem']);
+        } else {
+            $css = $value->getCssValue();
+            $this->addStyle($prefix . $value->withContext('rounded-b'), ['border-bottom-left-radius' => $css, 'border-bottom-right-radius' => $css]);
+        }
+        return $this;
+    }
+
+    public function roundedLeft(?Unit $value = null, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        if ($value === null) {
+            $this->addStyle($prefix . 'rounded-l', ['border-top-left-radius' => '0.25rem', 'border-bottom-left-radius' => '0.25rem']);
+        } else {
+            $css = $value->getCssValue();
+            $this->addStyle($prefix . $value->withContext('rounded-l'), ['border-top-left-radius' => $css, 'border-bottom-left-radius' => $css]);
+        }
+        return $this;
+    }
+
+    public function roundedRight(?Unit $value = null, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        if ($value === null) {
+            $this->addStyle($prefix . 'rounded-r', ['border-top-right-radius' => '0.25rem', 'border-bottom-right-radius' => '0.25rem']);
+        } else {
+            $css = $value->getCssValue();
+            $this->addStyle($prefix . $value->withContext('rounded-r'), ['border-top-right-radius' => $css, 'border-bottom-right-radius' => $css]);
+        }
+        return $this;
+    }
+
+    public function roundedTopLeft(Unit $value, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('rounded-tl'), ['border-top-left-radius' => $value->getCssValue()]);
+        return $this;
+    }
+
+    public function roundedTopRight(Unit $value, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('rounded-tr'), ['border-top-right-radius' => $value->getCssValue()]);
+        return $this;
+    }
+
+    public function roundedBottomLeft(Unit $value, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('rounded-bl'), ['border-bottom-left-radius' => $value->getCssValue()]);
+        return $this;
+    }
+
+    public function roundedBottomRight(Unit $value, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('rounded-br'), ['border-bottom-right-radius' => $value->getCssValue()]);
+        return $this;
+    }
+
+    // ============================================================
+    // Outline
+    // ============================================================
+
+    public function outline(int $width = 1, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'outline-' . $width, ['outline-width' => $width . 'px', 'outline-style' => 'solid']);
+        return $this;
+    }
+
+    public function outlineColor(Color $color, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $color->withContext('outline'), ['outline-color' => $color->getValue()]);
+        return $this;
+    }
+
+    public function outlineDashed(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'outline-dashed', ['outline-style' => 'dashed']);
+        return $this;
+    }
+
+    public function outlineDotted(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'outline-dotted', ['outline-style' => 'dotted']);
+        return $this;
+    }
+
+    public function outlineOffset(int $px, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'outline-offset-' . $px, ['outline-offset' => $px . 'px']);
+        return $this;
+    }
+
+    // ============================================================
+    // Ring (focus ring / box-shadow ring)
+    // ============================================================
+
+    public function ring(int $width = 3, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'ring-' . $width, ['box-shadow' => "0 0 0 {$width}px currentColor"]);
+        return $this;
+    }
+
+    public function ringColor(Color $color, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $value = $color->getValue();
+        $this->addStyle($prefix . $color->withContext('ring'), ['--tw-ring-color' => $value, 'box-shadow' => "0 0 0 3px $value"]);
+        return $this;
+    }
+
+    public function ringOffset(int $px, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'ring-offset-' . $px, ['--tw-ring-offset-width' => $px . 'px']);
+        return $this;
+    }
+
+    // ============================================================
+    // Transforms — translate, skew, origin, GPU
+    // ============================================================
+
+    public function translateX(Unit $value, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('translate-x'), ['transform' => 'translateX(' . $value->getCssValue() . ')']);
+        return $this;
+    }
+
+    public function translateY(Unit $value, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('translate-y'), ['transform' => 'translateY(' . $value->getCssValue() . ')']);
+        return $this;
+    }
+
+    public function skewX(int $degrees, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'skew-x-' . $degrees, ['transform' => 'skewX(' . $degrees . 'deg)']);
+        return $this;
+    }
+
+    public function skewY(int $degrees, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'skew-y-' . $degrees, ['transform' => 'skewY(' . $degrees . 'deg)']);
+        return $this;
+    }
+
+    public function transformOrigin(string $origin, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $class = 'origin-' . str_replace(' ', '-', $origin);
+        $this->addStyle($prefix . $class, ['transform-origin' => $origin]);
+        return $this;
+    }
+
+    public function transformGpu(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'transform-gpu', ['transform' => 'translateZ(0)']);
+        return $this;
+    }
+
+    // ============================================================
+    // Transitions
+    // ============================================================
+
+    public function transitionAll(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'transition-all', ['transition-property' => 'all']);
+        return $this;
+    }
+
+    public function transitionColors(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'transition-colors', ['transition-property' => 'color, background-color, border-color, fill, stroke']);
+        return $this;
+    }
+
+    public function transitionOpacity(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'transition-opacity', ['transition-property' => 'opacity']);
+        return $this;
+    }
+
+    public function transitionShadow(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'transition-shadow', ['transition-property' => 'box-shadow']);
+        return $this;
+    }
+
+    public function transitionTransform(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'transition-transform', ['transition-property' => 'transform']);
+        return $this;
+    }
+
+    public function transitionNone(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'transition-none', ['transition-property' => 'none']);
+        return $this;
+    }
+
+    public function duration(int $ms, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'duration-' . $ms, ['transition-duration' => $ms . 'ms']);
+        return $this;
+    }
+
+    public function delay(int $ms, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'delay-' . $ms, ['transition-delay' => $ms . 'ms']);
+        return $this;
+    }
+
+    public function easeLinear(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'ease-linear', ['transition-timing-function' => 'linear']);
+        return $this;
+    }
+
+    public function easeIn(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'ease-in', ['transition-timing-function' => 'cubic-bezier(0.4, 0, 1, 1)']);
+        return $this;
+    }
+
+    public function easeOut(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'ease-out', ['transition-timing-function' => 'cubic-bezier(0, 0, 0.2, 1)']);
+        return $this;
+    }
+
+    public function easeInOut(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'ease-in-out', ['transition-timing-function' => 'cubic-bezier(0.4, 0, 0.2, 1)']);
+        return $this;
+    }
+
+    // ============================================================
+    // Filters
+    // ============================================================
+
+    public function blur(int $px, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'blur-' . $px, ['filter' => 'blur(' . $px . 'px)']);
+        return $this;
+    }
+
+    public function brightness(int $percent, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'brightness-' . $percent, ['filter' => 'brightness(' . ($percent / 100) . ')']);
+        return $this;
+    }
+
+    public function contrast(int $percent, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'contrast-' . $percent, ['filter' => 'contrast(' . ($percent / 100) . ')']);
+        return $this;
+    }
+
+    public function grayscale(int $percent = 100, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'grayscale-' . $percent, ['filter' => 'grayscale(' . ($percent / 100) . ')']);
+        return $this;
+    }
+
+    public function invert(int $percent = 100, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'invert-' . $percent, ['filter' => 'invert(' . ($percent / 100) . ')']);
+        return $this;
+    }
+
+    public function saturate(int $percent, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'saturate-' . $percent, ['filter' => 'saturate(' . ($percent / 100) . ')']);
+        return $this;
+    }
+
+    public function sepia(int $percent = 100, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'sepia-' . $percent, ['filter' => 'sepia(' . ($percent / 100) . ')']);
+        return $this;
+    }
+
+    public function hueRotate(int $degrees, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'hue-rotate-' . $degrees, ['filter' => 'hue-rotate(' . $degrees . 'deg)']);
+        return $this;
+    }
+
+    public function filterNone(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'filter-none', ['filter' => 'none']);
+        return $this;
+    }
+
+    // ============================================================
+    // Backdrop filters
+    // ============================================================
+
+    public function backdropBlur(int $px, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'backdrop-blur-' . $px, ['backdrop-filter' => 'blur(' . $px . 'px)']);
+        return $this;
+    }
+
+    public function backdropBrightness(int $percent, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'backdrop-brightness-' . $percent, ['backdrop-filter' => 'brightness(' . ($percent / 100) . ')']);
+        return $this;
+    }
+
+    public function backdropContrast(int $percent, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'backdrop-contrast-' . $percent, ['backdrop-filter' => 'contrast(' . ($percent / 100) . ')']);
+        return $this;
+    }
+
+    public function backdropGrayscale(int $percent = 100, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'backdrop-grayscale-' . $percent, ['backdrop-filter' => 'grayscale(' . ($percent / 100) . ')']);
+        return $this;
+    }
+
+    public function backdropSaturate(int $percent, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'backdrop-saturate-' . $percent, ['backdrop-filter' => 'saturate(' . ($percent / 100) . ')']);
+        return $this;
+    }
+
+    // ============================================================
+    // SVG fill & stroke
+    // ============================================================
+
+    public function fill(Color $color, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $color->withContext('fill'), ['fill' => $color->getValue()]);
+        return $this;
+    }
+
+    public function stroke(Color $color, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $color->withContext('stroke'), ['stroke' => $color->getValue()]);
+        return $this;
+    }
+
+    public function strokeWidth(int $width, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'stroke-' . $width, ['stroke-width' => (string)$width]);
+        return $this;
+    }
+
+    // ============================================================
+    // User select
+    // ============================================================
+
+    public function selectNone(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'select-none', ['user-select' => 'none']);
+        return $this;
+    }
+
+    public function selectText(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'select-text', ['user-select' => 'text']);
+        return $this;
+    }
+
+    public function selectAll(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'select-all', ['user-select' => 'all']);
+        return $this;
+    }
+
+    public function selectAuto(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'select-auto', ['user-select' => 'auto']);
+        return $this;
+    }
+
+    // ============================================================
+    // Pointer events
+    // ============================================================
+
+    public function pointerEventsNone(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'pointer-events-none', ['pointer-events' => 'none']);
+        return $this;
+    }
+
+    public function pointerEventsAuto(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'pointer-events-auto', ['pointer-events' => 'auto']);
+        return $this;
+    }
+
+    // ============================================================
+    // Touch action
+    // ============================================================
+
+    public function touchAuto(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'touch-auto', ['touch-action' => 'auto']);
+        return $this;
+    }
+
+    public function touchNone(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'touch-none', ['touch-action' => 'none']);
+        return $this;
+    }
+
+    public function touchPanX(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'touch-pan-x', ['touch-action' => 'pan-x']);
+        return $this;
+    }
+
+    public function touchPanY(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'touch-pan-y', ['touch-action' => 'pan-y']);
+        return $this;
+    }
+
+    public function touchManipulation(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'touch-manipulation', ['touch-action' => 'manipulation']);
+        return $this;
+    }
+
+    // ============================================================
+    // Resize
+    // ============================================================
+
+    public function resize(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'resize', ['resize' => 'both']);
+        return $this;
+    }
+
+    public function resizeNone(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'resize-none', ['resize' => 'none']);
+        return $this;
+    }
+
+    public function resizeX(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'resize-x', ['resize' => 'horizontal']);
+        return $this;
+    }
+
+    public function resizeY(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'resize-y', ['resize' => 'vertical']);
+        return $this;
+    }
+
+    // ============================================================
+    // Will-change
+    // ============================================================
+
+    public function willChangeAuto(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'will-change-auto', ['will-change' => 'auto']);
+        return $this;
+    }
+
+    public function willChangeScroll(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'will-change-scroll', ['will-change' => 'scroll-position']);
+        return $this;
+    }
+
+    public function willChangeContents(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'will-change-contents', ['will-change' => 'contents']);
+        return $this;
+    }
+
+    public function willChangeTransform(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'will-change-transform', ['will-change' => 'transform']);
+        return $this;
+    }
+
+    // ============================================================
+    // Appearance, caret, accent
+    // ============================================================
+
+    public function appearanceNone(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'appearance-none', ['appearance' => 'none', '-webkit-appearance' => 'none']);
+        return $this;
+    }
+
+    public function appearanceAuto(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'appearance-auto', ['appearance' => 'auto']);
+        return $this;
+    }
+
+    public function caretColor(Color $color, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $color->withContext('caret'), ['caret-color' => $color->getValue()]);
+        return $this;
+    }
+
+    public function accentColor(Color $color, ?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $color->withContext('accent'), ['accent-color' => $color->getValue()]);
+        return $this;
+    }
+
+    // ============================================================
+    // Scroll behavior
+    // ============================================================
+
+    public function scrollSmooth(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'scroll-smooth', ['scroll-behavior' => 'smooth']);
+        return $this;
+    }
+
+    public function scrollAuto(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'scroll-auto', ['scroll-behavior' => 'auto']);
+        return $this;
+    }
 }

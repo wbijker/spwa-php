@@ -215,9 +215,4 @@ class Row extends UIElementContent
         return $this;
     }
 
-    public function selectNone(): static
-    {
-        $this->addStyle('select-none', ['user-select' => 'none']);
-        return $this;
-    }
 }
