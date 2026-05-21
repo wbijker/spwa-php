@@ -288,7 +288,10 @@ JS;
             }
             $t->mark('execute_event');
 
-            $oldApp->finalize($state);
+            // Finalize every old-tree component, not just the root. An event
+            // handler can mutate state on any ancestor component via captured
+            // `$this`; without this sweep those mutations never persist.
+            Component::finalizeAll($state);
             $t->mark('finalize_old');
 
             PortalTarget::reset();

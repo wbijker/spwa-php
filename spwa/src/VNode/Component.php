@@ -376,6 +376,21 @@ abstract class Component extends VNode
     }
 
     /**
+     * Finalize every component recorded in the OLD render. Needed because an
+     * event handler can mutate state on a Component *above* the event owner
+     * (e.g. a child's destroy button captures `$this` from its parent
+     * TodoList and mutates `$this->todos`). executeEvent finalizes only the
+     * owner, and the root app's finalize doesn't recurse — without this,
+     * those ancestor mutations would never reach the StateManager.
+     */
+    public static function finalizeAll(StateManager $state): void
+    {
+        foreach (self::$oldRegistry as $component) {
+            $component->finalize($state);
+        }
+    }
+
+    /**
      * Call deleted() on components that were in the old tree but not the new tree.
      * Clears both registries afterwards.
      */
