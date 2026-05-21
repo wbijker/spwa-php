@@ -6,6 +6,7 @@ use Spwa\UI\Align;
 use Spwa\UI\Color;
 use Spwa\UI\Direction;
 use Spwa\UI\FontSize;
+use Spwa\UI\Pseudo;
 use Spwa\UI\Shadow;
 use Spwa\UI\UI;
 use Spwa\UI\UIElement;
@@ -26,12 +27,13 @@ class SampleUI
     public static function build(): UIElement
     {
         return UI::column()
-            ->alignCenter()                              // items-center
-            ->alignHorizontal(Align::left()->md())       // md:items-start
-            ->gap(Unit::large(), Unit::extraLarge()->md()) // gap-6, md:gap-8
-            ->padding(Unit::value(7))                     // p-7
-            ->direction(Direction::row()->md())          // md:flex-row
-            ->rounded(Unit::roundedXl())                 // rounded-2xl
+            ->alignCenter()                                          // items-center
+            ->alignHorizontal(Align::left(), Pseudo::md())           // md:items-start
+            ->gap(Unit::large())                                     // gap-6
+            ->gap(Unit::extraLarge(), Pseudo::md())                  // md:gap-8
+            ->padding(Unit::value(7))                                // p-7
+            ->direction(Direction::row(), Pseudo::md())              // md:flex-row
+            ->rounded(Unit::roundedXl())                             // rounded-2xl
             ->content(
                 // Album cover
                 UI::container()->content(
@@ -43,8 +45,8 @@ class SampleUI
 
                 // Album info
                 UI::column()
-                    ->alignCenter()                          // items-center
-                    ->alignHorizontal(Align::left()->md())   // md:items-start
+                    ->alignCenter()                                      // items-center
+                    ->alignHorizontal(Align::left(), Pseudo::md())       // md:items-start
                     ->content(
                         // Title
                         UI::text("BrickPHP")
@@ -61,22 +63,16 @@ class SampleUI
                             ->content(
                                 UI::text("No. 4")
                                     ->medium()
-                                    ->color(
-                                        Color::gray(600),
-                                        Color::gray(400)->dark()
-                                    ),
+                                    ->color(Color::gray(600))
+                                    ->color(Color::gray(400), Pseudo::dark()),
                                 UI::text("·")
                                     ->medium()
-                                    ->color(
-                                        Color::gray(600),
-                                        Color::gray(400)->dark()
-                                    ),
+                                    ->color(Color::gray(600))
+                                    ->color(Color::gray(400), Pseudo::dark()),
                                 UI::text("2025")
                                     ->medium()
-                                    ->color(
-                                        Color::gray(600),
-                                        Color::gray(400)->dark()
-                                    )
+                                    ->color(Color::gray(600))
+                                    ->color(Color::gray(400), Pseudo::dark())
                             )
                     )
             );

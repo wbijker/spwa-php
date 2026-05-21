@@ -3,11 +3,12 @@
 namespace Spwa\UI;
 
 /**
- * Flex direction property.
+ * Flex direction property. Modifiers (md, …) come from a Pseudo argument
+ * at the call site — see Pseudo.
  *
  * Usage:
  *   Direction::row()
- *   Direction::column()->md()
+ *   Direction::column()
  */
 class Direction extends Property
 {

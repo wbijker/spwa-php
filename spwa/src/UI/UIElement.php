@@ -689,11 +689,10 @@ class UIElement extends Node
     // Background
     // ============================================================
 
-    public function background(Color ...$colors): static
+    public function background(Color $color, ?Pseudo $pseudo = null): static
     {
-        foreach ($colors as $color) {
-            $this->addStyle($color->withContext('bg'), ['background-color' => $color->getValue()]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $color->withContext('bg'), ['background-color' => $color->getValue()]);
         return $this;
     }
 
@@ -701,11 +700,10 @@ class UIElement extends Node
     // Text Color
     // ============================================================
 
-    public function color(Color ...$colors): static
+    public function color(Color $color, ?Pseudo $pseudo = null): static
     {
-        foreach ($colors as $color) {
-            $this->addStyle($color->withContext('text'), ['color' => $color->getValue()]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $color->withContext('text'), ['color' => $color->getValue()]);
         return $this;
     }
 
@@ -713,54 +711,60 @@ class UIElement extends Node
     // Border
     // ============================================================
 
-    public function bordered(int $width = 1): static
+    public function bordered(int $width = 1, ?Pseudo $pseudo = null): static
     {
+        $prefix = $pseudo?->prefix() ?? '';
         $class = $width === 1 ? 'border' : 'border-' . $width;
-        $this->addStyle($class, ['border-width' => $width . 'px', 'border-style' => 'solid']);
+        $this->addStyle($prefix . $class, ['border-width' => $width . 'px', 'border-style' => 'solid']);
         return $this;
     }
 
-    public function borderColor(Color ...$colors): static
+    public function borderColor(Color $color, ?Pseudo $pseudo = null): static
     {
-        foreach ($colors as $color) {
-            $this->addStyle($color->withContext('border'), ['border-color' => $color->getValue()]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $color->withContext('border'), ['border-color' => $color->getValue()]);
         return $this;
     }
 
-    public function dashed(): static
+    public function dashed(?Pseudo $pseudo = null): static
     {
-        $this->addStyle('border-dashed', ['border-style' => 'dashed']);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'border-dashed', ['border-style' => 'dashed']);
         return $this;
     }
 
-    public function dotted(): static
+    public function dotted(?Pseudo $pseudo = null): static
     {
-        $this->addStyle('border-dotted', ['border-style' => 'dotted']);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'border-dotted', ['border-style' => 'dotted']);
         return $this;
     }
 
-    public function borderTop(int $width = 1): static
+    public function borderTop(int $width = 1, ?Pseudo $pseudo = null): static
     {
-        $this->addStyle('border-t-' . $width, ['border-top-width' => $width . 'px', 'border-top-style' => 'solid']);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'border-t-' . $width, ['border-top-width' => $width . 'px', 'border-top-style' => 'solid']);
         return $this;
     }
 
-    public function borderBottom(int $width = 1): static
+    public function borderBottom(int $width = 1, ?Pseudo $pseudo = null): static
     {
-        $this->addStyle('border-b-' . $width, ['border-bottom-width' => $width . 'px', 'border-bottom-style' => 'solid']);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'border-b-' . $width, ['border-bottom-width' => $width . 'px', 'border-bottom-style' => 'solid']);
         return $this;
     }
 
-    public function borderNone(): static
+    public function borderNone(?Pseudo $pseudo = null): static
     {
-        $this->addStyle('border-none', ['border' => 'none']);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'border-none', ['border' => 'none']);
         return $this;
     }
 
-    public function outlineNone(): static
+    public function outlineNone(?Pseudo $pseudo = null): static
     {
-        $this->addStyle('outline-none', ['outline' => 'none']);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'outline-none', ['outline' => 'none']);
         return $this;
     }
 
@@ -768,87 +772,84 @@ class UIElement extends Node
     // Sizing
     // ============================================================
 
-    public function width(Unit ...$values): static
+    public function width(Unit $value, ?Pseudo $pseudo = null): static
     {
-        foreach ($values as $value) {
-            $this->addStyle($value->withContext('w'), ['width' => $value->getCssValue()]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('w'), ['width' => $value->getCssValue()]);
         return $this;
     }
 
-    public function height(Unit ...$values): static
+    public function height(Unit $value, ?Pseudo $pseudo = null): static
     {
-        foreach ($values as $value) {
-            $this->addStyle($value->withContext('h'), ['height' => $value->getCssValue()]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('h'), ['height' => $value->getCssValue()]);
         return $this;
     }
 
-    public function size(Unit ...$values): static
+    public function size(Unit $value, ?Pseudo $pseudo = null): static
     {
-        foreach ($values as $value) {
-            $css = $value->getCssValue();
-            $this->addStyle($value->withContext('w'), ['width' => $css]);
-            $this->addStyle($value->withContext('h'), ['height' => $css]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $css = $value->getCssValue();
+        $this->addStyle($prefix . $value->withContext('w'), ['width' => $css]);
+        $this->addStyle($prefix . $value->withContext('h'), ['height' => $css]);
         return $this;
     }
 
-    public function minWidth(Unit ...$values): static
+    public function minWidth(Unit $value, ?Pseudo $pseudo = null): static
     {
-        foreach ($values as $value) {
-            $this->addStyle($value->withContext('min-w'), ['min-width' => $value->getCssValue()]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('min-w'), ['min-width' => $value->getCssValue()]);
         return $this;
     }
 
-    public function maxWidth(Unit ...$values): static
+    public function maxWidth(Unit $value, ?Pseudo $pseudo = null): static
     {
-        foreach ($values as $value) {
-            $this->addStyle($value->withContext('max-w'), ['max-width' => $value->getCssValue()]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('max-w'), ['max-width' => $value->getCssValue()]);
         return $this;
     }
 
-    public function minHeight(Unit ...$values): static
+    public function minHeight(Unit $value, ?Pseudo $pseudo = null): static
     {
-        foreach ($values as $value) {
-            $this->addStyle($value->withContext('min-h'), ['min-height' => $value->getCssValue()]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('min-h'), ['min-height' => $value->getCssValue()]);
         return $this;
     }
 
-    public function maxHeight(Unit ...$values): static
+    public function maxHeight(Unit $value, ?Pseudo $pseudo = null): static
     {
-        foreach ($values as $value) {
-            $this->addStyle($value->withContext('max-h'), ['max-height' => $value->getCssValue()]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('max-h'), ['max-height' => $value->getCssValue()]);
         return $this;
     }
 
-    public function extend(bool $screen = false): static
+    public function extend(bool $screen = false, ?Pseudo $pseudo = null): static
     {
-        $this->addStyle('w-full', ['width' => $screen ? '100vw' : '100%']);
-        $this->addStyle('h-full', ['height' => $screen ? '100vh' : '100%']);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'w-full', ['width' => $screen ? '100vw' : '100%']);
+        $this->addStyle($prefix . 'h-full', ['height' => $screen ? '100vh' : '100%']);
         return $this;
     }
 
-    public function extendHorizontal(): static
+    public function extendHorizontal(?Pseudo $pseudo = null): static
     {
-        $this->addStyle('w-full', ['width' => '100%']);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'w-full', ['width' => '100%']);
         return $this;
     }
 
-    public function extendVertical(): static
+    public function extendVertical(?Pseudo $pseudo = null): static
     {
-        $this->addStyle('h-full', ['height' => '100%']);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'h-full', ['height' => '100%']);
         return $this;
     }
 
-    public function shrink(): static
+    public function shrink(?Pseudo $pseudo = null): static
     {
-        $this->addStyle('w-fit', ['width' => 'fit-content']);
-        $this->addStyle('h-fit', ['height' => 'fit-content']);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'w-fit', ['width' => 'fit-content']);
+        $this->addStyle($prefix . 'h-fit', ['height' => 'fit-content']);
         return $this;
     }
 
@@ -856,63 +857,56 @@ class UIElement extends Node
     // Spacing
     // ============================================================
 
-    public function padding(Unit ...$values): static
+    public function padding(Unit $value, ?Pseudo $pseudo = null): static
     {
-        foreach ($values as $value) {
-            $this->addStyle($value->withContext('p'), ['padding' => $value->getCssValue()]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('p'), ['padding' => $value->getCssValue()]);
         return $this;
     }
 
-    public function paddingHorizontal(Unit ...$values): static
+    public function paddingHorizontal(Unit $value, ?Pseudo $pseudo = null): static
     {
-        foreach ($values as $value) {
-            $css = $value->getCssValue();
-            $this->addStyle($value->withContext('px'), ['padding-left' => $css, 'padding-right' => $css]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $css = $value->getCssValue();
+        $this->addStyle($prefix . $value->withContext('px'), ['padding-left' => $css, 'padding-right' => $css]);
         return $this;
     }
 
-    public function paddingVertical(Unit ...$values): static
+    public function paddingVertical(Unit $value, ?Pseudo $pseudo = null): static
     {
-        foreach ($values as $value) {
-            $css = $value->getCssValue();
-            $this->addStyle($value->withContext('py'), ['padding-top' => $css, 'padding-bottom' => $css]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $css = $value->getCssValue();
+        $this->addStyle($prefix . $value->withContext('py'), ['padding-top' => $css, 'padding-bottom' => $css]);
         return $this;
     }
 
-    public function paddingTop(Unit ...$values): static
+    public function paddingTop(Unit $value, ?Pseudo $pseudo = null): static
     {
-        foreach ($values as $value) {
-            $this->addStyle($value->withContext('pt'), ['padding-top' => $value->getCssValue()]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('pt'), ['padding-top' => $value->getCssValue()]);
         return $this;
     }
 
-    public function margin(Unit ...$values): static
+    public function margin(Unit $value, ?Pseudo $pseudo = null): static
     {
-        foreach ($values as $value) {
-            $this->addStyle($value->withContext('m'), ['margin' => $value->getCssValue()]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('m'), ['margin' => $value->getCssValue()]);
         return $this;
     }
 
-    public function marginHorizontal(Unit ...$values): static
+    public function marginHorizontal(Unit $value, ?Pseudo $pseudo = null): static
     {
-        foreach ($values as $value) {
-            $css = $value->getCssValue();
-            $this->addStyle($value->withContext('mx'), ['margin-left' => $css, 'margin-right' => $css]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $css = $value->getCssValue();
+        $this->addStyle($prefix . $value->withContext('mx'), ['margin-left' => $css, 'margin-right' => $css]);
         return $this;
     }
 
-    public function marginVertical(Unit ...$values): static
+    public function marginVertical(Unit $value, ?Pseudo $pseudo = null): static
     {
-        foreach ($values as $value) {
-            $css = $value->getCssValue();
-            $this->addStyle($value->withContext('my'), ['margin-top' => $css, 'margin-bottom' => $css]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $css = $value->getCssValue();
+        $this->addStyle($prefix . $value->withContext('my'), ['margin-top' => $css, 'margin-bottom' => $css]);
         return $this;
     }
 
@@ -920,21 +914,21 @@ class UIElement extends Node
     // Corners
     // ============================================================
 
-    public function rounded(Unit ...$values): static
+    public function rounded(?Unit $value = null, ?Pseudo $pseudo = null): static
     {
-        if (empty($values)) {
-            $this->addStyle('rounded', ['border-radius' => '0.25rem']);
+        $prefix = $pseudo?->prefix() ?? '';
+        if ($value === null) {
+            $this->addStyle($prefix . 'rounded', ['border-radius' => '0.25rem']);
         } else {
-            foreach ($values as $value) {
-                $this->addStyle($value->withContext('rounded'), ['border-radius' => $value->getCssValue()]);
-            }
+            $this->addStyle($prefix . $value->withContext('rounded'), ['border-radius' => $value->getCssValue()]);
         }
         return $this;
     }
 
-    public function roundedFull(): static
+    public function roundedFull(?Pseudo $pseudo = null): static
     {
-        $this->addStyle('rounded-full', ['border-radius' => '9999px']);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'rounded-full', ['border-radius' => '9999px']);
         return $this;
     }
 
@@ -942,9 +936,10 @@ class UIElement extends Node
     // Shadow
     // ============================================================
 
-    public function shadow(Shadow $size = Shadow::Medium): static
+    public function shadow(Shadow $size = Shadow::Medium, ?Pseudo $pseudo = null): static
     {
-        $this->addStyle($size->toClass(), ['box-shadow' => $size->getCssValue()]);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $size->toClass(), ['box-shadow' => $size->getCssValue()]);
         return $this;
     }
 
@@ -952,9 +947,10 @@ class UIElement extends Node
     // Opacity
     // ============================================================
 
-    public function opacity(int $value): static
+    public function opacity(int $value, ?Pseudo $pseudo = null): static
     {
-        $this->addStyle('opacity-' . $value, ['opacity' => (string)($value / 100)]);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'opacity-' . $value, ['opacity' => (string)($value / 100)]);
         return $this;
     }
 
@@ -962,15 +958,17 @@ class UIElement extends Node
     // Visibility
     // ============================================================
 
-    public function hidden(): static
+    public function hidden(?Pseudo $pseudo = null): static
     {
-        $this->addStyle('hidden', ['display' => 'none']);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'hidden', ['display' => 'none']);
         return $this;
     }
 
-    public function visible(): static
+    public function visible(?Pseudo $pseudo = null): static
     {
-        $this->addStyle('visible', ['visibility' => 'visible']);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'visible', ['visibility' => 'visible']);
         return $this;
     }
 
@@ -978,20 +976,22 @@ class UIElement extends Node
     // Overflow
     // ============================================================
 
-    public function clipContent(): static
+    public function clipContent(?Pseudo $pseudo = null): static
     {
-        $this->addStyle('overflow-hidden', ['overflow' => 'hidden']);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'overflow-hidden', ['overflow' => 'hidden']);
         return $this;
     }
 
-    public function overflow(): static
+    public function overflow(?Pseudo $pseudo = null): static
     {
-        return $this->clipContent();
+        return $this->clipContent($pseudo);
     }
 
-    public function scrollable(): static
+    public function scrollable(?Pseudo $pseudo = null): static
     {
-        $this->addStyle('overflow-auto', ['overflow' => 'auto']);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'overflow-auto', ['overflow' => 'auto']);
         return $this;
     }
 
@@ -999,15 +999,17 @@ class UIElement extends Node
     // Typography
     // ============================================================
 
-    public function fontSize(FontSize $size): static
+    public function fontSize(FontSize $size, ?Pseudo $pseudo = null): static
     {
-        $this->addStyle($size->toClass(), ['font-size' => $size->getCssValue()]);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $size->toClass(), ['font-size' => $size->getCssValue()]);
         return $this;
     }
 
-    public function weight(FontWeight $weight): static
+    public function weight(FontWeight $weight, ?Pseudo $pseudo = null): static
     {
-        $this->addStyle($weight->toClass(), ['font-weight' => $weight->getCssValue()]);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $weight->toClass(), ['font-weight' => $weight->getCssValue()]);
         return $this;
     }
 
@@ -1015,32 +1017,32 @@ class UIElement extends Node
     // Cursor
     // ============================================================
 
-    public function cursor(Cursor ...$cursors): static
+    public function cursor(Cursor $cursor, ?Pseudo $pseudo = null): static
     {
-        foreach ($cursors as $cursor) {
-            $this->addStyle($cursor->toClass(), ['cursor' => $cursor->getCssValue()]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $cursor->toClass(), ['cursor' => $cursor->getCssValue()]);
         return $this;
     }
 
-    public function clickable(): static
+    public function clickable(?Pseudo $pseudo = null): static
     {
-        return $this->cursor(Cursor::Pointer);
+        return $this->cursor(Cursor::Pointer, $pseudo);
     }
 
-    public function notAllowed(): static
+    public function notAllowed(?Pseudo $pseudo = null): static
     {
-        return $this->cursor(Cursor::NotAllowed);
+        return $this->cursor(Cursor::NotAllowed, $pseudo);
     }
 
     // ============================================================
     // Transitions
     // ============================================================
 
-    public function animated(int $durationMs = 200): static
+    public function animated(int $durationMs = 200, ?Pseudo $pseudo = null): static
     {
-        $this->addStyle('transition', ['transition-property' => 'all', 'transition-timing-function' => 'cubic-bezier(0.4, 0, 0.2, 1)']);
-        $this->addStyle('duration-' . $durationMs, ['transition-duration' => $durationMs . 'ms']);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'transition', ['transition-property' => 'all', 'transition-timing-function' => 'cubic-bezier(0.4, 0, 0.2, 1)']);
+        $this->addStyle($prefix . 'duration-' . $durationMs, ['transition-duration' => $durationMs . 'ms']);
         return $this;
     }
 
@@ -1048,27 +1050,31 @@ class UIElement extends Node
     // Transforms
     // ============================================================
 
-    public function rotate(int $degrees): static
+    public function rotate(int $degrees, ?Pseudo $pseudo = null): static
     {
-        $this->addStyle('rotate-' . $degrees, ['transform' => 'rotate(' . $degrees . 'deg)']);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'rotate-' . $degrees, ['transform' => 'rotate(' . $degrees . 'deg)']);
         return $this;
     }
 
-    public function scale(int $percent): static
+    public function scale(int $percent, ?Pseudo $pseudo = null): static
     {
-        $this->addStyle('scale-' . $percent, ['transform' => 'scale(' . ($percent / 100) . ')']);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'scale-' . $percent, ['transform' => 'scale(' . ($percent / 100) . ')']);
         return $this;
     }
 
-    public function flipHorizontal(): static
+    public function flipHorizontal(?Pseudo $pseudo = null): static
     {
-        $this->addStyle('-scale-x-100', ['transform' => 'scaleX(-1)']);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . '-scale-x-100', ['transform' => 'scaleX(-1)']);
         return $this;
     }
 
-    public function flipVertical(): static
+    public function flipVertical(?Pseudo $pseudo = null): static
     {
-        $this->addStyle('-scale-y-100', ['transform' => 'scaleY(-1)']);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . '-scale-y-100', ['transform' => 'scaleY(-1)']);
         return $this;
     }
 
@@ -1076,9 +1082,10 @@ class UIElement extends Node
     // Z-Index / Layering
     // ============================================================
 
-    public function layer(int $index): static
+    public function layer(int $index, ?Pseudo $pseudo = null): static
     {
-        $this->addStyle('z-' . $index, ['z-index' => (string)$index]);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'z-' . $index, ['z-index' => (string)$index]);
         return $this;
     }
 
@@ -1086,15 +1093,17 @@ class UIElement extends Node
     // Flex item properties
     // ============================================================
 
-    public function grow(int $factor = 1): static
+    public function grow(int $factor = 1, ?Pseudo $pseudo = null): static
     {
-        $this->addStyle('grow-' . $factor, ['flex-grow' => (string)$factor]);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'grow-' . $factor, ['flex-grow' => (string)$factor]);
         return $this;
     }
 
-    public function noShrink(): static
+    public function noShrink(?Pseudo $pseudo = null): static
     {
-        $this->addStyle('shrink-0', ['flex-shrink' => '0']);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'shrink-0', ['flex-shrink' => '0']);
         return $this;
     }
 
@@ -1102,71 +1111,71 @@ class UIElement extends Node
     // Position
     // ============================================================
 
-    public function relative(): static
+    public function relative(?Pseudo $pseudo = null): static
     {
-        $this->addStyle('relative', ['position' => 'relative']);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'relative', ['position' => 'relative']);
         return $this;
     }
 
-    public function absolute(): static
+    public function absolute(?Pseudo $pseudo = null): static
     {
-        $this->addStyle('absolute', ['position' => 'absolute']);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'absolute', ['position' => 'absolute']);
         return $this;
     }
 
-    public function fixed(): static
+    public function fixed(?Pseudo $pseudo = null): static
     {
-        $this->addStyle('fixed', ['position' => 'fixed']);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'fixed', ['position' => 'fixed']);
         return $this;
     }
 
-    public function sticky(): static
+    public function sticky(?Pseudo $pseudo = null): static
     {
-        $this->addStyle('sticky', ['position' => 'sticky']);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'sticky', ['position' => 'sticky']);
         return $this;
     }
 
     /**
-     * CSS `inset` shorthand: 1 unit = all four sides, 2 = vertical/horizontal,
-     * 3 = top/horizontal/bottom, 4 = top/right/bottom/left.
+     * CSS `inset` shorthand applied uniformly to all four sides.
      */
-    public function inset(Unit ...$values): static
+    public function inset(Unit $value, ?Pseudo $pseudo = null): static
     {
-        $css = implode(' ', array_map(fn(Unit $v) => $v->getCssValue(), $values));
+        $prefix = $pseudo?->prefix() ?? '';
+        $css = $value->getCssValue();
         $class = 'inset-[' . str_replace(' ', '_', $css) . ']';
-        $this->addStyle($class, ['inset' => $css]);
+        $this->addStyle($prefix . $class, ['inset' => $css]);
         return $this;
     }
 
-    public function offsetTop(Unit ...$values): static
+    public function offsetTop(Unit $value, ?Pseudo $pseudo = null): static
     {
-        foreach ($values as $value) {
-            $this->addStyle($value->withContext('top'), ['top' => $value->getCssValue()]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('top'), ['top' => $value->getCssValue()]);
         return $this;
     }
 
-    public function offsetLeft(Unit ...$values): static
+    public function offsetLeft(Unit $value, ?Pseudo $pseudo = null): static
     {
-        foreach ($values as $value) {
-            $this->addStyle($value->withContext('left'), ['left' => $value->getCssValue()]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('left'), ['left' => $value->getCssValue()]);
         return $this;
     }
 
-    public function offsetRight(Unit ...$values): static
+    public function offsetRight(Unit $value, ?Pseudo $pseudo = null): static
     {
-        foreach ($values as $value) {
-            $this->addStyle($value->withContext('right'), ['right' => $value->getCssValue()]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('right'), ['right' => $value->getCssValue()]);
         return $this;
     }
 
-    public function offsetBottom(Unit ...$values): static
+    public function offsetBottom(Unit $value, ?Pseudo $pseudo = null): static
     {
-        foreach ($values as $value) {
-            $this->addStyle($value->withContext('bottom'), ['bottom' => $value->getCssValue()]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('bottom'), ['bottom' => $value->getCssValue()]);
         return $this;
     }
 }

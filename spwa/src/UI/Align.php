@@ -5,13 +5,12 @@ namespace Spwa\UI;
 /**
  * Alignment value - pure value class.
  * Context (justify/items) is determined by usage in layout components.
+ * Modifiers (md, hover, …) come from a Pseudo argument at the call site.
  *
  * Usage:
  *   Align::left()
  *   Align::center()
  *   Align::middle()
- *   Align::center()->md()
- *   Align::middle()->hover()
  */
 class Align extends Property
 {
@@ -27,10 +26,11 @@ class Align extends Property
 
     /**
      * Build class with context (justify, items, etc).
+     * No modifier prefix — that comes from the caller's Pseudo argument.
      */
     public function withContext(string $context): string
     {
-        return $this->prefix() . $context . '-' . $this->value->value;
+        return $context . '-' . $this->value->value;
     }
 
     /**

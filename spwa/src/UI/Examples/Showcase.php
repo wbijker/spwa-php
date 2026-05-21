@@ -10,6 +10,7 @@ use Spwa\UI\Direction;
 use Spwa\UI\FontSize;
 use Spwa\UI\FontWeight;
 use Spwa\UI\GridColumns;
+use Spwa\UI\Pseudo;
 use Spwa\UI\Shadow;
 use Spwa\UI\Table;
 use Spwa\UI\UI;
@@ -198,7 +199,8 @@ class Showcase extends Component
                     ->content(
                     // Primary button with hover
                         UI::button("Primary")
-                            ->background(Color::blue(500), Color::blue(600)->hover())
+                            ->background(Color::blue(500))
+                            ->background(Color::blue(600), Pseudo::hover())
                             ->color(Color::white())
                             ->padding(Unit::small())
                             ->paddingHorizontal(Unit::large())
@@ -207,7 +209,8 @@ class Showcase extends Component
 
                         // Secondary button
                         UI::button("Secondary")
-                            ->background(Color::gray(200), Color::gray(300)->hover())
+                            ->background(Color::gray(200))
+                            ->background(Color::gray(300), Pseudo::hover())
                             ->color(Color::gray(800))
                             ->padding(Unit::small())
                             ->paddingHorizontal(Unit::large())
@@ -215,7 +218,8 @@ class Showcase extends Component
 
                         // Success button
                         UI::button("Success")
-                            ->background(Color::green(500), Color::green(600)->hover())
+                            ->background(Color::green(500))
+                            ->background(Color::green(600), Pseudo::hover())
                             ->color(Color::white())
                             ->padding(Unit::small())
                             ->paddingHorizontal(Unit::large())
@@ -223,7 +227,8 @@ class Showcase extends Component
 
                         // Danger button
                         UI::button("Danger")
-                            ->background(Color::red(500), Color::red(600)->hover())
+                            ->background(Color::red(500))
+                            ->background(Color::red(600), Pseudo::hover())
                             ->color(Color::white())
                             ->padding(Unit::small())
                             ->paddingHorizontal(Unit::large())
@@ -231,7 +236,8 @@ class Showcase extends Component
 
                         // Outline button
                         UI::button("Outline")
-                            ->background(Color::transparent(), Color::indigo(50)->hover())
+                            ->background(Color::transparent())
+                            ->background(Color::indigo(50), Pseudo::hover())
                             ->color(Color::indigo(600))
                             ->padding(Unit::small())
                             ->paddingHorizontal(Unit::large())
@@ -239,7 +245,8 @@ class Showcase extends Component
 
                         // Pill button
                         UI::button("Pill Button")
-                            ->background(Color::purple(500), Color::purple(600)->hover())
+                            ->background(Color::purple(500))
+                            ->background(Color::purple(600), Pseudo::hover())
                             ->color(Color::white())
                             ->padding(Unit::small())
                             ->paddingHorizontal(Unit::extraLarge())
@@ -487,7 +494,8 @@ class Showcase extends Component
                             ->content(
                                 UI::container()
                                     ->cursor(Cursor::Pointer)
-                                    ->background(Color::blue(400), Color::blue(600)->hover())
+                                    ->background(Color::blue(400))
+                                    ->background(Color::blue(600), Pseudo::hover())
                                     ->size(Unit::value(20))
                                     ->rounded(Unit::roundedLg())
                                     ->shadow(Shadow::Small),
@@ -503,7 +511,8 @@ class Showcase extends Component
                             ->content(
                                 UI::container()
                                     ->size(Unit::value(20))
-                                    ->background(Color::green(400), Color::green(700)->active())
+                                    ->background(Color::green(400))
+                                    ->background(Color::green(700), Pseudo::active())
                                     ->rounded(Unit::roundedLg())
                                     ->shadow(Shadow::Small),
                                 UI::text("Click me")->fontSize(FontSize::Small)->color(Color::gray(600))
@@ -515,7 +524,8 @@ class Showcase extends Component
                             ->alignCenter()
                             ->content(
                                 UI::button("Focus")
-                                    ->background(Color::purple(400), Color::purple(600)->focus())
+                                    ->background(Color::purple(400))
+                                    ->background(Color::purple(600), Pseudo::focus())
                                     ->color(Color::white())
                                     ->padding(Unit::medium())
                                     ->paddingHorizontal(Unit::large())
@@ -529,11 +539,9 @@ class Showcase extends Component
                             ->alignCenter()
                             ->content(
                                 UI::button("Multi-state")
-                                    ->background(
-                                        Color::orange(400),
-                                        Color::orange(500)->hover(),
-                                        Color::orange(700)->active()
-                                    )
+                                    ->background(Color::orange(400))
+                                    ->background(Color::orange(500), Pseudo::hover())
+                                    ->background(Color::orange(700), Pseudo::active())
                                     ->color(Color::white())
                                     ->padding(Unit::medium())
                                     ->paddingHorizontal(Unit::large())
@@ -547,14 +555,17 @@ class Showcase extends Component
                 UI::row()
                     ->gap(Unit::medium())
                     ->padding(Unit::large())
-                    ->background(Color::white(), Color::gray(800)->dark())
+                    ->background(Color::white())
+                    ->background(Color::gray(800), Pseudo::dark())
                     ->rounded(Unit::roundedLg())
                     ->content(
                         UI::text("This text adapts to dark mode")
-                            ->color(Color::gray(800), Color::gray(100)->dark()),
+                            ->color(Color::gray(800))
+                            ->color(Color::gray(100), Pseudo::dark()),
                         UI::container()
                             ->size(Unit::value(8))
-                            ->background(Color::blue(500), Color::blue(400)->dark())
+                            ->background(Color::blue(500))
+                            ->background(Color::blue(400), Pseudo::dark())
                             ->roundedFull()
                     )
             );
@@ -568,9 +579,11 @@ class Showcase extends Component
                 self::sectionTitle("Responsive Design"),
                 UI::text("Resize your browser to see changes")->fontSize(FontSize::Small)->color(Color::gray(500)),
                 UI::column()
-                    ->direction(Direction::row()->md())
-                    ->gap(Unit::medium(), Unit::large()->md())
-                    ->padding(Unit::medium(), Unit::large()->lg())
+                    ->direction(Direction::row(), Pseudo::md())
+                    ->gap(Unit::medium())
+                    ->gap(Unit::large(), Pseudo::md())
+                    ->padding(Unit::medium())
+                    ->padding(Unit::large(), Pseudo::lg())
                     ->background(Color::white())
                     ->rounded(Unit::roundedLg())
                     ->shadow(Shadow::Small)
@@ -592,7 +605,9 @@ class Showcase extends Component
                             ->rounded(Unit::rounded())
                     ),
                 UI::grid(1)
-                    ->columns(1, GridColumns::count(2)->md(), GridColumns::count(4)->lg())
+                    ->columns(1)
+                    ->cols(GridColumns::count(2), Pseudo::md())
+                    ->cols(GridColumns::count(4), Pseudo::lg())
                     ->gap(Unit::medium())
                     ->content(
                         UI::container()->height(Unit::value(16))->background(Color::teal(400))->rounded(Unit::rounded()),

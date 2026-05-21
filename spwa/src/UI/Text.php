@@ -78,9 +78,10 @@ class Text extends UIElementContent
     /**
      * Set font size.
      */
-    public function fontSize(FontSize $size): static
+    public function fontSize(FontSize $size, ?Pseudo $pseudo = null): static
     {
-        $this->addStyle($size->toClass(), ['font-size' => $size->getCssValue()]);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $size->toClass(), ['font-size' => $size->getCssValue()]);
         return $this;
     }
 
@@ -91,9 +92,10 @@ class Text extends UIElementContent
     /**
      * Set font weight.
      */
-    public function weight(FontWeight $weight): static
+    public function weight(FontWeight $weight, ?Pseudo $pseudo = null): static
     {
-        $this->addStyle($weight->toClass(), ['font-weight' => $weight->getCssValue()]);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $weight->toClass(), ['font-weight' => $weight->getCssValue()]);
         return $this;
     }
 

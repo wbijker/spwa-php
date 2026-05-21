@@ -48,7 +48,8 @@ class Button extends UIElementContent
      */
     public function primary(): static
     {
-        $this->background(Color::blue(500), Color::blue(600)->hover());
+        $this->background(Color::blue(500));
+        $this->background(Color::blue(600), Pseudo::hover());
         $this->color(Color::white());
         return $this;
     }
@@ -58,7 +59,8 @@ class Button extends UIElementContent
      */
     public function secondary(): static
     {
-        $this->background(Color::gray(200), Color::gray(300)->hover());
+        $this->background(Color::gray(200));
+        $this->background(Color::gray(300), Pseudo::hover());
         $this->color(Color::gray(800));
         return $this;
     }
@@ -68,7 +70,8 @@ class Button extends UIElementContent
      */
     public function danger(): static
     {
-        $this->background(Color::red(500), Color::red(600)->hover());
+        $this->background(Color::red(500));
+        $this->background(Color::red(600), Pseudo::hover());
         $this->color(Color::white());
         return $this;
     }
@@ -78,7 +81,8 @@ class Button extends UIElementContent
      */
     public function success(): static
     {
-        $this->background(Color::green(500), Color::green(600)->hover());
+        $this->background(Color::green(500));
+        $this->background(Color::green(600), Pseudo::hover());
         $this->color(Color::white());
         return $this;
     }
@@ -88,7 +92,8 @@ class Button extends UIElementContent
      */
     public function outline(): static
     {
-        $this->background(Color::transparent(), Color::gray(100)->hover());
+        $this->background(Color::transparent());
+        $this->background(Color::gray(100), Pseudo::hover());
         $this->addStyle('border', ['border-width' => '1px', 'border-style' => 'solid']);
         $this->addStyle('border-current', ['border-color' => 'currentColor']);
         return $this;
@@ -99,7 +104,8 @@ class Button extends UIElementContent
      */
     public function ghost(): static
     {
-        $this->background(Color::transparent(), Color::gray(100)->hover());
+        $this->background(Color::transparent());
+        $this->background(Color::gray(100), Pseudo::hover());
         return $this;
     }
 

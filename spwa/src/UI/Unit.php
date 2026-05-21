@@ -118,11 +118,12 @@ class Unit extends Property
     }
 
     /**
-     * Build class with specific context prefix.
+     * Build class with specific context prefix (e.g. "p", "m", "w").
+     * No modifier prefix — that comes from the caller's Pseudo argument.
      */
     public function withContext(string $context): string
     {
-        return $this->prefix() . $context . '-' . $this->value;
+        return $context . '-' . $this->value;
     }
 
     // ============================================================

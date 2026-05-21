@@ -9,6 +9,7 @@ use Spwa\Samples\site\Components\SectionHeading;
 use Spwa\UI\Color;
 use Spwa\UI\FontSize;
 use Spwa\UI\FontWeight;
+use Spwa\UI\Pseudo;
 use Spwa\UI\Shadow;
 use Spwa\UI\UI;
 use Spwa\UI\Unit;
@@ -130,7 +131,8 @@ class StatePage extends Component
                             UI::button('x')
                                 ->borderNone()
                                 ->background(Color::transparent())
-                                ->color(Color::slate(400), Color::red(500)->hover())
+                                ->color(Color::slate(400))
+                                ->color(Color::red(500), Pseudo::hover())
                                 ->clickable()
                                 ->fontSize(FontSize::Small)
                                 ->on('click', function () use ($todo) {

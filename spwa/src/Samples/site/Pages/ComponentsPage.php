@@ -235,9 +235,9 @@ Color::indigo(500)          // Default shade
 Color::emerald(300)         // Lighter
 Color::rose(700)            // Darker
 
-// With modifiers:
-Color::indigo(500)->hover() // :hover state
-Color::slate(800)->dark()   // Dark mode
+// With modifiers (passed as a Pseudo argument at the call site):
+->background(Color::indigo(500), Pseudo::hover())  // :hover state
+->background(Color::slate(800), Pseudo::dark())    // Dark mode
 PHP
                 ),
 

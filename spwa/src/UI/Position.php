@@ -20,36 +20,41 @@ class Position extends UIElementContent
         $this->addStyle('absolute', ['position' => 'absolute']);
     }
 
-    public function top(Unit $value): static
+    public function top(Unit $value, ?Pseudo $pseudo = null): static
     {
-        $this->addStyle($value->withContext('top'), ['top' => $value->getCssValue()]);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('top'), ['top' => $value->getCssValue()]);
         return $this;
     }
 
-    public function bottom(Unit $value): static
+    public function bottom(Unit $value, ?Pseudo $pseudo = null): static
     {
-        $this->addStyle($value->withContext('bottom'), ['bottom' => $value->getCssValue()]);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('bottom'), ['bottom' => $value->getCssValue()]);
         return $this;
     }
 
-    public function left(Unit $value): static
+    public function left(Unit $value, ?Pseudo $pseudo = null): static
     {
-        $this->addStyle($value->withContext('left'), ['left' => $value->getCssValue()]);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('left'), ['left' => $value->getCssValue()]);
         return $this;
     }
 
-    public function right(Unit $value): static
+    public function right(Unit $value, ?Pseudo $pseudo = null): static
     {
-        $this->addStyle($value->withContext('right'), ['right' => $value->getCssValue()]);
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('right'), ['right' => $value->getCssValue()]);
         return $this;
     }
 
     /**
      * Fill the entire stack (inset: 0).
      */
-    public function fill(): static
+    public function fill(?Pseudo $pseudo = null): static
     {
-        $this->addStyle('inset-0', [
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'inset-0', [
             'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0',
         ]);
         return $this;

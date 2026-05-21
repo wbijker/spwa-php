@@ -2,6 +2,8 @@
 
 namespace Spwa\UI;
 
+use staabm\SideEffectsDetector\SideEffect;
+
 /**
  * Horizontal stack layout - items arranged left to right.
  * Inspired by QuestPDF Row.
@@ -25,11 +27,10 @@ class Row extends UIElementContent
     /**
      * Set gap between items.
      */
-    public function gap(Unit ...$values): static
+    public function gap(Unit $value, ?Pseudo $pseudo = null): static
     {
-        foreach ($values as $value) {
-            $this->addStyle($value->withContext('gap'), ['gap' => $value->getCssValue()]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('gap'), ['gap' => $value->getCssValue()]);
         return $this;
     }
 
@@ -147,22 +148,20 @@ class Row extends UIElementContent
     /**
      * Horizontal alignment with responsive/pseudo support.
      */
-    public function align(Align ...$values): static
+    public function align(Align $value, ?Pseudo $pseudo = null): static
     {
-        foreach ($values as $value) {
-            $this->addStyle($value->withContext('justify'), ['justify-content' => $value->getCssValue()]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('justify'), ['justify-content' => $value->getCssValue()]);
         return $this;
     }
 
     /**
      * Vertical alignment with responsive/pseudo support.
      */
-    public function alignVertical(Align ...$values): static
+    public function alignVertical(Align $value, ?Pseudo $pseudo = null): static
     {
-        foreach ($values as $value) {
-            $this->addStyle($value->withContext('items'), ['align-items' => $value->getCssValue()]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('items'), ['align-items' => $value->getCssValue()]);
         return $this;
     }
 
@@ -209,11 +208,16 @@ class Row extends UIElementContent
     /**
      * Change direction with responsive/pseudo support.
      */
-    public function direction(Direction ...$values): static
+    public function direction(Direction $value, ?Pseudo $pseudo = null): static
     {
-        foreach ($values as $value) {
-            $this->addStyle($value->toClass(), ['flex-direction' => $value->getCssValue()]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->toClass(), ['flex-direction' => $value->getCssValue()]);
+        return $this;
+    }
+
+    public function selectNone(): static
+    {
+        $this->addStyle('select-none', ['user-select' => 'none']);
         return $this;
     }
 }

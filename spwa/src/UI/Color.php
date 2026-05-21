@@ -5,11 +5,12 @@ namespace Spwa\UI;
 /**
  * Color property representing a color value only.
  * Context (background, text, border) is determined by the UIElement method.
+ * Modifiers (hover, dark, sm, …) come from a Pseudo argument at the call
+ * site — see Pseudo.
  *
  * Usage:
  *   Color::red(500)              // red-500
- *   Color::red(500)->hover()     // hover:red-500
- *   Color::blue(300)->dark()     // dark:blue-300
+ *   Color::blue(300)->alpha(0.5) // blue-300 at 50% alpha
  */
 class Color extends Property
 {
@@ -87,12 +88,13 @@ class Color extends Property
     }
 
     /**
-     * Build class with specific context prefix.
+     * Build class with specific context prefix (e.g. "bg", "text", "border").
+     * No modifier prefix — that comes from the caller's Pseudo argument.
      */
     public function withContext(string $context): string
     {
         return $this->contextCache[$context]
-            ??= $this->prefix() . $context . '-' . $this->base();
+            ??= $context . '-' . $this->base();
     }
 
     /**

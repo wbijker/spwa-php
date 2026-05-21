@@ -29,33 +29,30 @@ class Inlined extends UIElementContent
     /**
      * Set spacing between items (both horizontal and vertical).
      */
-    public function spacing(Unit ...$values): static
+    public function spacing(Unit $value, ?Pseudo $pseudo = null): static
     {
-        foreach ($values as $value) {
-            $this->addStyle($value->withContext('gap'), ['gap' => $value->getCssValue()]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('gap'), ['gap' => $value->getCssValue()]);
         return $this;
     }
 
     /**
      * Set horizontal spacing.
      */
-    public function spacingHorizontal(Unit ...$values): static
+    public function spacingHorizontal(Unit $value, ?Pseudo $pseudo = null): static
     {
-        foreach ($values as $value) {
-            $this->addStyle($value->withContext('gap-x'), ['column-gap' => $value->getCssValue()]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('gap-x'), ['column-gap' => $value->getCssValue()]);
         return $this;
     }
 
     /**
      * Set vertical spacing.
      */
-    public function spacingVertical(Unit ...$values): static
+    public function spacingVertical(Unit $value, ?Pseudo $pseudo = null): static
     {
-        foreach ($values as $value) {
-            $this->addStyle($value->withContext('gap-y'), ['row-gap' => $value->getCssValue()]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('gap-y'), ['row-gap' => $value->getCssValue()]);
         return $this;
     }
 
@@ -146,22 +143,20 @@ class Inlined extends UIElementContent
     /**
      * Horizontal alignment with responsive/pseudo support.
      */
-    public function align(Align ...$values): static
+    public function align(Align $value, ?Pseudo $pseudo = null): static
     {
-        foreach ($values as $value) {
-            $this->addStyle($value->withContext('justify'), ['justify-content' => $value->getCssValue()]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('justify'), ['justify-content' => $value->getCssValue()]);
         return $this;
     }
 
     /**
      * Vertical alignment with responsive/pseudo support.
      */
-    public function alignVertical(Align ...$values): static
+    public function alignVertical(Align $value, ?Pseudo $pseudo = null): static
     {
-        foreach ($values as $value) {
-            $this->addStyle($value->withContext('items'), ['align-items' => $value->getCssValue()]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('items'), ['align-items' => $value->getCssValue()]);
         return $this;
     }
 

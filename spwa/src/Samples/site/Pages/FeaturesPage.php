@@ -233,16 +233,12 @@ PHP
 UI::column()->content(
     UI::text('Responsive Title')
         ->fontSize(FontSize::Large)
-        // Values with breakpoints
-        ->width(
-            Unit::full(),         // mobile: 100%
-            Unit::half()->md(),   // tablet: 50%
-            Unit::third()->lg()   // desktop: 33%
-        )
-        ->padding(
-            Unit::small(),
-            Unit::large()->md()
-        )
+        // Values with breakpoints — pass a Pseudo for each variant
+        ->width(Unit::full())                       // mobile: 100%
+        ->width(Unit::half(), Pseudo::md())         // tablet: 50%
+        ->width(Unit::third(), Pseudo::lg())        // desktop: 33%
+        ->padding(Unit::small())
+        ->padding(Unit::large(), Pseudo::md())
 )
 PHP
                         ),
@@ -251,17 +247,13 @@ PHP
                             'Named palettes with shades. Hover, dark mode, focus — all declarative.',
                             <<<'PHP'
 UI::button('Save')
-    ->background(
-        Color::indigo(500),
-        Color::indigo(600)->hover(),
-        Color::indigo(400)->active(),
-        Color::indigo(700)->dark(),
-    )
+    ->background(Color::indigo(500))
+    ->background(Color::indigo(600), Pseudo::hover())
+    ->background(Color::indigo(400), Pseudo::active())
+    ->background(Color::indigo(700), Pseudo::dark())
     ->color(Color::white())
-    ->borderColor(
-        Color::indigo(300),
-        Color::indigo(400)->focus()
-    )
+    ->borderColor(Color::indigo(300))
+    ->borderColor(Color::indigo(400), Pseudo::focus())
 PHP
                         ),
                         $this->featureItem(
@@ -304,7 +296,7 @@ PHP
             ['->clipContent()', 'overflow: hidden;'],
             ['->truncate()', 'overflow: hidden; text-overflow: ellipsis; white-space: nowrap;'],
             ['->grow()', 'flex-grow: 1;'],
-            ['->width(Unit::half()->md())', '@media (min-width: 768px) { width: 50% }'],
+            ['->width(Unit::half(), Pseudo::md())', '@media (min-width: 768px) { width: 50% }'],
         ];
 
         $rows = [];

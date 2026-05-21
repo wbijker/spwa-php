@@ -5,6 +5,7 @@ namespace Spwa\Samples\site\Components;
 use Spwa\UI\Color;
 use Spwa\UI\FontSize;
 use Spwa\UI\FontWeight;
+use Spwa\UI\Pseudo;
 use Spwa\UI\Router;
 use Spwa\UI\Shadow;
 use Spwa\UI\UI;
@@ -53,7 +54,8 @@ class Navbar extends Component
         return UI::button($label)
             ->borderNone()
             ->background(Color::transparent())
-            ->color(Color::slate(600), Color::indigo(700)->hover())
+            ->color(Color::slate(600))
+            ->color(Color::indigo(700), Pseudo::hover())
             ->padding(Unit::small())
             ->paddingHorizontal(Unit::medium())
             ->rounded(Unit::roundedLg())

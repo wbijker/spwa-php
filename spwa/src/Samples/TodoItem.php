@@ -6,6 +6,7 @@ use Closure;
 use Spwa\UI\Color;
 use Spwa\UI\FontSize;
 use Spwa\UI\FontWeight;
+use Spwa\UI\Pseudo;
 use Spwa\UI\UI;
 use Spwa\UI\UIElement;
 use Spwa\UI\Unit;
@@ -109,7 +110,8 @@ class TodoItem extends Component
             ->background(Color::transparent())
             ->paddingHorizontal(Unit::rem(0.5))
             ->fontSize(FontSize::TwoXL)
-            ->color(Color::rose(300), Color::rose(500)->hover())
+            ->color(Color::rose(300))
+            ->color(Color::rose(500), Pseudo::hover())
             ->on('click', fn() => ($this->onDestroy)($this->id));
     }
 
@@ -139,7 +141,8 @@ class TodoItem extends Component
             ->background(Color::transparent())
             ->paddingHorizontal(Unit::rem(0.5))
             ->fontSize(FontSize::TwoXL)
-            ->color(Color::teal(400), Color::teal(500)->hover())
+            ->color(Color::teal(400))
+            ->color(Color::teal(500), Pseudo::hover())
             ->on('click', function () {
                 $next = trim($this->editText);
                 if ($next !== '') {
@@ -158,7 +161,8 @@ class TodoItem extends Component
             ->background(Color::transparent())
             ->paddingHorizontal(Unit::rem(0.5))
             ->fontSize(FontSize::TwoXL)
-            ->color(Color::rose(300), Color::rose(500)->hover())
+            ->color(Color::rose(300))
+            ->color(Color::rose(500), Pseudo::hover())
             ->on('click', function () {
                 $this->editing = false;
                 $this->editText = '';

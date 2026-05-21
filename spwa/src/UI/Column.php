@@ -28,11 +28,10 @@ class Column extends UIElementContent
     /**
      * Set gap between items.
      */
-    public function gap(Unit ...$values): static
+    public function gap(Unit $value, ?Pseudo $pseudo = null): static
     {
-        foreach ($values as $value) {
-            $this->addStyle($value->withContext('gap'), ['gap' => $value->getCssValue()]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('gap'), ['gap' => $value->getCssValue()]);
         return $this;
     }
 
@@ -150,22 +149,20 @@ class Column extends UIElementContent
     /**
      * Vertical alignment with responsive/pseudo support.
      */
-    public function align(Align ...$values): static
+    public function align(Align $value, ?Pseudo $pseudo = null): static
     {
-        foreach ($values as $value) {
-            $this->addStyle($value->withContext('justify'), ['justify-content' => $value->getCssValue()]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('justify'), ['justify-content' => $value->getCssValue()]);
         return $this;
     }
 
     /**
      * Horizontal alignment with responsive/pseudo support.
      */
-    public function alignHorizontal(Align ...$values): static
+    public function alignHorizontal(Align $value, ?Pseudo $pseudo = null): static
     {
-        foreach ($values as $value) {
-            $this->addStyle($value->withContext('items'), ['align-items' => $value->getCssValue()]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->withContext('items'), ['align-items' => $value->getCssValue()]);
         return $this;
     }
 
@@ -190,11 +187,10 @@ class Column extends UIElementContent
     /**
      * Change direction with responsive/pseudo support.
      */
-    public function direction(Direction ...$values): static
+    public function direction(Direction $value, ?Pseudo $pseudo = null): static
     {
-        foreach ($values as $value) {
-            $this->addStyle($value->toClass(), ['flex-direction' => $value->getCssValue()]);
-        }
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . $value->toClass(), ['flex-direction' => $value->getCssValue()]);
         return $this;
     }
 }

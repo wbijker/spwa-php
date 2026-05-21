@@ -5,6 +5,7 @@ namespace Spwa\Samples;
 use Spwa\UI\Color;
 use Spwa\UI\FontSize;
 use Spwa\UI\FontWeight;
+use Spwa\UI\Pseudo;
 use Spwa\UI\Shadow;
 use Spwa\UI\UI;
 use Spwa\UI\UIElement;
@@ -70,6 +71,7 @@ class TodoList extends Component
 
                 // Main card
                 UI::column()
+                    ->background(Color::gray(), Pseudo::hover()->active()->sm())
                     ->maxWidth(Unit::px(550))
                     ->width(Unit::full())
                     ->marginHorizontal(Unit::auto())
