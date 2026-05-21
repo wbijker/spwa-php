@@ -377,7 +377,7 @@ class UI
     {
         return (new Image($src, $alt))
             ->roundedFull()
-            ->cover();
+            ->objectCover();
     }
 
     public static function center(): Row

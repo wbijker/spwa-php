@@ -11,7 +11,7 @@ use Spwa\VNode\VNode;
  * Usage:
  *   UI::stack()
  *       ->content(
- *           Stack::position(UI::image("bg.jpg"))->fill(),
+ *           Stack::position(UI::image("bg.jpg"))->fillParent(),
  *           Stack::position(UI::text("Top-left"))->top(Unit::px(10))->left(Unit::px(10)),
  *           Stack::position(UI::text("Bottom-right"))->bottom(Unit::px(10))->right(Unit::px(10)),
  *       )

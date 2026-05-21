@@ -10,7 +10,7 @@ namespace Spwa\UI;
  *       ->viewBox(0, 0, 24, 24)
  *       ->size(Unit::px(24))
  *       ->content(
- *           Svg::path("M12 2L2 7l10 5 10-5-10-5z")->fill("currentColor")
+ *           Svg::path("M12 2L2 7l10 5 10-5-10-5z")->fill("currentColor") // SvgElement::fill
  *       )
  */
 class Svg extends UIElement
@@ -57,27 +57,29 @@ class Svg extends UIElement
     }
 
     /**
-     * Set default fill color.
+     * Set the SVG-root `fill` ATTRIBUTE — inherited by child shapes that
+     * don't override it. Distinct from UIElement::fill() which emits a CSS
+     * rule (use that for hover/dark/etc styling).
      */
-    public function fill(string|Color $color): static
+    public function defaultFill(string|Color $color): static
     {
         $this->fill = $color instanceof Color ? $color->getValue() : $color;
         return $this;
     }
 
     /**
-     * Set default stroke color.
+     * Set the SVG-root `stroke` ATTRIBUTE — inherited by child shapes.
      */
-    public function stroke(string|Color $color): static
+    public function defaultStroke(string|Color $color): static
     {
         $this->stroke = $color instanceof Color ? $color->getValue() : $color;
         return $this;
     }
 
     /**
-     * Set default stroke width.
+     * Set the SVG-root `stroke-width` ATTRIBUTE — inherited by child shapes.
      */
-    public function strokeWidth(string $width): static
+    public function defaultStrokeWidth(string $width): static
     {
         $this->strokeWidth = $width;
         return $this;

@@ -52,9 +52,13 @@ class Select extends UIElement
         return $this;
     }
 
-    public function size(int $size): static
+    /**
+     * Number of visible rows (HTML `size` attribute). Renamed from size() to
+     * avoid clashing with UIElement::size() (the width/height utility).
+     */
+    public function visibleRows(int $rows): static
     {
-        $this->size = $size;
+        $this->size = $rows;
         return $this;
     }
 

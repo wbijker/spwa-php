@@ -88,9 +88,11 @@ class Button extends UIElementContent
     }
 
     /**
-     * Outline style.
+     * Outlined button variant — transparent background with currentColor border.
+     * Renamed from outline() to avoid clashing with UIElement::outline() (the
+     * CSS outline-width utility).
      */
-    public function outline(): static
+    public function outlined(): static
     {
         $this->background(Color::transparent());
         $this->background(Color::gray(100), Pseudo::hover());

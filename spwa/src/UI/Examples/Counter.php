@@ -22,7 +22,7 @@ class Counter extends Component
         private Closure $onChange
     ) {}
 
-    protected function shouldRender(): bool
+    protected function shouldRender(Component $old): bool
     {
         return true;
     }
@@ -36,7 +36,8 @@ class Counter extends Component
             ->rounded(Unit::rem(0.5))
             ->content(
                 UI::button('-')
-                    ->padding(Unit::rem(0.5), Unit::rem(1))
+                    ->paddingVertical(Unit::rem(0.5))
+                    ->paddingHorizontal(Unit::rem(1))
                     ->background(Color::red(500))
                     ->color(Color::white())
                     ->rounded(Unit::rem(0.25))
@@ -45,12 +46,14 @@ class Counter extends Component
                     }),
 
                 UI::text((string)$this->value)
-                    ->padding(Unit::rem(0.5), Unit::rem(1))
+                    ->paddingVertical(Unit::rem(0.5))
+                    ->paddingHorizontal(Unit::rem(1))
                     ->fontSize(FontSize::TwoXL)
                     ->semibold(),
 
                 UI::button('+')
-                    ->padding(Unit::rem(0.5), Unit::rem(1))
+                    ->paddingVertical(Unit::rem(0.5))
+                    ->paddingHorizontal(Unit::rem(1))
                     ->background(Color::green(500))
                     ->color(Color::white())
                     ->rounded(Unit::rem(0.25))

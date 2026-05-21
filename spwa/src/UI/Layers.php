@@ -9,7 +9,7 @@ namespace Spwa\UI;
  * Usage:
  *   UI::layers()
  *       ->primary(UI::image("background.jpg"))
- *       ->layer(UI::text("Overlay text"))
+ *       ->overlay(UI::text("Overlay text"))
  */
 class Layers extends UIElementContent
 {
@@ -33,9 +33,10 @@ class Layers extends UIElementContent
     }
 
     /**
-     * Add an overlay layer.
+     * Add an overlay layer. Renamed from layer() to avoid clashing with
+     * UIElement::layer() (the z-index utility).
      */
-    public function layer(UIElement $element): static
+    public function overlay(UIElement $element): static
     {
         $this->layers[] = $element;
         return $this;

@@ -49,9 +49,10 @@ class Position extends UIElementContent
     }
 
     /**
-     * Fill the entire stack (inset: 0).
+     * Fill the entire stack (inset: 0). Renamed from fill() to avoid clashing
+     * with UIElement::fill() (the SVG fill utility).
      */
-    public function fill(?Pseudo $pseudo = null): static
+    public function fillParent(?Pseudo $pseudo = null): static
     {
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . 'inset-0', [
