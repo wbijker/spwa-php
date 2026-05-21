@@ -9,6 +9,16 @@ RUN pecl install xdebug \
 
 COPY ./xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
 
+# install and configure apcu (used by Spwa\Cache\RenderCache to skip
+# the OLD render on POST events)
+RUN pecl install apcu \
+    && docker-php-ext-enable apcu \
+    && { \
+        echo 'apc.enabled=1'; \
+        echo 'apc.enable_cli=1'; \
+        echo 'apc.shm_size=64M'; \
+    } > /usr/local/etc/php/conf.d/apcu.ini
+
 # enabled apace url rewrite module
 RUN a2enmod rewrite && service apache2 restart
 
