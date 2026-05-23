@@ -151,17 +151,6 @@ abstract class Component extends VNode
     }
 
     /**
-     * Called during render to allow components to register custom JS/CSS
-     * assets with the App. Override to call $app->addJs() or $app->addCss().
-     *
-     * Renamed from register() to registerAssets() because the bare name was
-     * shadowed by user-facing builder APIs (e.g. Router::register).
-     */
-    protected function registerAssets(App $app): void
-    {
-    }
-
-    /**
      * Decide whether this component needs to be re-rendered in the current
      * diff cycle. Receives the matching instance from the OLD render at the
      * same path — typically you compare a few state fields and short-circuit
@@ -342,14 +331,9 @@ abstract class Component extends VNode
             }
         }
 
-        // Track current App instance for register() calls
+        // Track current App instance for any framework hooks that need it.
         if ($this instanceof App) {
             self::$currentApp = $this;
-        }
-
-        // Lifecycle: register (allow components to inject JS/CSS)
-        if (self::$currentApp !== null) {
-            $this->registerAssets(self::$currentApp);
         }
 
         // Lifecycle: restored

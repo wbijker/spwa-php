@@ -363,12 +363,14 @@ JS;
         // and retry from defaults. A second failure is propagated.
         try {
             PortalTarget::reset();
+            $entry->runRegisterAssets();
             $ui = $entry->render($state, null, RenderPhase::Initial);
             $entry->finalize($state);
         } catch (\Throwable $e) {
             $state->clearAll();
             PortalTarget::reset();
             $entry = new ($entry::class)();
+            $entry->runRegisterAssets();
             $ui = $entry->render($state, null, RenderPhase::Initial);
             $entry->finalize($state);
         }

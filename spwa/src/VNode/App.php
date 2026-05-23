@@ -20,6 +20,36 @@ abstract class App extends Component
     abstract protected function view(): VNode;
 
     /**
+     * Override to register custom JS/CSS assets on this App.
+     *
+     * Called once by the framework on the initial GET, before the first
+     * render. The strings collected via $app->addJs() / $app->addCss() are
+     * inlined into <head> as a single <script> and <style> block.
+     *
+     *   protected function registerAssets(App $app): void {
+     *       $app->addCss('.brand { color: tomato }');
+     *       $app->addJs('window.MyApp = { ready: true };');
+     *   }
+     *
+     * Not called on POST event responses — assets persist from the initial
+     * page load, so register everything you might need up front.
+     */
+    protected function registerAssets(App $app): void
+    {
+    }
+
+    /**
+     * Framework entry point — runs the registerAssets() hook with this App
+     * as both the receiver and the argument. Called by Spwa::run() on the
+     * initial GET before rendering. Not part of the public override surface
+     * — subclasses override registerAssets() instead.
+     */
+    public function runRegisterAssets(): void
+    {
+        $this->registerAssets($this);
+    }
+
+    /**
      * Optional overlay element shown while a server request is in flight.
      *
      * Rendered once on the initial page load as a sibling of the main app
