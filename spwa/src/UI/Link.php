@@ -5,9 +5,12 @@ namespace Spwa\UI;
 /**
  * Hyperlink element — supports both text labels and rich content.
  *
- * Usage:
- *   UI::link("Visit site", "https://example.com")
- *   UI::link("https://example.com")->content(UI::image("icon.png"), UI::text("Click"))
+ * Construct with either a raw URL string (plain anchor) or a BaseRoute (SPA
+ * navigation, handled server-side via Router unless `external: true`).
+ *
+ *   UI::link("https://example.com", "Visit site")           plain
+ *   Router::link(new ArticleRoute('hi'))->content('Read')   SPA-handled
+ *   Router::link($extRoute, external: true)                 browser-handled
  */
 class Link extends UIElementContent
 {
@@ -15,10 +18,22 @@ class Link extends UIElementContent
     protected bool $newTab = false;
     protected ?string $download = null;
 
-    public function __construct(string $href, ?string $label = null)
+    public function __construct(BaseRoute|string $target, ?string $label = null, bool $external = false)
     {
         parent::__construct('a');
-        $this->href = $href;
+
+        if ($target instanceof BaseRoute) {
+            $this->href = $target->toUrl();
+            if (!$external) {
+                // SPA navigation — server-side route swap. spwa.js
+                // preventDefaults anchor clicks with an SPWA handler attached.
+                $route = $target;
+                $this->on('click', fn() => Router::navigate($route));
+            }
+        } else {
+            $this->href = $target;
+        }
+
         if ($label !== null) {
             $this->content($label);
         }
@@ -54,33 +69,16 @@ class Link extends UIElementContent
         return $this;
     }
 
-    public function build(): DomNode
+    protected function applyAttributes(): void
     {
-        $node = $this->dom()->setTag('a');
-
         if ($this->href !== null) {
-            $node->attr('href', $this->href);
+            $this->attr('href', $this->href);
         }
-
         if ($this->newTab) {
-            $node->attr('target', '_blank')
-                ->attr('rel', 'noopener noreferrer');
+            $this->attr('target', '_blank')->attr('rel', 'noopener noreferrer');
         }
-
         if ($this->download !== null) {
-            $node->attr('download', $this->download);
+            $this->attr('download', $this->download);
         }
-
-        foreach ($this->children as $child) {
-            if ($child instanceof UIElement) {
-                $node->children($child->build());
-            } elseif ($child instanceof DomNode) {
-                $node->children($child);
-            } elseif (is_string($child)) {
-                $node->children($child);
-            }
-        }
-
-        return $node;
     }
 }

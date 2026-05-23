@@ -151,10 +151,13 @@ abstract class Component extends VNode
     }
 
     /**
-     * Called during render to allow components to register custom JS/CSS with the App.
-     * Override to call $app->addJs() or $app->addCss().
+     * Called during render to allow components to register custom JS/CSS
+     * assets with the App. Override to call $app->addJs() or $app->addCss().
+     *
+     * Renamed from register() to registerAssets() because the bare name was
+     * shadowed by user-facing builder APIs (e.g. Router::register).
      */
-    protected function register(App $app): void
+    protected function registerAssets(App $app): void
     {
     }
 
@@ -217,7 +220,11 @@ abstract class Component extends VNode
 
     /**
      * Capture the values of every state/prop declared on subclasses of
-     * Component as a single serialized string. Closures are excluded.
+     * Component as a single serialized string. Closure properties are
+     * skipped; properties whose value graph contains non-serializable
+     * data (e.g. an array of closures, as used by Router::register)
+     * fall back to a sentinel that always compares "changed" — the
+     * memoization just opts out for that component.
      */
     private function captureStateSnapshot(): string
     {
@@ -233,7 +240,11 @@ abstract class Component extends VNode
                 $values[$rc->getName() . '::' . $prop->getName()] = $v;
             }
         }
-        return serialize($values);
+        try {
+            return serialize($values);
+        } catch (\Throwable) {
+            return spl_object_hash($this);
+        }
     }
 
     /**
@@ -338,7 +349,7 @@ abstract class Component extends VNode
 
         // Lifecycle: register (allow components to inject JS/CSS)
         if (self::$currentApp !== null) {
-            $this->register(self::$currentApp);
+            $this->registerAssets(self::$currentApp);
         }
 
         // Lifecycle: restored

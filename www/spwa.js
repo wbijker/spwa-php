@@ -900,6 +900,16 @@ var SPWA = (function() {
     }
 
     function handleEvent(evt, event, el) {
+        // Anchor with an SPWA click handler = SPA-handled link. Stop the
+        // browser from following the href so the server can swap content
+        // in-place. Modifier keys / middle-click fall through to the
+        // browser so "open in new tab" still works.
+        if (event === 'click' && el && el.tagName === 'A') {
+            if (evt.ctrlKey || evt.metaKey || evt.shiftKey || evt.button !== 0) {
+                return;
+            }
+            evt.preventDefault();
+        }
         var path = computePath(el);
         var data = { event: event, path: path };
         // File upload — send as multipart form
