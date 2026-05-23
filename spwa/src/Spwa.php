@@ -253,6 +253,12 @@ JS;
         $value = $payload['value'] ?? null;
         $bindings = $payload['bindings'] ?? [];
         $expectedHash = $payload['hash'] ?? null;
+        // The path the frontend's DOM was rendered for. Differs from
+        // REQUEST_URI after popstate (browser changed URL, server hasn't
+        // re-rendered yet). Used to override REQUEST_URI for the OLD render
+        // only, so the diff against the NEW render at the current URL
+        // produces the correct list↔detail swap.
+        $previousPath = $payload['previousPath'] ?? null;
         $t->mark('parse_payload');
 
         // Optimistic concurrency: the frontend echoes the hash it was
@@ -274,7 +280,19 @@ JS;
         try {
             PortalTarget::reset();
             $oldApp = new ($entry::class)();
+            // OLD must mirror what's actually on the user's screen — the path
+            // the frontend last rendered for. After popstate the browser URL
+            // (REQUEST_URI) has already moved on; without this override OLD
+            // would render the NEW route too, diff would be empty, and the
+            // stale DOM would never be patched.
+            $origRequestUri = $_SERVER['REQUEST_URI'] ?? null;
+            if ($previousPath !== null && $previousPath !== '' && $previousPath !== $origRequestUri) {
+                $_SERVER['REQUEST_URI'] = $previousPath;
+            }
             $oldUi = $oldApp->render($state, null, RenderPhase::DiffOld);
+            if ($origRequestUri !== null) {
+                $_SERVER['REQUEST_URI'] = $origRequestUri;
+            }
             $t->mark('render_old');
 
             if (!empty($bindings) && $oldUi instanceof TagDomNode) {

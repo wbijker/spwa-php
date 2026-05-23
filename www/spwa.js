@@ -327,6 +327,13 @@ var SPWA = (function() {
     var SPWA_MAX_REPLAYS = 2;
     var __spwa_lastPayload = null;
 
+    // The path the current DOM was last rendered for. Sent on every POST as
+    // `previousPath` so the server can render OLD against the URL the user
+    // actually has on screen, not whatever location.href happens to be at the
+    // moment of the request (which differs after popstate). Updated after
+    // every successful response so it tracks pushState navigations too.
+    var __spwa_renderedPath = location.pathname + location.search;
+
     // --- Value bindings ---
     function initBindings() {
         document.querySelectorAll('[data-bind]').forEach(function(el) {
@@ -541,6 +548,12 @@ var SPWA = (function() {
         // Re-initialize bindings after patches (new elements may have data-bind)
         initBindings();
 
+        // Snapshot the URL the DOM is now rendered for. Includes any
+        // pushState/replaceState issued by the server in data.js above. Sent
+        // back to the server on the next POST as `previousPath` so OLD/NEW
+        // diff stays correct across popstate navigations.
+        __spwa_renderedPath = location.pathname + location.search;
+
         // DOM is now hydrated for this request — release the queue.
         drainQueue();
     }
@@ -648,6 +661,7 @@ var SPWA = (function() {
         if (typeof window.__SPWA_HASH === 'string') {
             data.hash = window.__SPWA_HASH;
         }
+        data.previousPath = __spwa_renderedPath;
         if (SPWA.isStateEnabled()) {
             var clientState = SPWA.getAll();
             if (clientState) data.state = clientState;
@@ -670,6 +684,7 @@ var SPWA = (function() {
         if (typeof window.__SPWA_HASH === 'string') {
             data.hash = window.__SPWA_HASH;
         }
+        data.previousPath = __spwa_renderedPath;
         if (SPWA.isStateEnabled()) {
             var clientState = SPWA.getAll();
             if (clientState) data.state = clientState;
