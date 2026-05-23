@@ -427,6 +427,8 @@ JS;
                 (new TagDomNode('meta'))->attr('name', 'viewport')->attr('content', 'width=device-width, initial-scale=1.0'),
                 (new TagDomNode('title'))->rawContent(htmlspecialchars($entry->title())),
                 (new TagDomNode('script'))->rawContent('window.__SPWA_HASH=' . json_encode($stateHash) . ';'),
+                // Preflight first so framework-generated rules can override it.
+                (new TagDomNode('link'))->attr('rel', 'stylesheet')->attr('href', '/preflight.css'),
                 (new TagDomNode('style'))->attr('id', 'spwa-styles')->rawContent($generator->toStyle()),
                 (new TagDomNode('style'))->attr('id', 'spwa-custom-styles')->rawContent($customCss),
                 (new TagDomNode('script'))->attr('src', '/spwa.js')->rawContent(''),
