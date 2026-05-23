@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3c94cc82cb811f3459a76253cc59955f",
+    "content-hash": "c32f7bed83c4b84c40c7634816834971",
     "packages": [
         {
             "name": "itecho/codequery",
@@ -34,10 +34,11 @@
             "dist": {
                 "type": "path",
                 "url": "../heroicons",
-                "reference": "daa071b21833dd8ce9d868da5513aca013c49368"
+                "reference": "e1da3aa97b33e813b2614465d035d83eab3a6795"
             },
             "require": {
-                "php": ">=8.0"
+                "php": ">=8.0",
+                "spwa/spwa": "^1.0"
             },
             "type": "library",
             "autoload": {
@@ -51,15 +52,62 @@
             }
         },
         {
+            "name": "samples/news",
+            "version": "1.0.0",
+            "dist": {
+                "type": "path",
+                "url": "../samples/News",
+                "reference": "fc5e4f8d5fe69ff50715f1c8b0b6f086b404083c"
+            },
+            "require": {
+                "php": ">=8.0",
+                "spwa/spwa": "^1.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Samples\\News\\": "src/"
+                }
+            },
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
+            "name": "samples/site-app",
+            "version": "1.0.0",
+            "dist": {
+                "type": "path",
+                "url": "../samples/SiteApp",
+                "reference": "8fc169bba20238a9c14d5879782004b73a30d62c"
+            },
+            "require": {
+                "php": ">=8.0",
+                "spwa/spwa": "^1.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Samples\\SiteApp\\": "src/"
+                }
+            },
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
             "name": "spwa/spwa",
             "version": "1.0.0",
             "dist": {
                 "type": "path",
                 "url": "../spwa",
-                "reference": "e3dc1f8c881528134eb8b2c2cfc8e333a6a431b6"
+                "reference": "93089c63bddcca210d8c3914c1f610ece67a5b16"
             },
             "require": {
                 "php": ">=8.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^11.0"
             },
             "type": "library",
             "autoload": {
@@ -67,6 +115,11 @@
                     "Spwa\\": "src/"
                 },
                 "files": []
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Spwa\\Tests\\": "tests/"
+                }
             },
             "transport-options": {
                 "relative": true
@@ -84,5 +137,5 @@
         "ext-zlib": "*"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }

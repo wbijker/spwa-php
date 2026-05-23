@@ -9,6 +9,9 @@
     },
     "repositories": [
         {
+            "packagist": false
+        },
+        {
             "type": "path",
             "url": "../spwa/"
         },
@@ -19,13 +22,26 @@
         {
             "type": "path",
             "url": "../heroicons/"
+        },
+        {
+            "type": "path",
+            "url": "../samples/News/"
+        },
+        {
+            "type": "path",
+            "url": "../samples/SiteApp/"
         }
     ],
     "require": {
         "spwa/spwa": "*",
         "itecho/codequery": "*",
         "itecho/heroicons": "*",
+        "samples/news": "*",
+        "samples/site-app": "*",
         "ext-json": "*",
         "ext-zlib": "*"
+    },
+    "config": {
+        "disable-tls": true
     }
 }

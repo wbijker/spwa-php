@@ -1,6 +1,6 @@
 <?php
 
-namespace Spwa\Samples\site\Components;
+namespace Samples\SiteApp\Components;
 
 use Spwa\UI\Color;
 use Spwa\UI\FontSize;

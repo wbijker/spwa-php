@@ -30,5 +30,6 @@ services:
       - ./spwa:/var/www/spwa/
       - ./codequery:/var/www/codequery/
       - ./heroicons:/var/www/heroicons/
+      - ./samples:/var/www/samples/
     ports:
       - "8000:80"

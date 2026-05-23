@@ -1,10 +1,16 @@
 <?php
 
-namespace Spwa\Samples\site\Pages;
+namespace Samples\SiteApp\Pages;
 
-use Spwa\Samples\site\Components\Navbar;
+use Samples\SiteApp\Components\Navbar;
+use Samples\SiteApp\Routes\ComponentsRoute;
+use Samples\SiteApp\Routes\FeaturesRoute;
+use Samples\SiteApp\Routes\FormsRoute;
+use Samples\SiteApp\Routes\HomeRoute;
+use Samples\SiteApp\Routes\StateRoute;
 use Spwa\UI\Color;
 use Spwa\UI\FontSize;
+use Spwa\UI\Router;
 use Spwa\UI\UI;
 use Spwa\UI\Unit;
 use Spwa\VNode\Component;
@@ -19,12 +25,12 @@ class SiteApp extends Component
             ->minHeight(Unit::screen())
             ->content(
                 new Navbar(),
-                UI::router()
-                    ->route('/', new HomePage())
-                    ->route('/features', new FeaturesPage())
-                    ->route('/components', new ComponentsPage())
-                    ->route('/forms', new FormsPage())
-                    ->route('/state', new StatePage())
+                Router::router()
+                    ->register(HomeRoute::class,       fn() => new HomePage())
+                    ->register(FeaturesRoute::class,   fn() => new FeaturesPage())
+                    ->register(ComponentsRoute::class, fn() => new ComponentsPage())
+                    ->register(FormsRoute::class,      fn() => new FormsPage())
+                    ->register(StateRoute::class,      fn() => new StatePage())
                     ->fallback(new HomePage()),
                 $this->buildFooter(),
             );
