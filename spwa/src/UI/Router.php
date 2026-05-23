@@ -92,7 +92,21 @@ class Router extends Component
         history.scrollRestoration = 'manual';
     }
 
+    // Persist scroll positions across full page reloads via sessionStorage —
+    // the in-memory map alone is wiped on refresh. Keyed per-URL so navigating
+    // away and back (whether by SPA or by reload) lands at the same scroll.
+    var STORAGE_KEY = '__spwaScrollPositions';
     var scrollPositions = {};
+    try {
+        var raw = sessionStorage.getItem(STORAGE_KEY);
+        if (raw) scrollPositions = JSON.parse(raw) || {};
+    } catch (e) { /* quota / disabled — start with an empty map */ }
+
+    function persist() {
+        try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(scrollPositions)); }
+        catch (e) { /* ignore — best-effort */ }
+    }
+
     var currentKey = location.pathname + location.search;
 
     function keyOf() { return location.pathname + location.search; }
@@ -107,12 +121,22 @@ class Router extends Component
         requestAnimationFrame(function () {
             pendingFrame = false;
             scrollPositions[currentKey] = window.scrollY;
+            persist();
         });
     }, { passive: true });
 
+    // pagehide is the reliable cross-browser "user is leaving" hook (mobile
+    // Safari notably skips beforeunload). Fires on reload, navigation away,
+    // and tab close — a final guaranteed write before the page is gone.
+    window.addEventListener('pagehide', function () {
+        scrollPositions[currentKey] = window.scrollY;
+        persist();
+    });
+
     // Restore on a rAF loop — the new DOM may not be tall enough yet when
     // navigation fires (patches apply after pushState, asynchronously after
-    // popstate). Bail when scrollY matches target or we've waited long enough.
+    // popstate, and the body may still be parsing on initial page load).
+    // Bail when scrollY matches target or we've waited long enough.
     function restoreFor(key) {
         var target = scrollPositions[key] || 0;
         var attempts = 0;
@@ -129,11 +153,17 @@ class Router extends Component
         requestAnimationFrame(step);
     }
 
+    // Initial restore — reload/direct hit on a URL we've seen before should
+    // land back at the saved scroll position. The rAF loop tolerates the
+    // body still being parsed.
+    restoreFor(currentKey);
+
     // pushState changes location synchronously. Save for OLD key first, then
     // flip currentKey and queue a restore for the NEW key once patches land.
     var origPush = history.pushState;
     history.pushState = function () {
         scrollPositions[currentKey] = window.scrollY;
+        persist();
         var ret = origPush.apply(this, arguments);
         var newKey = keyOf();
         if (newKey !== currentKey) {
@@ -155,6 +185,7 @@ class Router extends Component
     window.addEventListener('popstate', function () {
         // location has already changed; currentKey is still the OLD URL.
         scrollPositions[currentKey] = window.scrollY;
+        persist();
         currentKey = keyOf();
         if (window.SPWA && typeof SPWA.refresh === 'function') {
             SPWA.refresh();

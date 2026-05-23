@@ -176,8 +176,10 @@ class Spwa
             );
             $body = (new TagDomNode('body'))
                 ->attr('style', 'margin:0')
-                ->content($dom)
-                ->content((new TagDomNode('script'))->rawContent(self::hmrScript()));
+                ->content($dom);
+            if (self::isDevelopment()) {
+                $body->content((new TagDomNode('script'))->rawContent(self::hmrScript()));
+            }
             $document = (new TagDomNode('html'))
                 ->attr('lang', 'en')
                 ->content($head, $body);
@@ -188,11 +190,39 @@ class Spwa
             // and emit it without going through render/collectStyles.
             $bare = new DefaultErrorPage($info);
             $dom = $bare->render(new InMemoryStateManager(), null, RenderPhase::Initial);
+            $hmr = self::isDevelopment() ? '<script>' . self::hmrScript() . '</script>' : '';
             echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Error</title></head><body style="margin:0">'
                . $dom->toHtml()
-               . '<script>' . self::hmrScript() . '</script>'
+               . $hmr
                . '</body></html>';
         }
+    }
+
+    /**
+     * Load the project config (returns []) if no config.php exists. Looks
+     * next to the entry script (e.g. www/config.php sits beside index.php).
+     * Cached for the request.
+     *
+     * @return array<string, mixed>
+     */
+    private static function config(): array
+    {
+        static $config = null;
+        if ($config === null) {
+            $path = dirname($_SERVER['SCRIPT_FILENAME'] ?? '') . '/config.php';
+            $config = is_file($path) ? (array)require $path : [];
+        }
+        return $config;
+    }
+
+    /**
+     * True when config.php has `development => true`. Gates the HMR
+     * long-poll (both the IIFE in spwa.js, via window.__SPWA_DEV, and
+     * the inlined script in error pages).
+     */
+    private static function isDevelopment(): bool
+    {
+        return (bool)(self::config()['development'] ?? false);
     }
 
     /**
@@ -426,7 +456,10 @@ JS;
                 (new TagDomNode('meta'))->attr('charset', 'UTF-8'),
                 (new TagDomNode('meta'))->attr('name', 'viewport')->attr('content', 'width=device-width, initial-scale=1.0'),
                 (new TagDomNode('title'))->rawContent(htmlspecialchars($entry->title())),
-                (new TagDomNode('script'))->rawContent('window.__SPWA_HASH=' . json_encode($stateHash) . ';'),
+                (new TagDomNode('script'))->rawContent(
+                    'window.__SPWA_HASH=' . json_encode($stateHash) . ';'
+                    . 'window.__SPWA_DEV=' . json_encode(self::isDevelopment()) . ';'
+                ),
                 // Preflight first so framework-generated rules can override it.
                 (new TagDomNode('link'))->attr('rel', 'stylesheet')->attr('href', '/preflight.css'),
                 (new TagDomNode('style'))->attr('id', 'spwa-styles')->rawContent($generator->toStyle()),

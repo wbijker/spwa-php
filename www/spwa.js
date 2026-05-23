@@ -952,7 +952,10 @@ var SPWA = (function() {
 })();
 
 // Dev-only HMR: long-poll /hmr.php; on a detected .php change, reload.
+// Gated on window.__SPWA_DEV, which the server sets from config.php
+// (development => true|false). When false, no polling happens at all.
 (function () {
+    if (!window.__SPWA_DEV) return;
     var ctl;
     function poll() {
         if (ctl) ctl.abort();
