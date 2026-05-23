@@ -206,7 +206,12 @@ class CssExtractor
             $verbatimErr = $e;
         }
 
-        // 2. Synthesis — only the values that THIS call's args text contains.
+        // 2. Synthesis — only the values that THIS call's args text contains,
+        //    plus one level of `$this->name(...)` dereference: when the args
+        //    invoke an instance method on the same file's class (e.g.
+        //    `->color($this->categoryColor($category))`), pull literal values
+        //    out of that method's body too. Lets `match` expressions and other
+        //    helper-returned values reach the bag.
         if (!method_exists($probe, $method)) {
             $this->recordFailure($file, $line, $method, $argText, "method does not exist on " . $probe::class);
             return;
@@ -214,12 +219,105 @@ class CssExtractor
         $rm = new ReflectionMethod($probe, $method);
         $bag = $this->extractValues($argText);
 
+        foreach ($this->extractInstanceMethodCalls($argText) as $calledMethod) {
+            $body = $this->getMethodBody($file, $calledMethod);
+            if ($body === null) continue;
+            foreach ($this->extractValues($body) as $cls => $exprs) {
+                $bag[$cls] = array_values(array_unique([...($bag[$cls] ?? []), ...$exprs]));
+            }
+        }
+
         $synthOk = $this->trySynthesis($probe, $rm, $bag);
 
         if (!$synthOk) {
             $msg = $verbatimErr ? trim(explode("\n", $verbatimErr->getMessage())[0]) : 'no synthesis';
             $this->recordFailure($file, $line, $method, $argText, $msg);
         }
+    }
+
+    /**
+     * Find method names called as `$this->name(` in the given expression text.
+     *
+     * @return string[]
+     */
+    private function extractInstanceMethodCalls(string $argText): array
+    {
+        $tokens = PhpToken::tokenize('<?php ' . $argText . ';');
+        $count = count($tokens);
+        $methods = [];
+        for ($i = 0; $i < $count; $i++) {
+            if ($tokens[$i]->id !== T_VARIABLE || $tokens[$i]->text !== '$this') continue;
+            $j = $this->skipTrivia($tokens, $i + 1);
+            if ($j === null || $tokens[$j]->id !== T_OBJECT_OPERATOR) continue;
+            $j = $this->skipTrivia($tokens, $j + 1);
+            if ($j === null || $tokens[$j]->id !== T_STRING) continue;
+            $name = $tokens[$j]->text;
+            $k = $this->skipTrivia($tokens, $j + 1);
+            if ($k === null || $tokens[$k]->text !== '(') continue;
+            $methods[$name] = true;
+        }
+        return array_keys($methods);
+    }
+
+    /** @var array<string, array<string, string|null>>  file → method → body|null */
+    private array $methodBodyCache = [];
+
+    /**
+     * Locate `function <name>(…) { body }` in a PHP file and return the body
+     * source (between the outermost braces). Returns null if not found.
+     * Cached per (file, method).
+     */
+    private function getMethodBody(string $file, string $methodName): ?string
+    {
+        if (array_key_exists($methodName, $this->methodBodyCache[$file] ?? [])) {
+            return $this->methodBodyCache[$file][$methodName];
+        }
+        $body = $this->findMethodBody($file, $methodName);
+        $this->methodBodyCache[$file][$methodName] = $body;
+        return $body;
+    }
+
+    private function findMethodBody(string $file, string $methodName): ?string
+    {
+        $tokens = PhpToken::tokenize(@file_get_contents($file) ?: '');
+        $count = count($tokens);
+        for ($i = 0; $i < $count; $i++) {
+            if ($tokens[$i]->id !== T_FUNCTION) continue;
+            $j = $this->skipTrivia($tokens, $i + 1);
+            if ($j === null || $tokens[$j]->id !== T_STRING) continue;
+            if ($tokens[$j]->text !== $methodName) continue;
+            // Walk past the parameter list ()
+            $k = $this->skipTrivia($tokens, $j + 1);
+            if ($k === null || $tokens[$k]->text !== '(') continue;
+            $depth = 0;
+            for (; $k < $count; $k++) {
+                $t = $tokens[$k]->text;
+                if ($t === '(') $depth++;
+                elseif ($t === ')') {
+                    $depth--;
+                    if ($depth === 0) { $k++; break; }
+                }
+            }
+            // Skip return-type (no braces), find the opening { of the body.
+            while ($k < $count && $tokens[$k]->text !== '{') $k++;
+            if ($k >= $count) return null;
+            // Capture body text between matching braces.
+            $depth = 0;
+            $body = '';
+            for (; $k < $count; $k++) {
+                $t = $tokens[$k]->text;
+                if ($t === '{') {
+                    $depth++;
+                    if ($depth === 1) continue; // skip outermost {
+                } elseif ($t === '}') {
+                    $depth--;
+                    if ($depth === 0) return $body;
+                }
+                $body .= $t;
+            }
+            return null;
+        }
+        return null;
     }
 
     private function recordFailure(string $file, int $line, string $method, string $argText, string $reason): void
