@@ -12,7 +12,6 @@ use Spwa\UI\Shadow;
 use Spwa\UI\UI;
 use Spwa\UI\UIElement;
 use Spwa\UI\Unit;
-use Spwa\UI\ValueMap;
 use Spwa\VNode\Component;
 use Spwa\VNode\VNode;
 
@@ -475,22 +474,7 @@ class News extends Component
         return UI::text(strtoupper($category))
             ->fontSize(FontSize::ExtraSmall)
             ->weight(FontWeight::Bold)
-            ->color(ValueMap::create([
-                'banking'       => Color::blue(600),
-                'business'      => Color::blue(600),
-                'mobile'        => Color::violet(600),
-                'cellular'      => Color::violet(600),
-                'internet'      => Color::cyan(600),
-                'fibre'         => Color::cyan(600),
-                'cybersecurity' => Color::red(600),
-                'cloud'         => Color::indigo(600),
-                'startups'      => Color::emerald(600),
-                'funding'       => Color::emerald(600),
-                'government'    => Color::amber(700),
-                'energy'        => Color::orange(600),
-                'ai'            => Color::purple(600),
-                'telecoms'      => Color::purple(600),
-            ], Color::gray(600), strtolower($category)));
+            ->color($this->categoryColor($category));
     }
 
     private function articleMeta(string $date): UIElement
@@ -498,6 +482,22 @@ class News extends Component
         return UI::text($date)
             ->fontSize(FontSize::ExtraSmall)
             ->color(Color::gray(500));
+    }
+
+    private function categoryColor(string $category): Color
+    {
+        return match (strtolower($category)) {
+            'banking', 'business' => Color::blue(600),
+            'mobile', 'cellular' => Color::violet(600),
+            'internet', 'fibre'   => Color::cyan(600),
+            'cybersecurity'       => Color::red(600),
+            'cloud'               => Color::indigo(600),
+            'startups', 'funding' => Color::emerald(600),
+            'government'          => Color::amber(700),
+            'energy'              => Color::orange(600),
+            'ai', 'telecoms'      => Color::purple(600),
+            default               => Color::gray(600),
+        };
     }
 
     // ============================================================
