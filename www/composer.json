@@ -25,11 +25,7 @@
         },
         {
             "type": "path",
-            "url": "../samples/News/"
-        },
-        {
-            "type": "path",
-            "url": "../samples/SiteApp/"
+            "url": "../samples/*"
         }
     ],
     "require": {
@@ -38,6 +34,7 @@
         "itecho/heroicons": "*",
         "samples/news": "*",
         "samples/site-app": "*",
+        "samples/todo-app": "*",
         "ext-json": "*",
         "ext-zlib": "*"
     },

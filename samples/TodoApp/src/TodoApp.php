@@ -1,6 +1,6 @@
 <?php
 
-namespace Spwa\Samples;
+namespace Samples\TodoApp;
 
 use Spwa\State\SessionStateManager;
 use Spwa\State\StateManager;

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c32f7bed83c4b84c40c7634816834971",
+    "content-hash": "dcaaa8eae41b9ad7695fcc9325df2734",
     "packages": [
         {
             "name": "itecho/codequery",
@@ -89,6 +89,28 @@
             "autoload": {
                 "psr-4": {
                     "Samples\\SiteApp\\": "src/"
+                }
+            },
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
+            "name": "samples/todo-app",
+            "version": "1.0.0",
+            "dist": {
+                "type": "path",
+                "url": "../samples/TodoApp",
+                "reference": "539738502834b1f101d2a75191e0f227a43aecc8"
+            },
+            "require": {
+                "php": ">=8.0",
+                "spwa/spwa": "^1.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Samples\\TodoApp\\": "src/"
                 }
             },
             "transport-options": {
