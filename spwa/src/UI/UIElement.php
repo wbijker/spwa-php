@@ -995,17 +995,25 @@ class UIElement extends Node
         return $this;
     }
 
+    /**
+     * Clip horizontal overflow without creating a scroll context. Uses
+     * `overflow-x: clip` — unlike `overflow-x: hidden`, this does NOT
+     * force the other axis to `auto`, so the element won't sprout an
+     * internal vertical scrollbar on tall pages. Use this on the
+     * outermost page container to prevent any descendant from causing
+     * horizontal page scroll.
+     */
     public function clipHorizontal(?Pseudo $pseudo = null): static
     {
         $prefix = $pseudo?->prefix() ?? '';
-        $this->addStyle($prefix . 'overflow-x-hidden', ['overflow-x' => 'hidden']);
+        $this->addStyle($prefix . 'overflow-x-clip', ['overflow-x' => 'clip']);
         return $this;
     }
 
     public function clipVertical(?Pseudo $pseudo = null): static
     {
         $prefix = $pseudo?->prefix() ?? '';
-        $this->addStyle($prefix . 'overflow-y-hidden', ['overflow-y' => 'hidden']);
+        $this->addStyle($prefix . 'overflow-y-clip', ['overflow-y' => 'clip']);
         return $this;
     }
 

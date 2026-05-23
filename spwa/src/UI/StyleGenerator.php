@@ -182,6 +182,14 @@ class StyleGenerator
     }
 
     /**
+     * Baseline reset emitted before any framework-generated rules. Sets
+     * border-box on every element so width()/height() include padding and
+     * border — without this, width(full) + padding overflows the parent
+     * (the browser default is content-box).
+     */
+    private const RESET_CSS = "*,*::before,*::after{box-sizing:border-box}";
+
+    /**
      * Generate CSS string output with proper media queries and pseudo selectors.
      */
     public function toCSS(): string
@@ -201,7 +209,7 @@ class StyleGenerator
             }
         }
 
-        $css = implode("\n", $baseStyles);
+        $css = self::RESET_CSS . "\n" . implode("\n", $baseStyles);
 
         foreach ($mediaStyles as $mediaQuery => $rules) {
             $css .= "\n{$mediaQuery} {\n";
@@ -234,7 +242,7 @@ class StyleGenerator
             }
         }
 
-        $css = implode('', $baseStyles);
+        $css = self::RESET_CSS . implode('', $baseStyles);
 
         foreach ($mediaStyles as $mediaQuery => $rules) {
             $css .= $mediaQuery . '{' . implode('', $rules) . '}';

@@ -3,6 +3,7 @@
 namespace Samples\News;
 
 use Spwa\UI\Color;
+use Spwa\UI\Direction;
 use Spwa\UI\FontSize;
 use Spwa\UI\FontWeight;
 use Spwa\UI\Pseudo;
@@ -31,19 +32,32 @@ class News extends Component
 {
     protected function build(): VNode
     {
+        // Outer column fills at least the viewport, so when the routed content
+        // is short the grow()'d inner column expands and pushes the footer to
+        // the bottom of the screen. When content is taller than the viewport
+        // the page scrolls and the footer sits below it naturally.
         return UI::column()
+            ->minHeight(Unit::vh(100))
             ->width(Unit::full())
+            ->clipHorizontal()
             ->background(Color::gray(50))
             ->content(
                 $this->header(),
 
-                Router::router()
-                    ->register(NewsListRoute::class, fn() => $this->body())
-                    ->register(ArticleRoute::class, function (ArticleRoute $route) {
-                        $article = NewsData::findBySlug($route->slug);
-                        return $article !== null ? $this->detailView($article) : $this->body();
-                    })
-                    ->fallback($this->body()),
+                UI::column()
+                    ->grow()
+                    ->width(Unit::full())
+                    ->minWidth(Unit::none())
+                    ->content(
+                        Router::router()
+                            ->register(NewsListRoute::class, fn() => $this->body())
+                            ->register(ArticleRoute::class, function (ArticleRoute $route) {
+                                $article = NewsData::findBySlug($route->slug);
+                                return $article !== null ? $this->detailView($article) : $this->body();
+                            })
+                            ->fallback($this->body()),
+                    ),
+
                 $this->footer(),
             );
     }
@@ -59,28 +73,38 @@ class News extends Component
             ->shadow(Shadow::Small)
             ->content(
                 UI::row()
+                    ->wrap()
                     ->alignBetween()
                     ->alignMiddle()
+                    ->gap(Unit::rem(0.75))
                     ->maxWidth(Unit::px(1200))
                     ->width(Unit::full())
                     ->marginHorizontal(Unit::auto())
-                    ->paddingVertical(Unit::rem(1))
+                    ->paddingHorizontal(Unit::rem(1))
+                    ->paddingHorizontal(Unit::rem(1.5), Pseudo::md())
+                    ->paddingVertical(Unit::rem(0.75))
+                    ->paddingVertical(Unit::rem(1), Pseudo::md())
                     ->content(
                         UI::row()
                             ->alignMiddle()
                             ->gap(Unit::rem(0.5))
                             ->content(
                                 UI::text('My')
-                                    ->fontSize(FontSize::TwoXL)
+                                    ->fontSize(FontSize::ExtraLarge)
+                                    ->fontSize(FontSize::TwoXL, Pseudo::md())
                                     ->weight(FontWeight::Bold)
                                     ->color(Color::gray(900)),
                                 UI::text('News')
-                                    ->fontSize(FontSize::TwoXL)
+                                    ->fontSize(FontSize::ExtraLarge)
+                                    ->fontSize(FontSize::TwoXL, Pseudo::md())
                                     ->weight(FontWeight::Bold)
                                     ->color(Color::red(600))
                             ),
                         UI::row()
-                            ->gap(Unit::rem(1.5))
+                            ->wrap()
+                            ->gap(Unit::rem(0.75))
+                            ->gap(Unit::rem(1.25), Pseudo::md())
+                            ->gap(Unit::rem(1.5), Pseudo::lg())
                             ->content(
                                 $this->navLink('News', true),
                                 $this->navLink('Industry'),
@@ -119,30 +143,47 @@ class News extends Component
 
     private function body(): UIElement
     {
+        // Stacks vertically on small screens; switches to side-by-side
+        // (main + sidebar) at lg (>=1024px).
         return UI::row()
+            ->direction(Direction::column())
+            ->direction(Direction::row(), Pseudo::lg())
             ->maxWidth(Unit::px(1200))
             ->width(Unit::full())
             ->marginHorizontal(Unit::auto())
-            ->paddingHorizontal(Unit::rem(1.5))
-            ->paddingVertical(Unit::rem(2))
-            ->gap(Unit::rem(2))
+            ->paddingHorizontal(Unit::rem(1))
+            ->paddingHorizontal(Unit::rem(1.5), Pseudo::md())
+            ->paddingVertical(Unit::rem(1.25))
+            ->paddingVertical(Unit::rem(2), Pseudo::md())
+            ->gap(Unit::rem(1.5))
+            ->gap(Unit::rem(2), Pseudo::md())
             ->alignTop()
             ->content(
-                // Main column
+                // Main column. minWidth(none) overrides the flex-item
+                // default of min-width:auto so the scrollable What's Next
+                // strip can scroll inside the column instead of pushing
+                // the page wider on narrow viewports.
                 UI::column()
                     ->grow(2)
-                    ->gap(Unit::rem(2))
+                    ->width(Unit::full())
+                    ->minWidth(Unit::none())
+                    ->gap(Unit::rem(1.5))
+                    ->gap(Unit::rem(2), Pseudo::md())
                     ->content(
                         $this->featuredArticle(NewsData::featured()),
                         $this->whatsNextStrip(NewsData::whatsNext()),
                         $this->articleList(NewsData::articles()),
                     ),
 
-                // Sidebar
+                // Sidebar — hidden below md; full width on md, constrained at lg.
                 UI::column()
+                    ->hidden()
+                    ->flex(Pseudo::md())
                     ->grow(1)
-                    ->minWidth(Unit::px(280))
-                    ->maxWidth(Unit::px(340))
+                    ->width(Unit::full())
+                    ->minWidth(Unit::none())
+                    ->minWidth(Unit::px(280), Pseudo::lg())
+                    ->maxWidth(Unit::px(340), Pseudo::lg())
                     ->gap(Unit::rem(1.5))
                     ->content(
                         $this->industryNewsSidebar(NewsData::industryNews()),
@@ -168,20 +209,26 @@ class News extends Component
             ->content(
                 UI::image($article->coverImage, $article->title)
                     ->width(Unit::full())
-                    ->height(Unit::px(380))
+                    ->height(Unit::px(220))
+                    ->height(Unit::px(320), Pseudo::md())
+                    ->height(Unit::px(380), Pseudo::lg())
                     ->objectCover(),
                 UI::column()
-                    ->padding(Unit::rem(1.5))
+                    ->padding(Unit::rem(1))
+                    ->padding(Unit::rem(1.5), Pseudo::md())
                     ->gap(Unit::rem(0.75))
                     ->content(
                         $this->categoryLabel($article->category),
                         UI::text($article->title)
-                            ->fontSize(FontSize::ThreeXL)
+                            ->fontSize(FontSize::ExtraLarge)
+                            ->fontSize(FontSize::TwoXL, Pseudo::md())
+                            ->fontSize(FontSize::ThreeXL, Pseudo::lg())
                             ->weight(FontWeight::Bold)
                             ->color(Color::gray(900))
                             ->color(Color::red(600), Pseudo::hover()),
                         UI::text($article->excerpt)
-                            ->fontSize(FontSize::Base)
+                            ->fontSize(FontSize::Small)
+                            ->fontSize(FontSize::Base, Pseudo::md())
                             ->color(Color::gray(600)),
                         $this->articleMeta($article->formattedDate())
                     )
@@ -259,7 +306,10 @@ class News extends Component
 
     private function articleCard(Article $article): UIElement
     {
+        // Stacks (image above text) on small screens; image-left layout on md+.
         return UI::row()
+            ->direction(Direction::column())
+            ->direction(Direction::row(), Pseudo::md())
             ->background(Color::white())
             ->rounded(Unit::rem(0.375))
             ->overflow()
@@ -271,18 +321,22 @@ class News extends Component
             ->on('click', fn() => Router::navigate(new ArticleRoute($article->slug())))
             ->content(
                 UI::image($article->coverImage, $article->title)
-                    ->width(Unit::px(220))
-                    ->height(Unit::px(160))
-                    ->noShrink()
+                    ->width(Unit::full())
+                    ->width(Unit::px(220), Pseudo::md())
+                    ->height(Unit::px(180))
+                    ->height(Unit::px(160), Pseudo::md())
+                    ->noShrink(Pseudo::md())
                     ->objectCover(),
                 UI::column()
                     ->grow()
-                    ->padding(Unit::rem(1.25))
+                    ->padding(Unit::rem(1))
+                    ->padding(Unit::rem(1.25), Pseudo::md())
                     ->gap(Unit::rem(0.5))
                     ->content(
                         $this->categoryLabel($article->category),
                         UI::text($article->title)
-                            ->fontSize(FontSize::Large)
+                            ->fontSize(FontSize::Base)
+                            ->fontSize(FontSize::Large, Pseudo::md())
                             ->weight(FontWeight::SemiBold)
                             ->color(Color::gray(900))
                             ->color(Color::red(600), Pseudo::hover()),
@@ -361,21 +415,30 @@ class News extends Component
     {
         return UI::container()
             ->background(Color::gray(900))
-            ->paddingVertical(Unit::rem(2.5))
-            ->paddingHorizontal(Unit::rem(1.5))
+            ->paddingVertical(Unit::rem(2))
+            ->paddingVertical(Unit::rem(2.5), Pseudo::md())
+            ->paddingHorizontal(Unit::rem(1))
+            ->paddingHorizontal(Unit::rem(1.5), Pseudo::md())
             ->content(
+                // Stacks on small screens; row with space-between on md+.
                 UI::row()
+                    ->direction(Direction::column())
+                    ->direction(Direction::row(), Pseudo::md())
                     ->maxWidth(Unit::px(1200))
                     ->width(Unit::full())
                     ->marginHorizontal(Unit::auto())
                     ->alignBetween()
                     ->alignMiddle()
+                    ->gap(Unit::rem(1))
                     ->content(
                         UI::text('© 2026. All rights reserved.')
                             ->fontSize(FontSize::Small)
                             ->color(Color::gray(400)),
                         UI::row()
-                            ->gap(Unit::rem(1.5))
+                            ->wrap()
+                            ->alignCenter()
+                            ->gap(Unit::rem(1))
+                            ->gap(Unit::rem(1.5), Pseudo::md())
                             ->content(
                                 $this->footerLink('About'),
                                 $this->footerLink('Advertise'),
@@ -455,8 +518,10 @@ class News extends Component
             ->maxWidth(Unit::px(900))
             ->width(Unit::full())
             ->marginHorizontal(Unit::auto())
-            ->paddingHorizontal(Unit::rem(1.5))
-            ->paddingVertical(Unit::rem(2))
+            ->paddingHorizontal(Unit::rem(1))
+            ->paddingHorizontal(Unit::rem(1.5), Pseudo::md())
+            ->paddingVertical(Unit::rem(1.25))
+            ->paddingVertical(Unit::rem(2), Pseudo::md())
             ->gap(Unit::rem(1.5))
             ->content(
                 $this->backLink(),
@@ -468,22 +533,28 @@ class News extends Component
                     ->content(
                         UI::image($article->coverImage, $article->title)
                             ->width(Unit::full())
-                            ->height(Unit::px(440))
+                            ->height(Unit::px(240))
+                            ->height(Unit::px(360), Pseudo::md())
+                            ->height(Unit::px(440), Pseudo::lg())
                             ->objectCover(),
                         UI::column()
-                            ->padding(Unit::rem(2))
+                            ->padding(Unit::rem(1.25))
+                            ->padding(Unit::rem(2), Pseudo::md())
                             ->gap(Unit::rem(1))
                             ->content(
                                 $this->categoryLabel($article->category),
                                 UI::text($article->title)
-                                    ->fontSize(FontSize::FourXL)
+                                    ->fontSize(FontSize::TwoXL)
+                                    ->fontSize(FontSize::ThreeXL, Pseudo::md())
+                                    ->fontSize(FontSize::FourXL, Pseudo::lg())
                                     ->weight(FontWeight::Bold)
                                     ->color(Color::gray(900)),
                                 UI::text($article->formattedDate())
                                     ->fontSize(FontSize::Small)
                                     ->color(Color::gray(500)),
                                 UI::text($article->excerpt)
-                                    ->fontSize(FontSize::Large)
+                                    ->fontSize(FontSize::Base)
+                                    ->fontSize(FontSize::Large, Pseudo::md())
                                     ->weight(FontWeight::SemiBold)
                                     ->color(Color::gray(700))
                                     ->paddingTop(Unit::rem(0.5)),
