@@ -93,7 +93,7 @@ class CssExtractor
 
         $names = ['Color','Unit','Pseudo','Cursor','FontSize','FontWeight','Shadow',
                   'Align','Direction','GridColumns','Breakpoint','ColorScheme',
-                  'Selector','BaseRoute','UI'];
+                  'Selector','BaseRoute','UI','ValueMap'];
         foreach ($names as $name) {
             if (class_exists($name, false) || enum_exists($name, false)) continue;
             $fqn = "Spwa\\UI\\$name";
@@ -198,126 +198,350 @@ class CssExtractor
 
         // 1. Verbatim — happens to work for any call with all-literal args.
         $verbatimErr = null;
+        $verbatimWorked = false;
         try {
             @eval("\$probe->$method($argText);");
             $this->siteSucceeded++;
-            return; // verbatim covered it — synthesis would be redundant
+            $verbatimWorked = true;
         } catch (Throwable $e) {
             $verbatimErr = $e;
         }
 
-        // 2. Synthesis — only the values that THIS call's args text contains,
-        //    plus one level of `$this->name(...)` dereference: when the args
-        //    invoke an instance method on the same file's class (e.g.
-        //    `->color($this->categoryColor($category))`), pull literal values
-        //    out of that method's body too. Lets `match` expressions and other
-        //    helper-returned values reach the bag.
-        if (!method_exists($probe, $method)) {
-            $this->recordFailure($file, $line, $method, $argText, "method does not exist on " . $probe::class);
+        // 2. ValueMap dereference — always runs if any ValueMap::create(…)
+        //    occurs in the args, even when verbatim "succeeded". The verbatim
+        //    eval only reaches one branch (the lookup returns the default
+        //    because $key is undefined in this scope); synthesis covers the
+        //    other branches by feeding every harvested value through the
+        //    parent method.
+        $valueMapValues = $this->extractValueMapValues($argText, $file);
+
+        if ($verbatimWorked && empty($valueMapValues)) {
             return;
         }
+
+        if (!method_exists($probe, $method)) {
+            if (!$verbatimWorked) {
+                $this->recordFailure($file, $line, $method, $argText, "method does not exist on " . $probe::class);
+            }
+            return;
+        }
+
         $rm = new ReflectionMethod($probe, $method);
         $bag = $this->extractValues($argText);
 
-        foreach ($this->extractInstanceMethodCalls($argText) as $calledMethod) {
-            $body = $this->getMethodBody($file, $calledMethod);
-            if ($body === null) continue;
-            foreach ($this->extractValues($body) as $cls => $exprs) {
-                $bag[$cls] = array_values(array_unique([...($bag[$cls] ?? []), ...$exprs]));
-            }
+        foreach ($valueMapValues as $cls => $exprs) {
+            $bag[$cls] = array_values(array_unique([...($bag[$cls] ?? []), ...$exprs]));
         }
 
         $synthOk = $this->trySynthesis($probe, $rm, $bag);
 
-        if (!$synthOk) {
+        if (!$verbatimWorked && !$synthOk) {
             $msg = $verbatimErr ? trim(explode("\n", $verbatimErr->getMessage())[0]) : 'no synthesis';
             $this->recordFailure($file, $line, $method, $argText, $msg);
         }
     }
 
+    // ============================================================
+    // ValueMap dereferencing
+    // ============================================================
+
+    /** @var array<int, mixed>  Live PHP values pulled out of resolved ValueMaps. */
+    private array $valueMapPool = [];
+
     /**
-     * Find method names called as `$this->name(` in the given expression text.
+     * Find every `ValueMap::create(opts, default, key)` call inside an argument
+     * expression, resolve the option/default pair (inline literal eval, or
+     * Reflection for `$this->prop`), and return harvested values bucketed by
+     * the short class name of each value.
      *
-     * @return string[]
+     * The returned arrays contain PHP source expressions (e.g. `Color::red(500)`)
+     * for inline cases, or sentinels like `$this->valueMapPool[42]` for values
+     * pulled out via Reflection — these are valid PHP that eval() inside this
+     * class can resolve back to the live object.
+     *
+     * @return array<string, string[]>  shortClass → expressions
      */
-    private function extractInstanceMethodCalls(string $argText): array
+    private function extractValueMapValues(string $argText, string $file): array
+    {
+        $bag = [];
+        foreach ($this->extractValueMapCalls($argText) as $call) {
+            $values = $this->resolveValueMap($call['opts'], $call['default'], $file);
+            foreach ($values as $v) {
+                $cls = is_object($v) ? (new \ReflectionClass($v))->getShortName() : gettype($v);
+                $bag[$cls] ??= [];
+                if ($this->isLiteralValueExpr($v)) {
+                    // We have a source string from inline parsing — keep it
+                    // readable in synthesized eval bodies.
+                    $bag[$cls][] = $v['__expr'];
+                } else {
+                    $idx = count($this->valueMapPool);
+                    $this->valueMapPool[] = $v;
+                    $bag[$cls][] = "\$this->valueMapPool[$idx]";
+                }
+            }
+        }
+        foreach ($bag as $k => $v) {
+            $bag[$k] = array_values(array_unique($v));
+        }
+        return $bag;
+    }
+
+    private function isLiteralValueExpr(mixed $v): bool
+    {
+        return is_array($v) && isset($v['__expr']);
+    }
+
+    /**
+     * Scan an arg expression and return every ValueMap::create(...) call as
+     * {opts, default, key} source-text triples.
+     *
+     * @return array<int, array{opts:string, default:string, key:string}>
+     */
+    private function extractValueMapCalls(string $argText): array
     {
         $tokens = PhpToken::tokenize('<?php ' . $argText . ';');
         $count = count($tokens);
-        $methods = [];
+        $out = [];
         for ($i = 0; $i < $count; $i++) {
-            if ($tokens[$i]->id !== T_VARIABLE || $tokens[$i]->text !== '$this') continue;
+            if ($tokens[$i]->id !== T_STRING || $tokens[$i]->text !== 'ValueMap') continue;
             $j = $this->skipTrivia($tokens, $i + 1);
-            if ($j === null || $tokens[$j]->id !== T_OBJECT_OPERATOR) continue;
+            if ($j === null || $tokens[$j]->id !== T_DOUBLE_COLON) continue;
             $j = $this->skipTrivia($tokens, $j + 1);
-            if ($j === null || $tokens[$j]->id !== T_STRING) continue;
-            $name = $tokens[$j]->text;
+            if ($j === null || $tokens[$j]->id !== T_STRING || $tokens[$j]->text !== 'create') continue;
             $k = $this->skipTrivia($tokens, $j + 1);
             if ($k === null || $tokens[$k]->text !== '(') continue;
-            $methods[$name] = true;
+            $args = $this->extractArgs($tokens, $k);
+            $parts = $this->splitTopLevelArgs($args['text']);
+            if (count($parts) < 2) continue;
+            $out[] = [
+                'opts'    => trim($parts[0]),
+                'default' => trim($parts[1]),
+                'key'     => isset($parts[2]) ? trim($parts[2]) : 'null',
+            ];
         }
-        return array_keys($methods);
+        return $out;
     }
-
-    /** @var array<string, array<string, string|null>>  file → method → body|null */
-    private array $methodBodyCache = [];
 
     /**
-     * Locate `function <name>(…) { body }` in a PHP file and return the body
-     * source (between the outermost braces). Returns null if not found.
-     * Cached per (file, method).
+     * Split arg text on top-level commas (commas outside any nested
+     * paren/bracket/brace). Returns the raw substrings — caller can trim.
+     *
+     * @return string[]
      */
-    private function getMethodBody(string $file, string $methodName): ?string
+    private function splitTopLevelArgs(string $argText): array
     {
-        if (array_key_exists($methodName, $this->methodBodyCache[$file] ?? [])) {
-            return $this->methodBodyCache[$file][$methodName];
+        $tokens = PhpToken::tokenize('<?php ' . $argText . ';');
+        $count = count($tokens);
+        $depth = 0;
+        $parts = [''];
+        // skip the opening <?php token; PhpToken includes it as element 0.
+        foreach ($tokens as $idx => $t) {
+            if ($idx === 0 && $t->id === T_OPEN_TAG) continue;
+            $text = $t->text;
+            if ($text === ';') continue;
+            if ($text === '(' || $text === '[' || $text === '{') $depth++;
+            elseif ($text === ')' || $text === ']' || $text === '}') $depth--;
+            elseif ($text === ',' && $depth === 0) {
+                $parts[] = '';
+                continue;
+            }
+            $parts[count($parts) - 1] .= $text;
         }
-        $body = $this->findMethodBody($file, $methodName);
-        $this->methodBodyCache[$file][$methodName] = $body;
-        return $body;
+        return $parts;
     }
 
-    private function findMethodBody(string $file, string $methodName): ?string
+    /**
+     * Resolve a ValueMap::create's options + default into a flat array of
+     * PHP values. Tries inline-literal eval first; for `$this->propName`
+     * options falls back to reflecting the file's class and reading the
+     * property default — that's where "the array may live somewhere else"
+     * (parent class, trait) is handled by PHP itself.
+     *
+     * @return array<int, array{__expr:string}|mixed>
+     */
+    private function resolveValueMap(string $optsExpr, string $defaultExpr, string $file): array
     {
-        $tokens = PhpToken::tokenize(@file_get_contents($file) ?: '');
-        $count = count($tokens);
-        for ($i = 0; $i < $count; $i++) {
-            if ($tokens[$i]->id !== T_FUNCTION) continue;
-            $j = $this->skipTrivia($tokens, $i + 1);
-            if ($j === null || $tokens[$j]->id !== T_STRING) continue;
-            if ($tokens[$j]->text !== $methodName) continue;
-            // Walk past the parameter list ()
-            $k = $this->skipTrivia($tokens, $j + 1);
-            if ($k === null || $tokens[$k]->text !== '(') continue;
-            $depth = 0;
-            for (; $k < $count; $k++) {
-                $t = $tokens[$k]->text;
-                if ($t === '(') $depth++;
-                elseif ($t === ')') {
-                    $depth--;
-                    if ($depth === 0) { $k++; break; }
-                }
+        $opts    = $this->resolveExpr($optsExpr, $file);
+        $default = $this->resolveExpr($defaultExpr, $file);
+
+        $values = [];
+        if (is_array($opts)) {
+            foreach ($opts as $v) {
+                $values[] = $v;
             }
-            // Skip return-type (no braces), find the opening { of the body.
-            while ($k < $count && $tokens[$k]->text !== '{') $k++;
-            if ($k >= $count) return null;
-            // Capture body text between matching braces.
-            $depth = 0;
-            $body = '';
-            for (; $k < $count; $k++) {
-                $t = $tokens[$k]->text;
-                if ($t === '{') {
-                    $depth++;
-                    if ($depth === 1) continue; // skip outermost {
-                } elseif ($t === '}') {
-                    $depth--;
-                    if ($depth === 0) return $body;
-                }
-                $body .= $t;
+        }
+        if ($default !== null || array_key_exists(0, [$default])) {
+            $values[] = $default;
+        }
+        // Drop nulls (failed resolutions).
+        return array_values(array_filter($values, static fn($v) => $v !== null));
+    }
+
+    /**
+     * Best-effort PHP value resolution.
+     *
+     *   1. If the expression is `$this->propName` (no further chain),
+     *      reflect the containing class and return the property's default.
+     *      This is where the property can live in a parent class / trait —
+     *      ReflectionClass::getDefaultProperties() walks the hierarchy.
+     *
+     *   2. Otherwise eval the expression directly. Works for any literal
+     *      that doesn't need a runtime $this/$var context: inline arrays,
+     *      Color::red(500), enum cases, etc.
+     *
+     * Each successful inline literal is wrapped as ['__expr' => '<source>']
+     * so caller can keep readable expressions; reflected values are returned
+     * as raw PHP values (they'll be looked up via $this->valueMapPool[N]).
+     */
+    private function resolveExpr(string $expr, string $file): mixed
+    {
+        $expr = trim($expr);
+
+        if (preg_match('/^\$this->(\w+)$/', $expr, $m)) {
+            $className = $this->findClassNameInFile($file);
+            if ($className !== null && class_exists($className)) {
+                try {
+                    $defaults = (new \ReflectionClass($className))->getDefaultProperties();
+                    return $defaults[$m[1]] ?? null;
+                } catch (Throwable) {}
             }
             return null;
         }
+
+        // Inline expression — eval it. If it's a literal array, we want to
+        // preserve readable source expressions for each value so synthesized
+        // eval'd code mentions e.g. Color::blue(600), not $pool[12].
+        try {
+            $value = null;
+            @eval("\$value = $expr;");
+            // For arrays whose elements are written as readable expressions,
+            // re-parse the source and pair element values with element source.
+            if (is_array($value) && str_starts_with($expr, '[')) {
+                return $this->arrayWithSourceExprs($value, $expr);
+            }
+            if (is_array($value)) {
+                // array(...) form or other — fall back to raw values.
+                return $value;
+            }
+            return $value;
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
+    /**
+     * For an inline literal `[k => v, k => v, …]` whose eval produced $value,
+     * walk the source again and tag each element value with its source text.
+     * The CssExtractor uses that source in the synthesized eval body so the
+     * resulting CSS rules are emitted from the user's original expressions.
+     *
+     * @return array<int|string, array{__expr:string}>
+     */
+    private function arrayWithSourceExprs(array $value, string $arrayExpr): array
+    {
+        $tokens = PhpToken::tokenize('<?php ' . $arrayExpr . ';');
+        $count = count($tokens);
+        // Find the outermost [ ... ]
+        $start = null;
+        for ($i = 0; $i < $count; $i++) {
+            if ($tokens[$i]->text === '[') { $start = $i; break; }
+        }
+        if ($start === null) return $value;
+
+        $depth = 0;
+        $entries = []; // raw source per top-level entry
+        $cur = '';
+        for ($i = $start; $i < $count; $i++) {
+            $t = $tokens[$i]->text;
+            if ($t === '[') {
+                $depth++;
+                if ($depth === 1) continue;
+            } elseif ($t === ']') {
+                $depth--;
+                if ($depth === 0) {
+                    if (trim($cur) !== '') $entries[] = trim($cur);
+                    break;
+                }
+            }
+            if ($depth === 1 && $t === ',') {
+                if (trim($cur) !== '') $entries[] = trim($cur);
+                $cur = '';
+                continue;
+            }
+            if ($depth > 0) $cur .= $t;
+        }
+
+        // Extract just the value side of each `key => value`.
+        $valueExprs = [];
+        foreach ($entries as $entry) {
+            // Find the top-level => (account for nested parens/brackets).
+            $arrowPos = $this->findTopLevelArrow($entry);
+            $valueExprs[] = $arrowPos === null ? $entry : trim(substr($entry, $arrowPos + 2));
+        }
+
+        // Pair each $value with its source expression. If counts don't match
+        // (e.g. spread operators), fall back to raw values for the misaligned ones.
+        $valueKeys = array_keys($value);
+        $out = [];
+        $i = 0;
+        foreach ($valueKeys as $k) {
+            if (isset($valueExprs[$i])) {
+                $out[$k] = ['__expr' => $valueExprs[$i]];
+            } else {
+                $out[$k] = $value[$k];
+            }
+            $i++;
+        }
+        return $out;
+    }
+
+    private function findTopLevelArrow(string $s): ?int
+    {
+        $depth = 0;
+        $len = strlen($s);
+        for ($i = 0; $i < $len - 1; $i++) {
+            $c = $s[$i];
+            if ($c === '(' || $c === '[' || $c === '{') $depth++;
+            elseif ($c === ')' || $c === ']' || $c === '}') $depth--;
+            elseif ($depth === 0 && $c === '=' && ($s[$i + 1] ?? '') === '>') return $i;
+        }
         return null;
+    }
+
+    /**
+     * Walk the file tokens once to find `namespace Foo\Bar;` and the first
+     * `class Name` declaration; return the FQCN or null. Cached per file.
+     */
+    private function findClassNameInFile(string $file): ?string
+    {
+        static $cache = [];
+        if (array_key_exists($file, $cache)) return $cache[$file];
+
+        $tokens = PhpToken::tokenize(@file_get_contents($file) ?: '');
+        $count = count($tokens);
+        $namespace = '';
+        for ($i = 0; $i < $count; $i++) {
+            $t = $tokens[$i];
+            if ($t->id === T_NAMESPACE) {
+                $j = $i + 1;
+                $namespace = '';
+                while ($j < $count && $tokens[$j]->text !== ';' && $tokens[$j]->text !== '{') {
+                    if ($tokens[$j]->id === T_STRING || $tokens[$j]->id === T_NAME_QUALIFIED || $tokens[$j]->id === T_NS_SEPARATOR) {
+                        $namespace .= $tokens[$j]->text;
+                    }
+                    $j++;
+                }
+                continue;
+            }
+            if ($t->id === T_CLASS) {
+                $j = $this->skipTrivia($tokens, $i + 1);
+                if ($j !== null && $tokens[$j]->id === T_STRING) {
+                    $name = $tokens[$j]->text;
+                    return $cache[$file] = $namespace !== '' ? "$namespace\\$name" : $name;
+                }
+            }
+        }
+        return $cache[$file] = null;
     }
 
     private function recordFailure(string $file, int $line, string $method, string $argText, string $reason): void
