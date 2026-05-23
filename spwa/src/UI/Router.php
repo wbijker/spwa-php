@@ -86,10 +86,80 @@ class Router extends Component
 (function () {
     if (window.__spwaRouterAttached) return;
     window.__spwaRouterAttached = true;
+
+    // We manage scroll ourselves so the browser doesn't fight us on back/forward.
+    if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
+    }
+
+    var scrollPositions = {};
+    var currentKey = location.pathname + location.search;
+
+    function keyOf() { return location.pathname + location.search; }
+
+    // Continuously snapshot scrollY for the active URL. By keeping this fresh,
+    // popstate (which fires AFTER location has already changed) can still save
+    // the correct position under the OLD key — currentKey hasn't moved yet.
+    var pendingFrame = false;
+    window.addEventListener('scroll', function () {
+        if (pendingFrame) return;
+        pendingFrame = true;
+        requestAnimationFrame(function () {
+            pendingFrame = false;
+            scrollPositions[currentKey] = window.scrollY;
+        });
+    }, { passive: true });
+
+    // Restore on a rAF loop — the new DOM may not be tall enough yet when
+    // navigation fires (patches apply after pushState, asynchronously after
+    // popstate). Bail when scrollY matches target or we've waited long enough.
+    function restoreFor(key) {
+        var target = scrollPositions[key] || 0;
+        var attempts = 0;
+        function step() {
+            var maxScroll = Math.max(0,
+                document.documentElement.scrollHeight - window.innerHeight);
+            var clamped = Math.min(target, maxScroll);
+            window.scrollTo(0, clamped);
+            attempts++;
+            if (attempts < 30 && window.scrollY < target && maxScroll < target) {
+                requestAnimationFrame(step);
+            }
+        }
+        requestAnimationFrame(step);
+    }
+
+    // pushState changes location synchronously. Save for OLD key first, then
+    // flip currentKey and queue a restore for the NEW key once patches land.
+    var origPush = history.pushState;
+    history.pushState = function () {
+        scrollPositions[currentKey] = window.scrollY;
+        var ret = origPush.apply(this, arguments);
+        var newKey = keyOf();
+        if (newKey !== currentKey) {
+            currentKey = newKey;
+            restoreFor(newKey);
+        }
+        return ret;
+    };
+
+    // replaceState shouldn't be treated as navigation — just keep currentKey
+    // in sync so subsequent scroll events save under the right URL.
+    var origReplace = history.replaceState;
+    history.replaceState = function () {
+        var ret = origReplace.apply(this, arguments);
+        currentKey = keyOf();
+        return ret;
+    };
+
     window.addEventListener('popstate', function () {
+        // location has already changed; currentKey is still the OLD URL.
+        scrollPositions[currentKey] = window.scrollY;
+        currentKey = keyOf();
         if (window.SPWA && typeof SPWA.refresh === 'function') {
             SPWA.refresh();
         }
+        restoreFor(currentKey);
     });
 })();
 JS);
