@@ -36,8 +36,8 @@ class Counter extends Component
             ->rounded(Unit::rem(0.5))
             ->content(
                 UI::button('-')
-                    ->paddingVertical(Unit::rem(0.5))
-                    ->paddingHorizontal(Unit::rem(1))
+                    ->paddingY(Unit::rem(0.5))
+                    ->paddingX(Unit::rem(1))
                     ->background(Color::red(500))
                     ->color(Color::white())
                     ->rounded(Unit::rem(0.25))
@@ -46,14 +46,14 @@ class Counter extends Component
                     }),
 
                 UI::text((string)$this->value)
-                    ->paddingVertical(Unit::rem(0.5))
-                    ->paddingHorizontal(Unit::rem(1))
+                    ->paddingY(Unit::rem(0.5))
+                    ->paddingX(Unit::rem(1))
                     ->fontSize(FontSize::TwoXL)
                     ->semibold(),
 
                 UI::button('+')
-                    ->paddingVertical(Unit::rem(0.5))
-                    ->paddingHorizontal(Unit::rem(1))
+                    ->paddingY(Unit::rem(0.5))
+                    ->paddingX(Unit::rem(1))
                     ->background(Color::green(500))
                     ->color(Color::white())
                     ->rounded(Unit::rem(0.25))

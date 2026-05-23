@@ -711,11 +711,60 @@ class UIElement extends Node
     // Border
     // ============================================================
 
-    public function bordered(int $width = 1, ?Pseudo $pseudo = null): static
-    {
+    /**
+     * Border-width setter — single int = all 4 sides (CSS `border-width`);
+     * named args set per-axis / per-side widths in one call.
+     *
+     *   ->bordered()                                        // 1px all sides
+     *   ->bordered(2)                                        // 2px all sides
+     *   ->bordered(2, Pseudo::md())                          // 2px all, at md
+     *   ->bordered(x: 1, y: 2)                               // l+r = 1, t+b = 2
+     *   ->bordered(top: 1, bottom: 4)                        // per-side
+     */
+    public function bordered(
+        ?int $width = null,
+        ?Pseudo $pseudo = null,
+        ?int $x = null,
+        ?int $y = null,
+        ?int $top = null,
+        ?int $right = null,
+        ?int $bottom = null,
+        ?int $left = null,
+    ): static {
         $prefix = $pseudo?->prefix() ?? '';
-        $class = $width === 1 ? 'border' : 'border-' . $width;
-        $this->addStyle($prefix . $class, ['border-width' => $width . 'px', 'border-style' => 'solid']);
+
+        // Treat zero positional args as "1px all sides" (the original default).
+        $allDefault = $width === null
+            && $x === null && $y === null
+            && $top === null && $right === null && $bottom === null && $left === null;
+        if ($allDefault) {
+            $width = 1;
+        }
+
+        if ($width !== null) {
+            $class = $width === 1 ? 'border' : 'border-' . $width;
+            $this->addStyle($prefix . $class, ['border-width' => $width . 'px', 'border-style' => 'solid']);
+        }
+        if ($x !== null) {
+            $cls = $x === 1 ? 'border-x' : 'border-x-' . $x;
+            $this->addStyle($prefix . $cls, ['border-left-width' => $x . 'px', 'border-right-width' => $x . 'px', 'border-left-style' => 'solid', 'border-right-style' => 'solid']);
+        }
+        if ($y !== null) {
+            $cls = $y === 1 ? 'border-y' : 'border-y-' . $y;
+            $this->addStyle($prefix . $cls, ['border-top-width' => $y . 'px', 'border-bottom-width' => $y . 'px', 'border-top-style' => 'solid', 'border-bottom-style' => 'solid']);
+        }
+        if ($top !== null) {
+            $this->addStyle($prefix . 'border-t-' . $top, ['border-top-width' => $top . 'px', 'border-top-style' => 'solid']);
+        }
+        if ($right !== null) {
+            $this->addStyle($prefix . 'border-r-' . $right, ['border-right-width' => $right . 'px', 'border-right-style' => 'solid']);
+        }
+        if ($bottom !== null) {
+            $this->addStyle($prefix . 'border-b-' . $bottom, ['border-bottom-width' => $bottom . 'px', 'border-bottom-style' => 'solid']);
+        }
+        if ($left !== null) {
+            $this->addStyle($prefix . 'border-l-' . $left, ['border-left-width' => $left . 'px', 'border-left-style' => 'solid']);
+        }
         return $this;
     }
 
@@ -831,14 +880,14 @@ class UIElement extends Node
         return $this;
     }
 
-    public function extendHorizontal(?Pseudo $pseudo = null): static
+    public function extendX(?Pseudo $pseudo = null): static
     {
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . 'w-full', ['width' => '100%']);
         return $this;
     }
 
-    public function extendVertical(?Pseudo $pseudo = null): static
+    public function extendY(?Pseudo $pseudo = null): static
     {
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . 'h-full', ['height' => '100%']);
@@ -857,14 +906,58 @@ class UIElement extends Node
     // Spacing
     // ============================================================
 
-    public function padding(Unit $value, ?Pseudo $pseudo = null): static
-    {
+    /**
+     * Padding setter — accepts a single "all sides" Unit positional arg (the
+     * original form) and/or per-axis / per-side named args. One call can set
+     * multiple sides at one breakpoint, e.g.:
+     *
+     *   ->padding(Unit::rem(1))                                  // all sides
+     *   ->padding(Unit::rem(1), Pseudo::md())                    // md: all sides
+     *   ->padding(x: Unit::rem(1), y: Unit::rem(0.75))           // px + py in one call
+     *   ->padding(x: Unit::rem(1.5), y: Unit::rem(1), pseudo: Pseudo::md())
+     *   ->padding(top: Unit::rem(2), right: Unit::rem(1))        // per-side
+     *
+     * Mix and match — every non-null axis emits its own utility class. The
+     * Pseudo (named `pseudo:`) applies to every emitted class in this call.
+     */
+    public function padding(
+        ?Unit $value = null,
+        ?Pseudo $pseudo = null,
+        ?Unit $x = null,
+        ?Unit $y = null,
+        ?Unit $top = null,
+        ?Unit $right = null,
+        ?Unit $bottom = null,
+        ?Unit $left = null,
+    ): static {
         $prefix = $pseudo?->prefix() ?? '';
-        $this->addStyle($prefix . $value->withContext('p'), ['padding' => $value->getCssValue()]);
+        if ($value !== null) {
+            $this->addStyle($prefix . $value->withContext('p'), ['padding' => $value->getCssValue()]);
+        }
+        if ($x !== null) {
+            $css = $x->getCssValue();
+            $this->addStyle($prefix . $x->withContext('px'), ['padding-left' => $css, 'padding-right' => $css]);
+        }
+        if ($y !== null) {
+            $css = $y->getCssValue();
+            $this->addStyle($prefix . $y->withContext('py'), ['padding-top' => $css, 'padding-bottom' => $css]);
+        }
+        if ($top !== null) {
+            $this->addStyle($prefix . $top->withContext('pt'), ['padding-top' => $top->getCssValue()]);
+        }
+        if ($right !== null) {
+            $this->addStyle($prefix . $right->withContext('pr'), ['padding-right' => $right->getCssValue()]);
+        }
+        if ($bottom !== null) {
+            $this->addStyle($prefix . $bottom->withContext('pb'), ['padding-bottom' => $bottom->getCssValue()]);
+        }
+        if ($left !== null) {
+            $this->addStyle($prefix . $left->withContext('pl'), ['padding-left' => $left->getCssValue()]);
+        }
         return $this;
     }
 
-    public function paddingHorizontal(Unit $value, ?Pseudo $pseudo = null): static
+    public function paddingX(Unit $value, ?Pseudo $pseudo = null): static
     {
         $prefix = $pseudo?->prefix() ?? '';
         $css = $value->getCssValue();
@@ -872,7 +965,7 @@ class UIElement extends Node
         return $this;
     }
 
-    public function paddingVertical(Unit $value, ?Pseudo $pseudo = null): static
+    public function paddingY(Unit $value, ?Pseudo $pseudo = null): static
     {
         $prefix = $pseudo?->prefix() ?? '';
         $css = $value->getCssValue();
@@ -887,14 +980,48 @@ class UIElement extends Node
         return $this;
     }
 
-    public function margin(Unit $value, ?Pseudo $pseudo = null): static
-    {
+    /**
+     * Margin setter — same multi-axis shape as padding(). See padding() for
+     * usage examples; substitute m/mx/my/mt/mr/mb/ml for the utility prefixes.
+     */
+    public function margin(
+        ?Unit $value = null,
+        ?Pseudo $pseudo = null,
+        ?Unit $x = null,
+        ?Unit $y = null,
+        ?Unit $top = null,
+        ?Unit $right = null,
+        ?Unit $bottom = null,
+        ?Unit $left = null,
+    ): static {
         $prefix = $pseudo?->prefix() ?? '';
-        $this->addStyle($prefix . $value->withContext('m'), ['margin' => $value->getCssValue()]);
+        if ($value !== null) {
+            $this->addStyle($prefix . $value->withContext('m'), ['margin' => $value->getCssValue()]);
+        }
+        if ($x !== null) {
+            $css = $x->getCssValue();
+            $this->addStyle($prefix . $x->withContext('mx'), ['margin-left' => $css, 'margin-right' => $css]);
+        }
+        if ($y !== null) {
+            $css = $y->getCssValue();
+            $this->addStyle($prefix . $y->withContext('my'), ['margin-top' => $css, 'margin-bottom' => $css]);
+        }
+        if ($top !== null) {
+            $this->addStyle($prefix . $top->withContext('mt'), ['margin-top' => $top->getCssValue()]);
+        }
+        if ($right !== null) {
+            $this->addStyle($prefix . $right->withContext('mr'), ['margin-right' => $right->getCssValue()]);
+        }
+        if ($bottom !== null) {
+            $this->addStyle($prefix . $bottom->withContext('mb'), ['margin-bottom' => $bottom->getCssValue()]);
+        }
+        if ($left !== null) {
+            $this->addStyle($prefix . $left->withContext('ml'), ['margin-left' => $left->getCssValue()]);
+        }
         return $this;
     }
 
-    public function marginHorizontal(Unit $value, ?Pseudo $pseudo = null): static
+    public function marginX(Unit $value, ?Pseudo $pseudo = null): static
     {
         $prefix = $pseudo?->prefix() ?? '';
         $css = $value->getCssValue();
@@ -902,7 +1029,7 @@ class UIElement extends Node
         return $this;
     }
 
-    public function marginVertical(Unit $value, ?Pseudo $pseudo = null): static
+    public function marginY(Unit $value, ?Pseudo $pseudo = null): static
     {
         $prefix = $pseudo?->prefix() ?? '';
         $css = $value->getCssValue();
@@ -914,13 +1041,70 @@ class UIElement extends Node
     // Corners
     // ============================================================
 
-    public function rounded(?Unit $value = null, ?Pseudo $pseudo = null): static
-    {
+    /**
+     * Border-radius setter — single positional Unit = all 4 corners; named
+     * args set per-side or per-corner radii in one call.
+     *
+     *   ->rounded()                                            // 0.25rem all
+     *   ->rounded(Unit::rem(0.5))                              // all corners
+     *   ->rounded(Unit::rem(0.5), Pseudo::md())                // md: all
+     *   ->rounded(top: Unit::rem(1))                           // tl + tr
+     *   ->rounded(top: Unit::rem(1), bottom: Unit::none())     // per-side
+     *   ->rounded(topLeft: Unit::rem(2))                       // per-corner
+     */
+    public function rounded(
+        ?Unit $value = null,
+        ?Pseudo $pseudo = null,
+        ?Unit $top = null,
+        ?Unit $right = null,
+        ?Unit $bottom = null,
+        ?Unit $left = null,
+        ?Unit $topLeft = null,
+        ?Unit $topRight = null,
+        ?Unit $bottomLeft = null,
+        ?Unit $bottomRight = null,
+    ): static {
         $prefix = $pseudo?->prefix() ?? '';
-        if ($value === null) {
+
+        // Bare ->rounded() retains its original "0.25rem all" shorthand.
+        $allDefault = $value === null
+            && $top === null && $right === null && $bottom === null && $left === null
+            && $topLeft === null && $topRight === null && $bottomLeft === null && $bottomRight === null;
+        if ($allDefault) {
             $this->addStyle($prefix . 'rounded', ['border-radius' => '0.25rem']);
-        } else {
+            return $this;
+        }
+
+        if ($value !== null) {
             $this->addStyle($prefix . $value->withContext('rounded'), ['border-radius' => $value->getCssValue()]);
+        }
+        if ($top !== null) {
+            $css = $top->getCssValue();
+            $this->addStyle($prefix . $top->withContext('rounded-t'), ['border-top-left-radius' => $css, 'border-top-right-radius' => $css]);
+        }
+        if ($right !== null) {
+            $css = $right->getCssValue();
+            $this->addStyle($prefix . $right->withContext('rounded-r'), ['border-top-right-radius' => $css, 'border-bottom-right-radius' => $css]);
+        }
+        if ($bottom !== null) {
+            $css = $bottom->getCssValue();
+            $this->addStyle($prefix . $bottom->withContext('rounded-b'), ['border-bottom-left-radius' => $css, 'border-bottom-right-radius' => $css]);
+        }
+        if ($left !== null) {
+            $css = $left->getCssValue();
+            $this->addStyle($prefix . $left->withContext('rounded-l'), ['border-top-left-radius' => $css, 'border-bottom-left-radius' => $css]);
+        }
+        if ($topLeft !== null) {
+            $this->addStyle($prefix . $topLeft->withContext('rounded-tl'), ['border-top-left-radius' => $topLeft->getCssValue()]);
+        }
+        if ($topRight !== null) {
+            $this->addStyle($prefix . $topRight->withContext('rounded-tr'), ['border-top-right-radius' => $topRight->getCssValue()]);
+        }
+        if ($bottomLeft !== null) {
+            $this->addStyle($prefix . $bottomLeft->withContext('rounded-bl'), ['border-bottom-left-radius' => $bottomLeft->getCssValue()]);
+        }
+        if ($bottomRight !== null) {
+            $this->addStyle($prefix . $bottomRight->withContext('rounded-br'), ['border-bottom-right-radius' => $bottomRight->getCssValue()]);
         }
         return $this;
     }
@@ -1003,28 +1187,28 @@ class UIElement extends Node
      * outermost page container to prevent any descendant from causing
      * horizontal page scroll.
      */
-    public function clipHorizontal(?Pseudo $pseudo = null): static
+    public function clipX(?Pseudo $pseudo = null): static
     {
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . 'overflow-x-clip', ['overflow-x' => 'clip']);
         return $this;
     }
 
-    public function clipVertical(?Pseudo $pseudo = null): static
+    public function clipY(?Pseudo $pseudo = null): static
     {
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . 'overflow-y-clip', ['overflow-y' => 'clip']);
         return $this;
     }
 
-    public function scrollableHorizontal(?Pseudo $pseudo = null): static
+    public function scrollableX(?Pseudo $pseudo = null): static
     {
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . 'overflow-x-auto', ['overflow-x' => 'auto']);
         return $this;
     }
 
-    public function scrollableVertical(?Pseudo $pseudo = null): static
+    public function scrollableY(?Pseudo $pseudo = null): static
     {
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . 'overflow-y-auto', ['overflow-y' => 'auto']);
@@ -1100,14 +1284,14 @@ class UIElement extends Node
         return $this;
     }
 
-    public function flipHorizontal(?Pseudo $pseudo = null): static
+    public function flipX(?Pseudo $pseudo = null): static
     {
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . '-scale-x-100', ['transform' => 'scaleX(-1)']);
         return $this;
     }
 
-    public function flipVertical(?Pseudo $pseudo = null): static
+    public function flipY(?Pseudo $pseudo = null): static
     {
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . '-scale-y-100', ['transform' => 'scaleY(-1)']);

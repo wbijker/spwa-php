@@ -28,7 +28,7 @@ class SampleUI
     {
         return UI::column()
             ->alignCenter()                                          // items-center
-            ->alignHorizontal(Align::left(), Pseudo::md())           // md:items-start
+            ->alignX(Align::left(), Pseudo::md())           // md:items-start
             ->gap(Unit::large())                                     // gap-6
             ->gap(Unit::extraLarge(), Pseudo::md())                  // md:gap-8
             ->padding(Unit::value(7))                                // p-7
@@ -46,7 +46,7 @@ class SampleUI
                 // Album info
                 UI::column()
                     ->alignCenter()                                      // items-center
-                    ->alignHorizontal(Align::left(), Pseudo::md())       // md:items-start
+                    ->alignX(Align::left(), Pseudo::md())       // md:items-start
                     ->content(
                         // Title
                         UI::text("BrickPHP")

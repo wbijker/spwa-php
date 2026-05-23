@@ -330,7 +330,7 @@ class UI
     public static function divider(): Container
     {
         $divider = new Container();
-        $divider->extendHorizontal();
+        $divider->extendX();
         $divider->height(Unit::px(1));
         $divider->background(Color::gray(200));
         return $divider;
@@ -356,7 +356,7 @@ class UI
             ->fontSize(FontSize::ExtraSmall)
             ->weight(FontWeight::Medium)
             ->padding(Unit::xs())
-            ->paddingHorizontal(Unit::small())
+            ->paddingX(Unit::small())
             ->roundedFull()
             ->background(Color::gray(100))
             ->color(Color::gray(800));
@@ -367,7 +367,7 @@ class UI
         return (new Text($text))
             ->fontSize(FontSize::Small)
             ->padding(Unit::small())
-            ->paddingHorizontal(Unit::medium())
+            ->paddingX(Unit::medium())
             ->roundedFull()
             ->background(Color::blue(500))
             ->color(Color::white());

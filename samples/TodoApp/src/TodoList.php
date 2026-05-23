@@ -43,7 +43,7 @@ class TodoList extends Component
                 // Analog clock
                 UI::row()
                     ->alignCenter()
-                    ->paddingVertical(Unit::rem(1.5))
+                    ->paddingY(Unit::rem(1.5))
                     ->content(new Clock()),
 
                 // Title
@@ -53,15 +53,15 @@ class TodoList extends Component
                     ->weight(FontWeight::Thin)
                     ->color(Color::red(700))
                     ->opacity(20)
-                    ->paddingVertical(Unit::rem(1)),
+                    ->paddingY(Unit::rem(1)),
 
                 // Current date/time, aligned to the right edge of the card
                 UI::row()
                     ->alignRight()
                     ->maxWidth(Unit::px(550))
                     ->width(Unit::full())
-                    ->marginHorizontal(Unit::auto())
-                    ->paddingVertical(Unit::rem(0.5))
+                    ->marginX(Unit::auto())
+                    ->paddingY(Unit::rem(0.5))
                     ->content(
                         UI::text(date('Y-m-d H:i:s'))
                             ->fontSize(FontSize::Small)
@@ -74,7 +74,7 @@ class TodoList extends Component
                     ->background(Color::gray(), Pseudo::hover()->active()->sm())
                     ->maxWidth(Unit::px(550))
                     ->width(Unit::full())
-                    ->marginHorizontal(Unit::auto())
+                    ->marginX(Unit::auto())
                     ->shadow(Shadow::Large)
                     ->content(
                         $this->buildInput($allCompleted),
@@ -192,8 +192,8 @@ class TodoList extends Component
             ->alignMiddle()
             ->alignBetween()
             ->background(Color::white())
-            ->paddingHorizontal(Unit::rem(1))
-            ->paddingVertical(Unit::rem(0.6))
+            ->paddingX(Unit::rem(1))
+            ->paddingY(Unit::rem(0.6))
             ->borderTop()
             ->borderColor(Color::neutral(200))
             ->fontSize(FontSize::Small)
@@ -237,7 +237,7 @@ class TodoList extends Component
             ->borderNone()
             ->background(Color::transparent())
             ->padding(Unit::rem(0.2))
-            ->paddingHorizontal(Unit::rem(0.45))
+            ->paddingX(Unit::rem(0.45))
             ->rounded(Unit::px(3))
             ->fontSize(FontSize::Small)
             ->color(Color::inherit())

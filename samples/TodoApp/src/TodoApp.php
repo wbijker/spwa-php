@@ -36,7 +36,7 @@ class TodoApp extends App
                 UI::text('Loading…')
                     ->background(Color::white())
                     ->padding(Unit::rem(0.75))
-                    ->paddingHorizontal(Unit::rem(1.25))
+                    ->paddingX(Unit::rem(1.25))
                     ->rounded(Unit::rem(0.5))
                     ->color(Color::gray(700))
                     ->fontSize(FontSize::Small)

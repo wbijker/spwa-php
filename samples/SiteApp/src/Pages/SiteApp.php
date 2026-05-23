@@ -44,7 +44,7 @@ class SiteApp extends Component
             ->content(
                 UI::column()
                     ->maxWidth(Unit::px(900))
-                    ->marginHorizontal(Unit::auto())
+                    ->marginX(Unit::auto())
                     ->gap(Unit::small())
                     ->alignCenter()
                     ->content(

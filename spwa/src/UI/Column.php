@@ -159,7 +159,7 @@ class Column extends UIElementContent
     /**
      * Horizontal alignment with responsive/pseudo support.
      */
-    public function alignHorizontal(Align $value, ?Pseudo $pseudo = null): static
+    public function alignX(Align $value, ?Pseudo $pseudo = null): static
     {
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('items'), ['align-items' => $value->getCssValue()]);

@@ -171,33 +171,7 @@ class Textarea extends UIElementContent
         return $this;
     }
 
-    /**
-     * Disable resizing.
-     */
-    public function noResize(): static
-    {
-        $this->addStyle('resize-none', ['resize' => 'none']);
-        return $this;
-    }
-
-    /**
-     * Allow vertical resizing only.
-     */
-    public function resizeVertical(): static
-    {
-        $this->addStyle('resize-y', ['resize' => 'vertical']);
-        return $this;
-    }
-
-    /**
-     * Allow horizontal resizing only.
-     */
-    public function resizeHorizontal(): static
-    {
-        $this->addStyle('resize-x', ['resize' => 'horizontal']);
-        return $this;
-    }
-
+    // noResize / resizeX / resizeY now live on UIElement (they were duplicates here).
     protected function applyAttributes(): void
     {
         $this->children = [];

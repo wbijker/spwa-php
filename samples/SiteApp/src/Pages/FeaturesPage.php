@@ -19,7 +19,7 @@ class FeaturesPage extends Component
     {
         return UI::column()
             ->maxWidth(Unit::px(900))
-            ->marginHorizontal(Unit::auto())
+            ->marginX(Unit::auto())
             ->padding(Unit::extraLarge())
             ->gap(Unit::extraLarge())
             ->content(
@@ -160,7 +160,7 @@ PHP
             $items[] = UI::row()
                 ->gap(Unit::small())
                 ->alignTop()
-                ->paddingVertical(Unit::xs())
+                ->paddingY(Unit::xs())
                 ->content(
                     UI::text('•')
                         ->color(Color::indigo(500))
@@ -266,7 +266,7 @@ UI::column()
     ->padding(Unit::large())      // 1.5rem
     ->gap(Unit::medium())         // 1rem
     ->minHeight(Unit::screen())   // 100vh
-    ->marginHorizontal(Unit::auto())
+    ->marginX(Unit::auto())
 
 // Fractional:
 ->width(Unit::half())            // 50%

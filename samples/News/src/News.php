@@ -39,7 +39,7 @@ class News extends Component
         return UI::column()
             ->minHeight(Unit::vh(100))
             ->width(Unit::full())
-            ->clipHorizontal()
+            ->clipX()
             ->background(Color::gray(50))
             ->content(
                 $this->header(),
@@ -79,11 +79,9 @@ class News extends Component
                     ->gap(Unit::rem(0.75))
                     ->maxWidth(Unit::px(1200))
                     ->width(Unit::full())
-                    ->marginHorizontal(Unit::auto())
-                    ->paddingHorizontal(Unit::rem(1))
-                    ->paddingHorizontal(Unit::rem(1.5), Pseudo::md())
-                    ->paddingVertical(Unit::rem(0.75))
-                    ->paddingVertical(Unit::rem(1), Pseudo::md())
+                    ->marginX(Unit::auto())
+                    ->padding(x: Unit::rem(1),   y: Unit::rem(0.75))
+                    ->padding(x: Unit::rem(1.5), y: Unit::rem(1), pseudo: Pseudo::md())
                     ->content(
                         UI::row()
                             ->alignMiddle()
@@ -124,7 +122,7 @@ class News extends Component
             ->fontSize(FontSize::Small)
             ->weight(FontWeight::SemiBold)
             ->clickable()
-            ->paddingVertical(Unit::rem(0.25))
+            ->paddingY(Unit::rem(0.25))
             ->color(Color::red(600), Pseudo::hover());
 
         if ($active) {
@@ -150,11 +148,9 @@ class News extends Component
             ->direction(Direction::row(), Pseudo::lg())
             ->maxWidth(Unit::px(1200))
             ->width(Unit::full())
-            ->marginHorizontal(Unit::auto())
-            ->paddingHorizontal(Unit::rem(1))
-            ->paddingHorizontal(Unit::rem(1.5), Pseudo::md())
-            ->paddingVertical(Unit::rem(1.25))
-            ->paddingVertical(Unit::rem(2), Pseudo::md())
+            ->marginX(Unit::auto())
+            ->padding(x: Unit::rem(1),   y: Unit::rem(1.25))
+            ->padding(x: Unit::rem(1.5), y: Unit::rem(2), pseudo: Pseudo::md())
             ->gap(Unit::rem(1.5))
             ->gap(Unit::rem(2), Pseudo::md())
             ->alignTop()
@@ -369,8 +365,7 @@ class News extends Component
             ->content(
                 UI::container()
                     ->background(Color::red(600))
-                    ->paddingHorizontal(Unit::rem(1))
-                    ->paddingVertical(Unit::rem(0.75))
+                    ->padding(x: Unit::rem(1), y: Unit::rem(0.75))
                     ->content(
                         UI::text('INDUSTRY NEWS')
                             ->fontSize(FontSize::Small)
@@ -384,8 +379,7 @@ class News extends Component
     private function industryNewsRow(IndustryNewsItem $item, bool $isLast): UIElement
     {
         $row = UI::column()
-            ->paddingHorizontal(Unit::rem(1))
-            ->paddingVertical(Unit::rem(0.75))
+            ->padding(x: Unit::rem(1), y: Unit::rem(0.75))
             ->gap(Unit::rem(0.25))
             ->clickable()
             ->background(Color::gray(50), Pseudo::hover())
@@ -415,10 +409,8 @@ class News extends Component
     {
         return UI::container()
             ->background(Color::gray(900))
-            ->paddingVertical(Unit::rem(2))
-            ->paddingVertical(Unit::rem(2.5), Pseudo::md())
-            ->paddingHorizontal(Unit::rem(1))
-            ->paddingHorizontal(Unit::rem(1.5), Pseudo::md())
+            ->padding(x: Unit::rem(1),   y: Unit::rem(2))
+            ->padding(x: Unit::rem(1.5), y: Unit::rem(2.5), pseudo: Pseudo::md())
             ->content(
                 // Stacks on small screens; row with space-between on md+.
                 UI::row()
@@ -426,7 +418,7 @@ class News extends Component
                     ->direction(Direction::row(), Pseudo::md())
                     ->maxWidth(Unit::px(1200))
                     ->width(Unit::full())
-                    ->marginHorizontal(Unit::auto())
+                    ->marginX(Unit::auto())
                     ->alignBetween()
                     ->alignMiddle()
                     ->gap(Unit::rem(1))
@@ -517,11 +509,9 @@ class News extends Component
         return UI::column()
             ->maxWidth(Unit::px(900))
             ->width(Unit::full())
-            ->marginHorizontal(Unit::auto())
-            ->paddingHorizontal(Unit::rem(1))
-            ->paddingHorizontal(Unit::rem(1.5), Pseudo::md())
-            ->paddingVertical(Unit::rem(1.25))
-            ->paddingVertical(Unit::rem(2), Pseudo::md())
+            ->marginX(Unit::auto())
+            ->padding(x: Unit::rem(1),   y: Unit::rem(1.25))
+            ->padding(x: Unit::rem(1.5), y: Unit::rem(2), pseudo: Pseudo::md())
             ->gap(Unit::rem(1.5))
             ->content(
                 $this->backLink(),

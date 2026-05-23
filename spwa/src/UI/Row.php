@@ -158,7 +158,7 @@ class Row extends UIElementContent
     /**
      * Vertical alignment with responsive/pseudo support.
      */
-    public function alignVertical(Align $value, ?Pseudo $pseudo = null): static
+    public function alignY(Align $value, ?Pseudo $pseudo = null): static
     {
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('items'), ['align-items' => $value->getCssValue()]);

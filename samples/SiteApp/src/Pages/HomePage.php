@@ -30,7 +30,7 @@ class HomePage extends Component
         return UI::column()
             ->background(Color::indigo(600))
             ->padding(Unit::extraLarge())
-            ->paddingVertical(Unit::px(80))
+            ->paddingY(Unit::px(80))
             ->alignCenter()
             ->gap(Unit::large())
             ->content(
@@ -52,7 +52,7 @@ class HomePage extends Component
                             ->color(Color::indigo(700))
                             ->borderNone()
                             ->padding(Unit::small())
-                            ->paddingHorizontal(Unit::large())
+                            ->paddingX(Unit::large())
                             ->rounded(Unit::roundedLg())
                             ->weight(FontWeight::SemiBold)
                             ->clickable()
@@ -63,7 +63,7 @@ class HomePage extends Component
                             ->bordered()
                             ->borderColor(Color::indigo(300))
                             ->padding(Unit::small())
-                            ->paddingHorizontal(Unit::large())
+                            ->paddingX(Unit::large())
                             ->rounded(Unit::roundedLg())
                             ->weight(FontWeight::SemiBold)
                             ->clickable()
@@ -76,7 +76,7 @@ class HomePage extends Component
     {
         return UI::column()
             ->maxWidth(Unit::px(900))
-            ->marginHorizontal(Unit::auto())
+            ->marginX(Unit::auto())
             ->padding(Unit::extraLarge())
             ->gap(Unit::large())
             ->content(
@@ -133,7 +133,7 @@ class HomePage extends Component
         return UI::column()
             ->background(Color::slate(900))
             ->padding(Unit::extraLarge())
-            ->paddingVertical(Unit::px(60))
+            ->paddingY(Unit::px(60))
             ->gap(Unit::large())
             ->alignCenter()
             ->content(

@@ -28,7 +28,7 @@ class ComponentsPage extends Component
     {
         return UI::column()
             ->maxWidth(Unit::px(900))
-            ->marginHorizontal(Unit::auto())
+            ->marginX(Unit::auto())
             ->padding(Unit::extraLarge())
             ->gap(Unit::extraLarge())
             ->content(
@@ -58,7 +58,7 @@ class ComponentsPage extends Component
                 ->background($isActive ? Color::indigo(500) : Color::white())
                 ->color($isActive ? Color::white() : Color::slate(600))
                 ->padding(Unit::small())
-                ->paddingHorizontal(Unit::medium())
+                ->paddingX(Unit::medium())
                 ->rounded(Unit::roundedLg())
                 ->weight($isActive ? FontWeight::SemiBold : FontWeight::Normal)
                 ->shadow($isActive ? Shadow::Small : Shadow::Medium)

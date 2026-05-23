@@ -24,7 +24,7 @@ class DefaultErrorPage extends Component
     {
         $card = UI::column()
             ->maxWidth(Unit::px(760))
-            ->extendHorizontal()
+            ->extendX()
             ->background(Color::slate(800))
             ->bordered(1)
             ->borderColor(Color::slate(700))
@@ -40,8 +40,8 @@ class DefaultErrorPage extends Component
                     ->uppercase()
                     ->color(Color::red(200))
                     ->background(Color::red(900))
-                    ->paddingHorizontal(Unit::px(10))
-                    ->paddingVertical(Unit::px(4))
+                    ->paddingX(Unit::px(10))
+                    ->paddingY(Unit::px(4))
                     ->rounded(Unit::px(6))
                     ->shrink(),
 
@@ -51,7 +51,7 @@ class DefaultErrorPage extends Component
                     ->color(Color::slate(100)),
 
                 UI::row()
-                    ->extendHorizontal()
+                    ->extendX()
                     ->padding(Unit::px(14))
                     ->background(Color::slate(900))
                     ->bordered(1)
@@ -70,7 +70,7 @@ class DefaultErrorPage extends Component
         if ($this->info->trace !== null && $this->info->trace !== '') {
             $card->content(
                 UI::pre($this->info->trace)
-                    ->extendHorizontal()
+                    ->extendX()
                     ->maxHeight(Unit::px(340))
                     ->scrollable()
                     ->padding(Unit::px(14))
@@ -86,7 +86,7 @@ class DefaultErrorPage extends Component
         return UI::row()
             ->center()
             ->minHeight(Unit::screen())
-            ->extendHorizontal()
+            ->extendX()
             ->background(Color::slate(900))
             ->padding(Unit::px(24))
             ->content($card);

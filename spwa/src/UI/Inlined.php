@@ -39,7 +39,7 @@ class Inlined extends UIElementContent
     /**
      * Set horizontal spacing.
      */
-    public function spacingHorizontal(Unit $value, ?Pseudo $pseudo = null): static
+    public function spacingX(Unit $value, ?Pseudo $pseudo = null): static
     {
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('gap-x'), ['column-gap' => $value->getCssValue()]);
@@ -49,7 +49,7 @@ class Inlined extends UIElementContent
     /**
      * Set vertical spacing.
      */
-    public function spacingVertical(Unit $value, ?Pseudo $pseudo = null): static
+    public function spacingY(Unit $value, ?Pseudo $pseudo = null): static
     {
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('gap-y'), ['row-gap' => $value->getCssValue()]);
@@ -153,7 +153,7 @@ class Inlined extends UIElementContent
     /**
      * Vertical alignment with responsive/pseudo support.
      */
-    public function alignVertical(Align $value, ?Pseudo $pseudo = null): static
+    public function alignY(Align $value, ?Pseudo $pseudo = null): static
     {
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('items'), ['align-items' => $value->getCssValue()]);

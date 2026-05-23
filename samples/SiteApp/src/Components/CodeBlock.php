@@ -25,8 +25,8 @@ class CodeBlock extends Component
             ->content(
                 UI::row()
                     ->background(Color::slate(700))
-                    ->paddingHorizontal(Unit::medium())
-                    ->paddingVertical(Unit::xs())
+                    ->paddingX(Unit::medium())
+                    ->paddingY(Unit::xs())
                     ->content(
                         UI::text($this->label)
                             ->fontSize(FontSize::ExtraSmall)

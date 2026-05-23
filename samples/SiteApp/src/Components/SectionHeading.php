@@ -34,7 +34,7 @@ class SectionHeading extends Component
 
         return UI::column()
             ->gap(Unit::small())
-            ->paddingVertical(Unit::large())
+            ->paddingY(Unit::large())
             ->content(...$nodes);
     }
 }

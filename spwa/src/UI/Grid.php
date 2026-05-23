@@ -62,7 +62,7 @@ class Grid extends UIElementContent
     /**
      * Set horizontal gap.
      */
-    public function gapHorizontal(Unit $value, ?Pseudo $pseudo = null): static
+    public function gapX(Unit $value, ?Pseudo $pseudo = null): static
     {
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('gap-x'), ['column-gap' => $value->getCssValue()]);
@@ -72,7 +72,7 @@ class Grid extends UIElementContent
     /**
      * Set vertical gap.
      */
-    public function gapVertical(Unit $value, ?Pseudo $pseudo = null): static
+    public function gapY(Unit $value, ?Pseudo $pseudo = null): static
     {
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('gap-y'), ['row-gap' => $value->getCssValue()]);

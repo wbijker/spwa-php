@@ -1,8 +1,8 @@
 <?php
 
-use Spwa\Samples\TodoApp;
 use Spwa\Spwa;
+use Samples\News\NewsApp;
 
 require 'vendor/autoload.php';
 
-Spwa::run(TodoApp::class);
+Spwa::run(NewsApp::class);

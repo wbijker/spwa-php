@@ -34,7 +34,7 @@ class FormsPage extends Component
     {
         return UI::column()
             ->maxWidth(Unit::px(900))
-            ->marginHorizontal(Unit::auto())
+            ->marginX(Unit::auto())
             ->padding(Unit::extraLarge())
             ->gap(Unit::extraLarge())
             ->content(
@@ -64,7 +64,7 @@ class FormsPage extends Component
                         ->text()
                         ->placeholder('Enter your name')
                         ->value($this->name)
-                        ->extendHorizontal()
+                        ->extendX()
                         ->padding(Unit::small())
                         ->bordered()
                         ->borderColor(Color::slate(300))
@@ -81,7 +81,7 @@ class FormsPage extends Component
                         ->email()
                         ->placeholder('you@example.com')
                         ->value($this->email)
-                        ->extendHorizontal()
+                        ->extendX()
                         ->padding(Unit::small())
                         ->bordered()
                         ->borderColor(Color::slate(300))
@@ -95,7 +95,7 @@ class FormsPage extends Component
                         ->weight(FontWeight::Medium)
                         ->color(Color::slate(700)),
                     UI::select()
-                        ->extendHorizontal()
+                        ->extendX()
                         ->padding(Unit::small())
                         ->bordered()
                         ->borderColor(Color::slate(300))
@@ -266,7 +266,7 @@ PHP
                 ->weight(FontWeight::Medium)
                 ->color(Color::slate(500)),
             $input
-                ->extendHorizontal()
+                ->extendX()
                 ->padding(Unit::small())
                 ->bordered()
                 ->borderColor(Color::slate(300))

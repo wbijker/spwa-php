@@ -34,7 +34,7 @@ class StatePage extends Component
     {
         return UI::column()
             ->maxWidth(Unit::px(900))
-            ->marginHorizontal(Unit::auto())
+            ->marginX(Unit::auto())
             ->padding(Unit::extraLarge())
             ->gap(Unit::extraLarge())
             ->content(
@@ -96,7 +96,7 @@ class StatePage extends Component
                         ->alignMiddle()
                         ->alignBetween()
                         ->padding(Unit::small())
-                        ->paddingHorizontal(Unit::medium())
+                        ->paddingX(Unit::medium())
                         ->background($todo['done'] ? Color::slate(50) : Color::white())
                         ->rounded(Unit::roundedLg())
                         ->bordered()

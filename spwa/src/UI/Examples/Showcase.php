@@ -91,7 +91,7 @@ class Showcase extends Component
             ->fontSize(FontSize::TwoXL)
             ->weight(FontWeight::SemiBold)
             ->color(Color::gray(800))
-            ->paddingVertical(Unit::medium());
+            ->paddingY(Unit::medium());
     }
 
     private static function colorPalette(): UIElement
@@ -203,7 +203,7 @@ class Showcase extends Component
                             ->background(Color::blue(600), Pseudo::hover())
                             ->color(Color::white())
                             ->padding(Unit::small())
-                            ->paddingHorizontal(Unit::large())
+                            ->paddingX(Unit::large())
                             ->rounded(Unit::rounded())
                             ->shadow(Shadow::Small),
 
@@ -213,7 +213,7 @@ class Showcase extends Component
                             ->background(Color::gray(300), Pseudo::hover())
                             ->color(Color::gray(800))
                             ->padding(Unit::small())
-                            ->paddingHorizontal(Unit::large())
+                            ->paddingX(Unit::large())
                             ->rounded(Unit::rounded()),
 
                         // Success button
@@ -222,7 +222,7 @@ class Showcase extends Component
                             ->background(Color::green(600), Pseudo::hover())
                             ->color(Color::white())
                             ->padding(Unit::small())
-                            ->paddingHorizontal(Unit::large())
+                            ->paddingX(Unit::large())
                             ->rounded(Unit::rounded()),
 
                         // Danger button
@@ -231,7 +231,7 @@ class Showcase extends Component
                             ->background(Color::red(600), Pseudo::hover())
                             ->color(Color::white())
                             ->padding(Unit::small())
-                            ->paddingHorizontal(Unit::large())
+                            ->paddingX(Unit::large())
                             ->rounded(Unit::rounded()),
 
                         // Outline button
@@ -240,7 +240,7 @@ class Showcase extends Component
                             ->background(Color::indigo(50), Pseudo::hover())
                             ->color(Color::indigo(600))
                             ->padding(Unit::small())
-                            ->paddingHorizontal(Unit::large())
+                            ->paddingX(Unit::large())
                             ->rounded(Unit::rounded()),
 
                         // Pill button
@@ -249,7 +249,7 @@ class Showcase extends Component
                             ->background(Color::purple(600), Pseudo::hover())
                             ->color(Color::white())
                             ->padding(Unit::small())
-                            ->paddingHorizontal(Unit::extraLarge())
+                            ->paddingX(Unit::extraLarge())
                             ->roundedFull()
                     ),
                 UI::row()
@@ -360,7 +360,7 @@ class Showcase extends Component
                                         UI::text("Active")
                                             ->fontSize(FontSize::ExtraSmall)
                                             ->padding(Unit::xs())
-                                            ->paddingHorizontal(Unit::small())
+                                            ->paddingX(Unit::small())
                                             ->roundedFull()
                                             ->background(Color::green(100))
                                             ->color(Color::green(800))
@@ -376,7 +376,7 @@ class Showcase extends Component
                                         UI::text("Active")
                                             ->fontSize(FontSize::ExtraSmall)
                                             ->padding(Unit::xs())
-                                            ->paddingHorizontal(Unit::small())
+                                            ->paddingX(Unit::small())
                                             ->roundedFull()
                                             ->background(Color::green(100))
                                             ->color(Color::green(800))
@@ -392,7 +392,7 @@ class Showcase extends Component
                                         UI::text("Inactive")
                                             ->fontSize(FontSize::ExtraSmall)
                                             ->padding(Unit::xs())
-                                            ->paddingHorizontal(Unit::small())
+                                            ->paddingX(Unit::small())
                                             ->roundedFull()
                                             ->background(Color::gray(100))
                                             ->color(Color::gray(600))
@@ -433,9 +433,9 @@ class Showcase extends Component
                     ->background(Color::white())
                     ->rounded(Unit::rounded())
                     ->content(
-                        UI::container()->height(Unit::value(8))->extendHorizontal()->background(Color::green(400))->rounded(Unit::rounded()),
-                        UI::container()->height(Unit::value(8))->extendHorizontal()->background(Color::green(500))->rounded(Unit::rounded()),
-                        UI::container()->height(Unit::value(8))->extendHorizontal()->background(Color::green(600))->rounded(Unit::rounded())
+                        UI::container()->height(Unit::value(8))->extendX()->background(Color::green(400))->rounded(Unit::rounded()),
+                        UI::container()->height(Unit::value(8))->extendX()->background(Color::green(500))->rounded(Unit::rounded()),
+                        UI::container()->height(Unit::value(8))->extendX()->background(Color::green(600))->rounded(Unit::rounded())
                     ),
 
                 // Grid layout
@@ -528,7 +528,7 @@ class Showcase extends Component
                                     ->background(Color::purple(600), Pseudo::focus())
                                     ->color(Color::white())
                                     ->padding(Unit::medium())
-                                    ->paddingHorizontal(Unit::large())
+                                    ->paddingX(Unit::large())
                                     ->rounded(Unit::rounded()),
                                 UI::text("Tab to focus")->fontSize(FontSize::Small)->color(Color::gray(600))
                             ),
@@ -544,7 +544,7 @@ class Showcase extends Component
                                     ->background(Color::orange(700), Pseudo::active())
                                     ->color(Color::white())
                                     ->padding(Unit::medium())
-                                    ->paddingHorizontal(Unit::large())
+                                    ->paddingX(Unit::large())
                                     ->rounded(Unit::rounded()),
                                 UI::text("Hover + Active")->fontSize(FontSize::Small)->color(Color::gray(600))
                             )
@@ -589,17 +589,17 @@ class Showcase extends Component
                     ->shadow(Shadow::Small)
                     ->content(
                         UI::container()
-                            ->extendHorizontal()
+                            ->extendX()
                             ->height(Unit::value(24))
                             ->background(Color::cyan(400))
                             ->rounded(Unit::rounded()),
                         UI::container()
-                            ->extendHorizontal()
+                            ->extendX()
                             ->height(Unit::value(24))
                             ->background(Color::cyan(500))
                             ->rounded(Unit::rounded()),
                         UI::container()
-                            ->extendHorizontal()
+                            ->extendX()
                             ->height(Unit::value(24))
                             ->background(Color::cyan(600))
                             ->rounded(Unit::rounded())

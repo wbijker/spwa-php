@@ -63,11 +63,11 @@ class Text extends UIElementContent
         if ($background !== null) $this->background($background);
         if ($opacity !== null) $this->opacity($opacity);
         if ($padding !== null) $this->padding($padding);
-        if ($paddingX !== null) $this->paddingHorizontal($paddingX);
-        if ($paddingY !== null) $this->paddingVertical($paddingY);
+        if ($paddingX !== null) $this->paddingX($paddingX);
+        if ($paddingY !== null) $this->paddingY($paddingY);
         if ($margin !== null) $this->margin($margin);
-        if ($marginX !== null) $this->marginHorizontal($marginX);
-        if ($marginY !== null) $this->marginVertical($marginY);
+        if ($marginX !== null) $this->marginX($marginX);
+        if ($marginY !== null) $this->marginY($marginY);
         return $this;
     }
 
