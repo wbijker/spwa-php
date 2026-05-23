@@ -29,6 +29,8 @@ class DebugPanel
 
     public function emit(): void
     {
+        return;
+        
         Console::clear();
         Console::group('%cSPWA Debug', 'color:#facc15;font-weight:bold;font-size:11px');
 

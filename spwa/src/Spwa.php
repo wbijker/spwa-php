@@ -411,7 +411,7 @@ JS;
                 (new TagDomNode('script'))->rawContent('window.__SPWA_HASH=' . json_encode($stateHash) . ';'),
                 (new TagDomNode('style'))->attr('id', 'spwa-styles')->rawContent($generator->toStyle()),
                 (new TagDomNode('style'))->attr('id', 'spwa-custom-styles')->rawContent($customCss),
-                (new TagDomNode('script'))->attr('src', 'spwa.js')->rawContent(''),
+                (new TagDomNode('script'))->attr('src', '/spwa.js')->rawContent(''),
                 (new TagDomNode('script'))->rawContent($customJs),
             );
 

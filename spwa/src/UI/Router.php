@@ -4,6 +4,7 @@ namespace Spwa\UI;
 
 use Spwa\Js\History;
 use Spwa\State\StateManager;
+use Spwa\VNode\App;
 use Spwa\VNode\Component;
 use Spwa\VNode\RenderPhase;
 use Spwa\VNode\VNode;
@@ -60,6 +61,38 @@ class Router extends Component
     public static function link(BaseRoute $route, bool $external = false): Link
     {
         return new Link($route, external: $external);
+    }
+
+    /**
+     * Register the Router's client-side assets on the given App. Call from
+     * your App::registerAssets() override:
+     *
+     *   protected function registerAssets(App $app): void {
+     *       Router::registerAssets($app);
+     *   }
+     *
+     * The emitted script wires the browser's History API to SPWA: any
+     * back/forward navigation fires SPWA.refresh(), which POSTs an empty
+     * event to the new URL. The server renders the route matched by the
+     * new REQUEST_URI and diff-patches the page in place.
+     *
+     * Only popstate is hooked — pushState navigations are already issued
+     * by the framework with patches in the same response, so they don't
+     * need an extra refresh.
+     */
+    public static function registerAssets(App $app): void
+    {
+        $app->addJs(<<<'JS'
+(function () {
+    if (window.__spwaRouterAttached) return;
+    window.__spwaRouterAttached = true;
+    window.addEventListener('popstate', function () {
+        if (window.SPWA && typeof SPWA.refresh === 'function') {
+            SPWA.refresh();
+        }
+    });
+})();
+JS);
     }
 
     /**
