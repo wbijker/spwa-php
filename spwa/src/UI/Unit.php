@@ -233,6 +233,29 @@ class Unit extends Property
         return $cache[$key] ??= new static('[' . $value . 'rem]');
     }
 
+    /**
+     * Viewport-height units. Use for full-screen layouts:
+     *   ->minHeight(Unit::vh(100))   // sticky-footer outer column
+     */
+    public static function vh(float $value): static
+    {
+        /** @var array<string, static> */
+        static $cache = [];
+        $key = (string) $value;
+        return $cache[$key] ??= new static('[' . $value . 'vh]');
+    }
+
+    /**
+     * Viewport-width units.
+     */
+    public static function vw(float $value): static
+    {
+        /** @var array<string, static> */
+        static $cache = [];
+        $key = (string) $value;
+        return $cache[$key] ??= new static('[' . $value . 'vw]');
+    }
+
     // ============================================================
     // Relative/percentage units
     // ============================================================

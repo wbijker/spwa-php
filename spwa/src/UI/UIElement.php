@@ -995,6 +995,34 @@ class UIElement extends Node
         return $this;
     }
 
+    public function clipHorizontal(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'overflow-x-hidden', ['overflow-x' => 'hidden']);
+        return $this;
+    }
+
+    public function clipVertical(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'overflow-y-hidden', ['overflow-y' => 'hidden']);
+        return $this;
+    }
+
+    public function scrollableHorizontal(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'overflow-x-auto', ['overflow-x' => 'auto']);
+        return $this;
+    }
+
+    public function scrollableVertical(?Pseudo $pseudo = null): static
+    {
+        $prefix = $pseudo?->prefix() ?? '';
+        $this->addStyle($prefix . 'overflow-y-auto', ['overflow-y' => 'auto']);
+        return $this;
+    }
+
     // ============================================================
     // Typography
     // ============================================================
