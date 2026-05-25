@@ -217,10 +217,10 @@ class Spwa
 
     /**
      * True when config.php has `development => true`. Gates the HMR
-     * long-poll (both the IIFE in spwa.js, via window.__SPWA_DEV, and
-     * the inlined script in error pages).
+     * long-poll (both the IIFE in spwa.js, via window.__SPWA_DEV, the
+     * inlined script in error pages, and the /hmr.php endpoint itself).
      */
-    private static function isDevelopment(): bool
+    public static function isDevelopment(): bool
     {
         return (bool)(self::config()['development'] ?? false);
     }
@@ -265,23 +265,31 @@ JS;
     }
 
     /**
-     * Cheap source fingerprint: newest mtime + file count under the project
-     * root, joined with a colon. Doubles as HMR change signal and /style.css
-     * cache-buster. Any edit bumps mtime; any add/remove bumps count. Walks
-     * .php (extracted into the stylesheet) and .css (preflight prepended to
-     * it) so either flavour of edit invalidates the cached sheet. Skips
-     * vendor/node_modules/.git.
+     * Cheap source fingerprint: newest mtime + file count, joined with a
+     * colon. Doubles as HMR change signal and /style.css cache-buster — an
+     * edit bumps mtime, an add/remove bumps count. Walks .php and .css under
+     * the directory named by config()['source']['dir'], pruning basenames
+     * listed in config()['source']['exclude'] (matches both directories and
+     * files).
      */
-    public static function sourceHash(string $root): string
+    public static function sourceHash(): string
     {
-        $skip = ['vendor' => 1, 'node_modules' => 1, '.git' => 1];
+        $src = self::config()['source'] ?? [];
+        $configDir = dirname($_SERVER['SCRIPT_FILENAME'] ?? '');
+        $root = $src['dir'] ?? '..';
+        if ($root === '' || $root[0] !== '/') {
+            $root = $configDir . '/' . $root;
+        }
+        $skip = array_flip($src['exclude'] ?? []);
+
         $dir = new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS);
         $filter = new \RecursiveCallbackFilterIterator($dir, function ($f) use ($skip) {
+            if (isset($skip[$f->getFilename()])) return false;
             if ($f->isFile()) {
                 $ext = $f->getExtension();
                 return $ext === 'php' || $ext === 'css';
             }
-            return !isset($skip[$f->getFilename()]);
+            return true;
         });
         $max = 0;
         $n = 0;
@@ -291,15 +299,6 @@ JS;
             $n++;
         }
         return $max . ':' . $n;
-    }
-
-    /**
-     * Project root (parent of www/) inferred from the entry script. Used to
-     * scope sourceHash() and config().
-     */
-    private static function projectRoot(): string
-    {
-        return dirname($_SERVER['SCRIPT_FILENAME'] ?? '', 2);
     }
 
     private static function handlePost(App $entry, StateManager $state): void
@@ -465,9 +464,9 @@ JS;
         $customJs = implode("\n", $entry->getCustomJs());
 
         $stateHash = self::computeStateHash($state);
-        // Same source-mtime hash that HMR watches; bumping it on any PHP
+        // Same source-mtime hash that HMR watches; bumping it on any PHP/CSS
         // change forces the browser to refetch /style.css.
-        $styleHash = self::sourceHash(self::projectRoot());
+        $styleHash = self::sourceHash();
         $t->mark('compute_hash');
 
         // Debug panel → inline script for initial render. Construct AFTER
