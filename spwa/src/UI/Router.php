@@ -153,13 +153,29 @@ class Router extends Component
         requestAnimationFrame(step);
     }
 
+    // Navigation triggered by Router::navigate() reaches the browser via
+    // history.pushState in `data.js`, which the runtime executes BEFORE
+    // applyPatches. Restoring scroll inside the pushState override would
+    // scroll the OLD DOM, then patches would land and the page would
+    // appear in the wrong position. Instead we stash the target key and
+    // restore in response to spwa:patched, fired by spwa.js after patches
+    // are applied.
+    var pendingRestoreKey = null;
+    window.addEventListener('spwa:patched', function () {
+        if (pendingRestoreKey !== null) {
+            var key = pendingRestoreKey;
+            pendingRestoreKey = null;
+            restoreFor(key);
+        }
+    });
+
     // Initial restore — reload/direct hit on a URL we've seen before should
     // land back at the saved scroll position. The rAF loop tolerates the
     // body still being parsed.
     restoreFor(currentKey);
 
     // pushState changes location synchronously. Save for OLD key first, then
-    // flip currentKey and queue a restore for the NEW key once patches land.
+    // flip currentKey and queue a deferred restore for the NEW key.
     var origPush = history.pushState;
     history.pushState = function () {
         scrollPositions[currentKey] = window.scrollY;
@@ -168,7 +184,7 @@ class Router extends Component
         var newKey = keyOf();
         if (newKey !== currentKey) {
             currentKey = newKey;
-            restoreFor(newKey);
+            pendingRestoreKey = newKey;
         }
         return ret;
     };
@@ -188,9 +204,15 @@ class Router extends Component
         persist();
         currentKey = keyOf();
         if (window.SPWA && typeof SPWA.refresh === 'function') {
+            // SPWA.refresh POSTs and the new DOM arrives asynchronously —
+            // defer the restore so it lands after patches are applied.
+            pendingRestoreKey = currentKey;
             SPWA.refresh();
+        } else {
+            // No runtime to refresh against — restore immediately against
+            // whatever DOM is already on the page.
+            restoreFor(currentKey);
         }
-        restoreFor(currentKey);
     });
 })();
 JS);

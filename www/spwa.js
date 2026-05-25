@@ -433,6 +433,13 @@ var SPWA = (function() {
         // diff stays correct across popstate navigations.
         __spwa_renderedPath = location.pathname + location.search;
 
+        // Signal that the DOM has been updated for this response. Used by
+        // the Router script to defer scroll restoration until the new page
+        // content is actually in place (executeJsDump runs pushState BEFORE
+        // applyPatches, so restoring inside pushState would scroll the OLD
+        // DOM).
+        window.dispatchEvent(new Event('spwa:patched'));
+
         // DOM is now hydrated for this request — release the queue.
         drainQueue();
     }
