@@ -6,6 +6,7 @@ use Spwa\State\State;
 use Spwa\State\StateManager;
 use Spwa\UI\DomNode;
 use Spwa\UI\NoOpDomNode;
+use Spwa\UI\TagDomNode;
 
 /**
  * A component virtual node that can have state and lifecycle.
@@ -356,8 +357,26 @@ abstract class Component extends VNode
         }
 
         $child = $this->build();
+        $rendered = $child->render($state, $this, $phase);
 
-        return $child->render($state, $this, $phase);
+        // Skeleton mode: overwrite the build-root's element label with the
+        // component class short-name so the outermost label seen by the
+        // skeleton renderer reflects the component, not the UI element it
+        // happens to wrap. Inert in normal rendering — the labels are only
+        // emitted to HTML when SkeletonRenderer runs.
+        if ($rendered instanceof TagDomNode) {
+            $cls = static::class;
+            $short = ($pos = strrpos($cls, '\\')) !== false ? substr($cls, $pos + 1) : $cls;
+            $rendered->skeletonLabel = $short;
+
+            if (\Spwa\UI\UIElement::$captureSource) {
+                $rc = new \ReflectionClass(static::class);
+                $rendered->skeletonFile = $rc->getFileName() ?: null;
+                $rendered->skeletonLine = $rc->getStartLine() ?: null;
+            }
+        }
+
+        return $rendered;
     }
 
     /**

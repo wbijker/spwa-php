@@ -3,6 +3,7 @@
 namespace Spwa;
 
 use Spwa\Debug\DebugPanel;
+use Spwa\Debug\SkeletonRenderer;
 use Spwa\Debug\Timings;
 use Spwa\Error\DefaultErrorPage;
 use Spwa\Error\ErrorInfo;
@@ -11,6 +12,7 @@ use Spwa\State\InMemoryStateManager;
 use Spwa\State\StateManager;
 use Spwa\UI\StyleGenerator;
 use Spwa\UI\TagDomNode;
+use Spwa\UI\UIElement;
 use Spwa\VNode\App;
 use Spwa\VNode\Component;
 use Spwa\VNode\Patcher;
@@ -26,6 +28,56 @@ class Spwa
 
     /** @var bool Set once an error has been rendered so the shutdown handler doesn't render twice. */
     private static bool $errorRendered = false;
+
+    /**
+     * Inline stylesheet for skeleton mode. Loaded only when the page is
+     * rendered with ?skeleton=true. Keeps the original element box (so
+     * margins/paddings/sizing stay intact) and overlays a dashed outline +
+     * a small top-left tag with the construct/component name. The image
+     * placeholder uses two CSS gradients to draw the classic crossed-out
+     * rectangle so a sized <img> turns into a same-sized X box.
+     */
+    private const SKELETON_CSS = <<<'CSS'
+.spwa-skel{outline:1px dashed rgba(60,80,120,0.45);outline-offset:-1px;position:relative;}
+.spwa-skel-label{position:absolute;top:0;left:0;z-index:9999;font:10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;background:#ffec99;color:#222;padding:2px 5px;pointer-events:none;border-bottom-right-radius:3px;white-space:nowrap;letter-spacing:.02em;}
+.spwa-skel-img{background:
+  linear-gradient(to top right,transparent calc(50% - 1px),rgba(60,80,120,0.4) 50%,transparent calc(50% + 1px)),
+  linear-gradient(to top left,transparent calc(50% - 1px),rgba(60,80,120,0.4) 50%,transparent calc(50% + 1px));min-height:32px;}
+.spwa-skel-hover{background-color:rgba(255,235,100,0.45) !important;}
+CSS;
+
+    /**
+     * Inline IIFE for skeleton mode. Tracks the innermost element under the
+     * cursor (via mousemove + closest()), toggling .spwa-skel-hover on it.
+     * Suppresses plain clicks so the page stays inspectable; ctrl/cmd+click
+     * logs the construct label + source file:line to the console.
+     */
+    private const SKELETON_JS = <<<'JS'
+(function () {
+  var active = null;
+  function clear() { if (active) { active.classList.remove('spwa-skel-hover'); active = null; } }
+  document.addEventListener('mousemove', function (e) {
+    var el = e.target && e.target.closest ? e.target.closest('[data-skel-label]') : null;
+    if (el === active) return;
+    clear();
+    if (el) { el.classList.add('spwa-skel-hover'); active = el; }
+  }, true);
+  document.addEventListener('mouseleave', clear, true);
+  document.addEventListener('click', function (e) {
+    var el = e.target && e.target.closest ? e.target.closest('[data-skel-label]') : null;
+    if (!el) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.ctrlKey || e.metaKey) {
+      var label = el.getAttribute('data-skel-label') || '?';
+      var file = el.getAttribute('data-skel-file');
+      var line = el.getAttribute('data-skel-line');
+      var loc = file ? (file + (line ? ':' + line : '')) : '(unknown)';
+      console.log('%c' + label, 'font-weight:bold;color:#a06010', '@', loc, el);
+    }
+  }, true);
+})();
+JS;
 
     /**
      * Entry point. Accepts either an instantiated App or its class
@@ -436,6 +488,13 @@ JS;
     {
         $t = new Timings();
 
+        // ?skeleton=true puts the page in wireframe mode. Flip the capture
+        // flag BEFORE render so each UIElement::__construct records its
+        // call-site (otherwise the DOM tree is too late — UI elements are
+        // already built).
+        $skeleton = (bool)filter_input(INPUT_GET, 'skeleton', FILTER_VALIDATE_BOOLEAN);
+        UIElement::$captureSource = $skeleton;
+
         // If restoring serialized state crashes the render, drop all state
         // and retry from defaults. A second failure is propagated.
         try {
@@ -452,6 +511,14 @@ JS;
             $entry->finalize($state);
         }
         $t->mark('render');
+
+        // Wireframe transform after the real render so the original styles
+        // (margins, paddings, sizing) are preserved — the skeleton only
+        // overlays a dashed outline + label and substitutes leaf content.
+        if ($skeleton) {
+            $ui = SkeletonRenderer::transform($ui);
+            $t->mark('skeleton');
+        }
 
         // Render the optional loader overlay so the DOM tree is complete.
         $loaderVNode = $entry->getLoader();
@@ -490,6 +557,10 @@ JS;
                 (new TagDomNode('script'))->rawContent($customJs),
             );
 
+        if ($skeleton) {
+            $head->content((new TagDomNode('style'))->rawContent(self::SKELETON_CSS));
+        }
+
         if ($stateJs !== null) {
             $head->content((new TagDomNode('script'))->rawContent($stateJs));
         }
@@ -510,6 +581,10 @@ JS;
         }
 
         $body->content((new TagDomNode('script'))->rawContent($debugJs));
+
+        if ($skeleton) {
+            $body->content((new TagDomNode('script'))->rawContent(self::SKELETON_JS));
+        }
 
         $document = (new TagDomNode('html'))
             ->attr('lang', 'en')

@@ -46,6 +46,24 @@ class TagDomNode extends DomNode
         return $this;
     }
 
+    /**
+     * Label shown in the top-left corner of this node when the page is
+     * rendered in `?skeleton=true` mode. Stamped by UIElement::__construct
+     * with the element class short-name (lowercase), then overwritten by
+     * Component::render with the component class short-name (capitalised)
+     * at component boundaries.
+     */
+    public ?string $skeletonLabel = null;
+
+    /**
+     * Source location captured in skeleton mode — the file:line where this
+     * node was instantiated in user code (for UI elements) or the file where
+     * the component class is declared (for components). Surfaced by the
+     * frontend on ctrl+click so the dev can jump straight to the source.
+     */
+    public ?string $skeletonFile = null;
+    public ?int $skeletonLine = null;
+
     /** @var bool Whether this node has a bound value ref */
     private bool $hasBoundRef = false;
 
@@ -175,6 +193,17 @@ class TagDomNode extends DomNode
     public function getEvents(): array
     {
         return $this->events;
+    }
+
+    /**
+     * Drop every registered listener — the node renders without any on*
+     * attributes after this. Used by the skeleton renderer so an accidental
+     * click during inspection doesn't kick off the real app handler.
+     */
+    public function clearEvents(): static
+    {
+        $this->events = [];
+        return $this;
     }
 
     /**

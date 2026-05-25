@@ -31,9 +31,48 @@ class UIElement extends Node
     /** @var Component|null The component that owns this element's events */
     protected ?Component $eventOwner = null;
 
+    /**
+     * When true, every UIElement::__construct walks the call stack to find
+     * the first non-framework frame and stamps its file:line onto the DOM
+     * node. Flipped on by Spwa::handleGet only when ?skeleton=true is
+     * present, so production renders skip the backtrace entirely.
+     */
+    public static bool $captureSource = false;
+
     public function __construct(string $tag = 'div')
     {
         parent::__construct(new TagDomNode($tag));
+
+        // Stamp the late-bound subclass short-name onto the DOM node so the
+        // skeleton renderer can label it ("row", "column", "text", "image"…).
+        // No effect outside skeleton mode — the label is never read otherwise.
+        $cls = static::class;
+        $short = ($pos = strrpos($cls, '\\')) !== false ? substr($cls, $pos + 1) : $cls;
+        if ($short !== 'UIElement' && $short !== 'UIElementContent') {
+            $this->dom()->skeletonLabel = strtolower($short);
+        }
+
+        if (self::$captureSource) {
+            $this->captureCallSite();
+        }
+    }
+
+    /**
+     * Find the first frame outside spwa/src/ — that's the user code that
+     * called UI::row() / UI::text() / etc. Cheap (debug_backtrace with
+     * IGNORE_ARGS), but still only runs when the static capture flag is on.
+     */
+    private function captureCallSite(): void
+    {
+        $bt = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+        foreach ($bt as $frame) {
+            $file = $frame['file'] ?? '';
+            if ($file === '') continue;
+            if (str_contains($file, '/spwa/src/') || str_contains($file, '\\spwa\\src\\')) continue;
+            $this->dom()->skeletonFile = $file;
+            $this->dom()->skeletonLine = $frame['line'] ?? 0;
+            return;
+        }
     }
 
     protected function dom(): TagDomNode
