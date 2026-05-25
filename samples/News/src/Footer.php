@@ -9,14 +9,14 @@ use Spwa\UI\Pseudo;
 use Spwa\UI\UI;
 use Spwa\UI\UIElement;
 use Spwa\UI\Unit;
-use Spwa\VNode\Stateless;
+use Spwa\VNode\StatelessComponent;
 use Spwa\VNode\VNode;
 
 /**
  * Site footer — copyright line on the left, nav-style links on the
  * right. Stacks on small screens, splits across the row on md+.
  */
-class Footer extends Stateless
+class Footer extends StatelessComponent
 {
     protected function build(): VNode
     {

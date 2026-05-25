@@ -11,14 +11,14 @@ use Spwa\UI\Shadow;
 use Spwa\UI\UI;
 use Spwa\UI\UIElement;
 use Spwa\UI\Unit;
-use Spwa\VNode\Stateless;
+use Spwa\VNode\StatelessComponent;
 use Spwa\VNode\VNode;
 
 /**
  * Single-article page rendered at /article/<slug> — back link, hero
  * image, category, title, date, excerpt, body copy.
  */
-class DetailView extends Stateless
+class DetailView extends StatelessComponent
 {
     public function __construct(private Article $article) {}
 

@@ -378,16 +378,6 @@ abstract class Component extends VNode
     }
 
     /**
-     * Get the state key for this component.
-     */
-    protected function getStateKey(): string
-    {
-        $className = static::class;
-        $pathStr = implode('.', $this->path);
-        return $pathStr === '' ? $className : "$pathStr:$className";
-    }
-
-    /**
      * Finalize every component recorded in the OLD render. Needed because an
      * event handler can mutate state on a Component *above* the event owner
      * (e.g. a child's destroy button captures `$this` from its parent

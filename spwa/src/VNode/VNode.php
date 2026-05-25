@@ -34,6 +34,19 @@ abstract class VNode
     }
 
     /**
+     * Stable per-instance key combining path and concrete class. Used
+     * by registries that map a position-in-tree + class to a VNode
+     * instance across diff phases (so the same component instance can
+     * be matched between OLD and NEW renders).
+     */
+    protected function getStateKey(): string
+    {
+        $className = static::class;
+        $pathStr = implode('.', $this->path);
+        return $pathStr === '' ? $className : "$pathStr:$className";
+    }
+
+    /**
      * Set the path for this node.
      * @param int[] $path
      */

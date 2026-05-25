@@ -9,14 +9,14 @@ use Spwa\UI\Pseudo;
 use Spwa\UI\Shadow;
 use Spwa\UI\UI;
 use Spwa\UI\Unit;
-use Spwa\VNode\Stateless;
+use Spwa\VNode\StatelessComponent;
 use Spwa\VNode\VNode;
 
 /**
  * Compact card inside the "What's Next" horizontal strip — fixed
  * width, small image, category + title only.
  */
-class WhatsNextCard extends Stateless
+class WhatsNextCard extends StatelessComponent
 {
     public function __construct(private WhatsNextItem $item) {}
 

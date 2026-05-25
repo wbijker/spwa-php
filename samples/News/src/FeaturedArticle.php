@@ -10,7 +10,7 @@ use Spwa\UI\Router;
 use Spwa\UI\Shadow;
 use Spwa\UI\UI;
 use Spwa\UI\Unit;
-use Spwa\VNode\Stateless;
+use Spwa\VNode\StatelessComponent;
 use Spwa\VNode\VNode;
 
 /**
@@ -18,7 +18,7 @@ use Spwa\VNode\VNode;
  * category, headline, excerpt, and date. Clicking the card navigates
  * to the article's detail route.
  */
-class FeaturedArticle extends Stateless
+class FeaturedArticle extends StatelessComponent
 {
     public function __construct(private Article $article) {}
 

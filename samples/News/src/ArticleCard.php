@@ -11,7 +11,7 @@ use Spwa\UI\Router;
 use Spwa\UI\Shadow;
 use Spwa\UI\UI;
 use Spwa\UI\Unit;
-use Spwa\VNode\Stateless;
+use Spwa\VNode\StatelessComponent;
 use Spwa\VNode\VNode;
 
 /**
@@ -19,7 +19,7 @@ use Spwa\VNode\VNode;
  * receives — no state, no lifecycle. Stacks vertically on small
  * screens and switches to image-left at md+.
  */
-class ArticleCard extends Stateless
+class ArticleCard extends StatelessComponent
 {
     public function __construct(private Article $article) {}
 
