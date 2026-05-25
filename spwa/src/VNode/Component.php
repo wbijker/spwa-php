@@ -369,7 +369,8 @@ abstract class Component extends VNode
             $rendered->skeletonLabel = $short;
 
             $rc = new \ReflectionClass(static::class);
-            $rendered->skeletonFile = $rc->getFileName() ?: null;
+            $file = $rc->getFileName() ?: null;
+            $rendered->skeletonFile = $file !== null ? \Spwa\UI\UIElement::mapHostPath($file) : null;
             $rendered->skeletonLine = $rc->getStartLine() ?: null;
         }
 

@@ -39,6 +39,20 @@ class UIElement extends Node
      */
     public static bool $captureSource = false;
 
+    /**
+     * Server-side root that path-mapping strips when rewriting captured file
+     * paths into host paths for the editor link. Set by Spwa::run from the
+     * auto-detected project root.
+     */
+    public static ?string $sourceRoot = null;
+
+    /**
+     * Host-side root the editor link uses. Combined with $sourceRoot to
+     * remap container/VM paths back to the dev's local checkout. Defaults
+     * to $sourceRoot (no remap) when config.editor.host_root is absent.
+     */
+    public static ?string $hostRoot = null;
+
     public function __construct(string $tag = 'div')
     {
         parent::__construct(new TagDomNode($tag));
@@ -68,10 +82,25 @@ class UIElement extends Node
             $file = $frame['file'] ?? '';
             if ($file === '') continue;
             if (str_contains($file, '/spwa/src/') || str_contains($file, '\\spwa\\src\\')) continue;
-            $this->dom()->skeletonFile = $file;
+            $this->dom()->skeletonFile = self::mapHostPath($file);
             $this->dom()->skeletonLine = $frame['line'] ?? 0;
             return;
         }
+    }
+
+    /**
+     * Rewrite a server-captured absolute path so it points to the host
+     * checkout (e.g. /var/www/foo.php → /Users/me/projects/x/foo.php). The
+     * editor jump-link won't resolve unless the path the OS receives exists
+     * on the host filesystem. No-op when the path doesn't sit under the
+     * configured server root, or when host_root wasn't configured.
+     */
+    public static function mapHostPath(string $file): string
+    {
+        if (self::$sourceRoot === null || self::$hostRoot === null) return $file;
+        if (self::$sourceRoot === self::$hostRoot) return $file;
+        if (!str_starts_with($file, self::$sourceRoot)) return $file;
+        return self::$hostRoot . substr($file, strlen(self::$sourceRoot));
     }
 
     protected function dom(): TagDomNode

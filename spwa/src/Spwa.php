@@ -50,10 +50,21 @@ CSS;
      * Inline IIFE injected on every dev-mode page (development=true). Plain
      * clicks pass through to the app; ctrl/cmd-click on a tagged element
      * logs its construct/component label + source file:line to the console
-     * and swallows the click so the app doesn't react.
+     * and navigates to the editor URL built from window.__SPWA_EDITOR_URL,
+     * substituting {file}/{line}/{col}. If the template is empty (no
+     * config.editor.url) the navigation step is skipped and only the
+     * console line is emitted.
      */
     private const INSPECT_JS = <<<'JS'
 (function () {
+  function buildHref(file, line, col) {
+    var tpl = window.__SPWA_EDITOR_URL;
+    if (!tpl || !file) return null;
+    return tpl
+      .split('{file}').join(file)
+      .split('{line}').join(line || '1')
+      .split('{col}').join(col || '1');
+  }
   document.addEventListener('click', function (e) {
     if (!e.ctrlKey && !e.metaKey) return;
     var el = e.target && e.target.closest ? e.target.closest('[data-skel-label]') : null;
@@ -65,6 +76,8 @@ CSS;
     var line = el.getAttribute('data-skel-line');
     var loc = file ? (file + (line ? ':' + line : '')) : '(unknown)';
     console.log('%c' + label, 'font-weight:bold;color:#a06010', '@', loc);
+    var href = buildHref(file, line, 1);
+    if (href) window.location.href = href;
   }, true);
 })();
 JS;
@@ -114,8 +127,15 @@ JS;
         // UIElement::__construct walks the call stack once to stamp file:line
         // on its DOM node so ctrl+click in the page can log "this came from
         // News.php:75". Done at the very top so it covers POST replays too
-        // (handlePost rebuilds the app twice for OLD/NEW).
-        UIElement::$captureSource = self::isDevelopment();
+        // (handlePost rebuilds the app twice for OLD/NEW). Captured paths
+        // are rewritten through host_root so they survive the container
+        // boundary when the dev's editor opens the link.
+        $isDev = self::isDevelopment();
+        UIElement::$captureSource = $isDev;
+        if ($isDev) {
+            UIElement::$sourceRoot = rtrim(dirname($_SERVER['SCRIPT_FILENAME'] ?? '', 2), '/');
+            UIElement::$hostRoot = rtrim(self::editorHostRoot() ?? UIElement::$sourceRoot, '/');
+        }
 
         try {
             if (is_string($entry)) {
@@ -300,6 +320,29 @@ JS;
     public static function isDevelopment(): bool
     {
         return (bool)(self::config()['development'] ?? false);
+    }
+
+    /**
+     * URL template (config.editor.url) used by ctrl+click to jump into the
+     * dev's editor. Empty when unconfigured — the inspector falls back to
+     * console.log.
+     */
+    public static function editorUrlTemplate(): string
+    {
+        return (string)(self::config()['editor']['url'] ?? '');
+    }
+
+    /**
+     * Host-side absolute path of this project (config.editor.host_root) —
+     * the prefix the editor link needs so the OS can find the file when
+     * PHP runs under a different mount path (Docker, VM, etc.). Returns
+     * null when unset — UIElement falls back to the auto-detected server
+     * root and the rewrite is a no-op.
+     */
+    public static function editorHostRoot(): ?string
+    {
+        $v = self::config()['editor']['host_root'] ?? null;
+        return is_string($v) && $v !== '' ? $v : null;
     }
 
     /**
@@ -565,15 +608,21 @@ JS;
         (new DebugPanel($ui, $state, $t))->emit();
         $debugJs = self::callsToJs(JsRuntime::drain());
 
+        $bootJs = 'window.__SPWA_HASH=' . json_encode($stateHash) . ';'
+                . 'window.__SPWA_DEV=' . json_encode($isDev) . ';';
+        if ($isDev) {
+            $tpl = self::editorUrlTemplate();
+            if ($tpl !== '') {
+                $bootJs .= 'window.__SPWA_EDITOR_URL=' . json_encode($tpl) . ';';
+            }
+        }
+
         $head = (new TagDomNode('head'))
             ->content(
                 (new TagDomNode('meta'))->attr('charset', 'UTF-8'),
                 (new TagDomNode('meta'))->attr('name', 'viewport')->attr('content', 'width=device-width, initial-scale=1.0'),
                 (new TagDomNode('title'))->rawContent(htmlspecialchars($entry->title())),
-                (new TagDomNode('script'))->rawContent(
-                    'window.__SPWA_HASH=' . json_encode($stateHash) . ';'
-                    . 'window.__SPWA_DEV=' . json_encode(self::isDevelopment()) . ';'
-                ),
+                (new TagDomNode('script'))->rawContent($bootJs),
                 // /style.css bundles preflight + the extracted utility rules
                 // (in that order, so application rules win).
                 (new TagDomNode('link'))->attr('rel', 'stylesheet')->attr('href', '/style.css?h=' . $styleHash),
