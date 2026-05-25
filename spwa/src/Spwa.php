@@ -265,13 +265,13 @@ JS;
     }
 
     /**
-     * Hash every PHP file's path+mtime under the project root. Doubles as the
-     * cache-buster for /style.css (same trigger as HMR — when source moves,
-     * both the long-poll detects it and the stylesheet URL changes).
+     * Cheap source fingerprint: newest mtime + file count under the project
+     * root, joined with a colon. Doubles as HMR change signal and /style.css
+     * cache-buster. Any edit bumps mtime; any add/remove bumps count. Skips
+     * vendor/node_modules/.git. Cheaper than hashing every path+mtime.
      */
     public static function sourceHash(string $root): string
     {
-        $h = hash_init('sha1');
         $skip = ['vendor' => 1, 'node_modules' => 1, '.git' => 1];
         $dir = new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS);
         $filter = new \RecursiveCallbackFilterIterator($dir, function ($f) use ($skip) {
@@ -279,10 +279,14 @@ JS;
                 ? $f->getExtension() === 'php'
                 : !isset($skip[$f->getFilename()]);
         });
+        $max = 0;
+        $n = 0;
         foreach (new \RecursiveIteratorIterator($filter) as $f) {
-            hash_update($h, $f->getPathname() . ':' . $f->getMTime() . "\n");
+            $m = $f->getMTime();
+            if ($m > $max) $max = $m;
+            $n++;
         }
-        return hash_final($h);
+        return $max . ':' . $n;
     }
 
     /**
