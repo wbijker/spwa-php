@@ -359,21 +359,18 @@ abstract class Component extends VNode
         $child = $this->build();
         $rendered = $child->render($state, $this, $phase);
 
-        // Skeleton mode: overwrite the build-root's element label with the
-        // component class short-name so the outermost label seen by the
-        // skeleton renderer reflects the component, not the UI element it
-        // happens to wrap. Inert in normal rendering — the labels are only
-        // emitted to HTML when SkeletonRenderer runs.
-        if ($rendered instanceof TagDomNode) {
+        // In dev mode, overwrite the build-root's element label + file/line
+        // with the component class info so the inspector/skeleton sees the
+        // component, not the UI element it happens to wrap. Production
+        // (captureSource off) renders without touching either field.
+        if ($rendered instanceof TagDomNode && \Spwa\UI\UIElement::$captureSource) {
             $cls = static::class;
             $short = ($pos = strrpos($cls, '\\')) !== false ? substr($cls, $pos + 1) : $cls;
             $rendered->skeletonLabel = $short;
 
-            if (\Spwa\UI\UIElement::$captureSource) {
-                $rc = new \ReflectionClass(static::class);
-                $rendered->skeletonFile = $rc->getFileName() ?: null;
-                $rendered->skeletonLine = $rc->getStartLine() ?: null;
-            }
+            $rc = new \ReflectionClass(static::class);
+            $rendered->skeletonFile = $rc->getFileName() ?: null;
+            $rendered->skeletonLine = $rc->getStartLine() ?: null;
         }
 
         return $rendered;

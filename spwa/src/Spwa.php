@@ -47,10 +47,34 @@ class Spwa
 CSS;
 
     /**
-     * Inline IIFE for skeleton mode. Tracks the innermost element under the
-     * cursor (via mousemove + closest()), toggling .spwa-skel-hover on it.
-     * Suppresses plain clicks so the page stays inspectable; ctrl/cmd+click
-     * logs the construct label + source file:line to the console.
+     * Inline IIFE injected on every dev-mode page (development=true). Plain
+     * clicks pass through to the app; ctrl/cmd-click on a tagged element
+     * logs its construct/component label + source file:line to the console
+     * and swallows the click so the app doesn't react.
+     */
+    private const INSPECT_JS = <<<'JS'
+(function () {
+  document.addEventListener('click', function (e) {
+    if (!e.ctrlKey && !e.metaKey) return;
+    var el = e.target && e.target.closest ? e.target.closest('[data-skel-label]') : null;
+    if (!el) return;
+    e.preventDefault();
+    e.stopPropagation();
+    var label = el.getAttribute('data-skel-label') || '?';
+    var file = el.getAttribute('data-skel-file');
+    var line = el.getAttribute('data-skel-line');
+    var loc = file ? (file + (line ? ':' + line : '')) : '(unknown)';
+    console.log('%c' + label, 'font-weight:bold;color:#a06010', '@', loc);
+  }, true);
+})();
+JS;
+
+    /**
+     * Inline IIFE injected only when ?skeleton=true (and dev mode is on).
+     * Tracks the innermost tagged element under the cursor and toggles
+     * .spwa-skel-hover for a translucent background highlight. Plain
+     * (non-modifier) clicks are swallowed too — skeleton view is read-only.
+     * Ctrl/cmd-click stays unhandled here; the INSPECT_JS handler logs it.
      */
     private const SKELETON_JS = <<<'JS'
 (function () {
@@ -64,17 +88,11 @@ CSS;
   }, true);
   document.addEventListener('mouseleave', clear, true);
   document.addEventListener('click', function (e) {
+    if (e.ctrlKey || e.metaKey) return;
     var el = e.target && e.target.closest ? e.target.closest('[data-skel-label]') : null;
     if (!el) return;
     e.preventDefault();
     e.stopPropagation();
-    if (e.ctrlKey || e.metaKey) {
-      var label = el.getAttribute('data-skel-label') || '?';
-      var file = el.getAttribute('data-skel-file');
-      var line = el.getAttribute('data-skel-line');
-      var loc = file ? (file + (line ? ':' + line : '')) : '(unknown)';
-      console.log('%c' + label, 'font-weight:bold;color:#a06010', '@', loc);
-    }
   }, true);
 })();
 JS;
@@ -91,6 +109,13 @@ JS;
     public static function run(App|string $entry): void
     {
         self::installErrorTraps();
+
+        // Dev mode flips the capture flag for the whole request — every
+        // UIElement::__construct walks the call stack once to stamp file:line
+        // on its DOM node so ctrl+click in the page can log "this came from
+        // News.php:75". Done at the very top so it covers POST replays too
+        // (handlePost rebuilds the app twice for OLD/NEW).
+        UIElement::$captureSource = self::isDevelopment();
 
         try {
             if (is_string($entry)) {
@@ -488,12 +513,11 @@ JS;
     {
         $t = new Timings();
 
-        // ?skeleton=true puts the page in wireframe mode. Flip the capture
-        // flag BEFORE render so each UIElement::__construct records its
-        // call-site (otherwise the DOM tree is too late — UI elements are
-        // already built).
-        $skeleton = (bool)filter_input(INPUT_GET, 'skeleton', FILTER_VALIDATE_BOOLEAN);
-        UIElement::$captureSource = $skeleton;
+        // Skeleton is a dev-only tool — production renders ignore ?skeleton=
+        // entirely. Source capture (UIElement::$captureSource) is already on
+        // for the whole request when isDevelopment, set in run() above.
+        $isDev = self::isDevelopment();
+        $skeleton = $isDev && (bool)filter_input(INPUT_GET, 'skeleton', FILTER_VALIDATE_BOOLEAN);
 
         // If restoring serialized state crashes the render, drop all state
         // and retry from defaults. A second failure is propagated.
@@ -582,6 +606,12 @@ JS;
 
         $body->content((new TagDomNode('script'))->rawContent($debugJs));
 
+        // Inspect logger goes on every dev page so ctrl+click works without
+        // having to switch into skeleton mode first. Skeleton mode then adds
+        // the hover-highlight + plain-click swallow on top.
+        if ($isDev) {
+            $body->content((new TagDomNode('script'))->rawContent(self::INSPECT_JS));
+        }
         if ($skeleton) {
             $body->content((new TagDomNode('script'))->rawContent(self::SKELETON_JS));
         }

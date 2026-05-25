@@ -400,6 +400,20 @@ class TagDomNode extends DomNode
             }
         }
 
+        // Auto-emit skeleton/inspect data attrs whenever the fields are set
+        // (UIElement + Component stamp them only when UIElement::$captureSource
+        // is on, which Spwa flips in dev mode). Kept out of $attributes so the
+        // diff path never sees them — they're presentation-only metadata.
+        if ($this->skeletonLabel !== null) {
+            $attrHtml .= ' data-skel-label="' . htmlspecialchars($this->skeletonLabel) . '"';
+        }
+        if ($this->skeletonFile !== null) {
+            $attrHtml .= ' data-skel-file="' . htmlspecialchars($this->skeletonFile) . '"';
+        }
+        if ($this->skeletonLine !== null) {
+            $attrHtml .= ' data-skel-line="' . $this->skeletonLine . '"';
+        }
+
         // Self-closing tags
         $selfClosing = ['img', 'br', 'hr', 'input', 'meta', 'link', 'area', 'base', 'col', 'embed', 'source', 'track', 'wbr'];
         if (in_array($this->tag, $selfClosing) && empty($this->children)) {

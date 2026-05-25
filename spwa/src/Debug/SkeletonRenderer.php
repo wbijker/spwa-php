@@ -82,11 +82,11 @@ class SkeletonRenderer
         // bootstrap below.
         $node->clearEvents();
 
-        $label = $node->skeletonLabel ?? $tag;
-        self::tagAsSkeleton($node, $label);
+        self::addSkeletonClass($node);
 
         // Label always at the top so it stacks above the content. Position
         // is handled in CSS (absolute top:0 left:0).
+        $label = $node->skeletonLabel ?? $tag;
         $labelNode = (new TagDomNode('span'))
             ->attr('class', 'spwa-skel-label')
             ->rawContent(htmlspecialchars($label, ENT_QUOTES));
@@ -103,7 +103,7 @@ class SkeletonRenderer
     private static function imageBox(TagDomNode $node): TagDomNode
     {
         $node->setTag('div');
-        self::tagAsSkeleton($node, $node->skeletonLabel ?? 'image', 'spwa-skel-img');
+        self::addSkeletonClass($node, 'spwa-skel-img');
 
         $labelNode = (new TagDomNode('span'))
             ->attr('class', 'spwa-skel-label')
@@ -116,22 +116,15 @@ class SkeletonRenderer
 
     /**
      * Append `.spwa-skel` (and any extra class) to the node's class
-     * attribute and stamp data-skel-{label,file,line} so the frontend
-     * inspector can read them on ctrl+click.
+     * attribute. The data-skel-{label,file,line} attrs are emitted
+     * automatically by TagDomNode::toHtml whenever the fields are set,
+     * so we don't write them through getAttributes here.
      */
-    private static function tagAsSkeleton(TagDomNode $node, string $label, string $extraClass = ''): void
+    private static function addSkeletonClass(TagDomNode $node, string $extraClass = ''): void
     {
         $attrs = $node->getAttributes();
         $existing = $attrs['class'] ?? '';
         $merged = trim($existing . ' spwa-skel' . ($extraClass !== '' ? ' ' . $extraClass : ''));
         $node->attr('class', $merged);
-
-        $node->attr('data-skel-label', $label);
-        if ($node->skeletonFile !== null) {
-            $node->attr('data-skel-file', $node->skeletonFile);
-        }
-        if ($node->skeletonLine !== null) {
-            $node->attr('data-skel-line', (string)$node->skeletonLine);
-        }
     }
 }

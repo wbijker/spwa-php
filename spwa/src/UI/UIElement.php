@@ -43,16 +43,15 @@ class UIElement extends Node
     {
         parent::__construct(new TagDomNode($tag));
 
-        // Stamp the late-bound subclass short-name onto the DOM node so the
-        // skeleton renderer can label it ("row", "column", "text", "image"…).
-        // No effect outside skeleton mode — the label is never read otherwise.
-        $cls = static::class;
-        $short = ($pos = strrpos($cls, '\\')) !== false ? substr($cls, $pos + 1) : $cls;
-        if ($short !== 'UIElement' && $short !== 'UIElementContent') {
-            $this->dom()->skeletonLabel = strtolower($short);
-        }
-
+        // Only stamp skeleton metadata in dev mode. The capture flag is
+        // flipped by Spwa::run() from isDevelopment(); production renders
+        // produce zero data-skel-* output and skip the backtrace entirely.
         if (self::$captureSource) {
+            $cls = static::class;
+            $short = ($pos = strrpos($cls, '\\')) !== false ? substr($cls, $pos + 1) : $cls;
+            if ($short !== 'UIElement' && $short !== 'UIElementContent') {
+                $this->dom()->skeletonLabel = strtolower($short);
+            }
             $this->captureCallSite();
         }
     }
