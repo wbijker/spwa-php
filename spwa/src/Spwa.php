@@ -267,17 +267,21 @@ JS;
     /**
      * Cheap source fingerprint: newest mtime + file count under the project
      * root, joined with a colon. Doubles as HMR change signal and /style.css
-     * cache-buster. Any edit bumps mtime; any add/remove bumps count. Skips
-     * vendor/node_modules/.git. Cheaper than hashing every path+mtime.
+     * cache-buster. Any edit bumps mtime; any add/remove bumps count. Walks
+     * .php (extracted into the stylesheet) and .css (preflight prepended to
+     * it) so either flavour of edit invalidates the cached sheet. Skips
+     * vendor/node_modules/.git.
      */
     public static function sourceHash(string $root): string
     {
         $skip = ['vendor' => 1, 'node_modules' => 1, '.git' => 1];
         $dir = new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS);
         $filter = new \RecursiveCallbackFilterIterator($dir, function ($f) use ($skip) {
-            return $f->isFile()
-                ? $f->getExtension() === 'php'
-                : !isset($skip[$f->getFilename()]);
+            if ($f->isFile()) {
+                $ext = $f->getExtension();
+                return $ext === 'php' || $ext === 'css';
+            }
+            return !isset($skip[$f->getFilename()]);
         });
         $max = 0;
         $n = 0;
@@ -480,8 +484,8 @@ JS;
                     'window.__SPWA_HASH=' . json_encode($stateHash) . ';'
                     . 'window.__SPWA_DEV=' . json_encode(self::isDevelopment()) . ';'
                 ),
-                // Preflight first so framework-generated rules can override it.
-                (new TagDomNode('link'))->attr('rel', 'stylesheet')->attr('href', '/preflight.css'),
+                // /style.css bundles preflight + the extracted utility rules
+                // (in that order, so application rules win).
                 (new TagDomNode('link'))->attr('rel', 'stylesheet')->attr('href', '/style.css?h=' . $styleHash),
                 (new TagDomNode('script'))->attr('src', '/spwa.js')->rawContent(''),
                 (new TagDomNode('script'))->rawContent($customJs),
