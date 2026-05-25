@@ -3,64 +3,63 @@
 namespace Spwa\UI;
 
 /**
- * Stacked layers - items positioned on top of each other.
- * Inspired by QuestPDF Layers.
+ * Stacked layers — content positioned on top of each other, sized by
+ * a single primary layer. Modeled after QuestPDF's Layers API:
+ * https://www.questpdf.com/api-reference/layers.html
+ *
+ * Exactly one layer is the `primary()` — it sits in normal flow and
+ * dictates the size of the entire stack. Every other `layer()` is
+ * wrapped in `position:absolute; inset:0` so it overlays the primary
+ * without contributing to layout. Stacking follows call order: layers
+ * added BEFORE `primary()` paint underneath it; layers added AFTER
+ * paint on top.
  *
  * Usage:
  *   UI::layers()
- *       ->primary(UI::image("background.jpg"))
- *       ->overlay(UI::text("Overlay text"))
+ *       ->layer(UI::container()->background(Color::yellow(200)))  // behind
+ *       ->primary(
+ *           UI::column()->padding(Unit::rem(1))->content(
+ *               UI::text('Main content')
+ *           )
+ *       )
+ *       ->layer(UI::text('Watermark')->color(Color::red(500)));   // in front
  */
 class Layers extends UIElementContent
 {
-    protected ?UIElement $primary = null;
-    /** @var UIElement[] */
-    protected array $layers = [];
+    private bool $primarySet = false;
 
     public function __construct()
     {
         parent::__construct('div');
-        $this->addStyle('relative', ['position' => 'relative']);
+        $this->relative();
     }
 
     /**
-     * Set the primary/background layer.
+     * The single layer in normal flow — its intrinsic size becomes
+     * the size of the whole stack. Throws if called more than once.
      */
     public function primary(UIElement $element): static
     {
-        $this->primary = $element;
+        if ($this->primarySet) {
+            throw new \LogicException('Layers can have only one primary layer');
+        }
+        $this->primarySet = true;
+        $this->children[] = $element;
         return $this;
     }
 
     /**
-     * Add an overlay layer. Renamed from layer() to avoid clashing with
-     * UIElement::layer() (the z-index utility).
+     * Add an overlay layer. Called before `primary()` → paints behind
+     * it; called after → paints in front. The layer is wrapped in an
+     * `absolute; inset:0` container so it fills the primary's box
+     * without contributing to layout.
      */
-    public function overlay(UIElement $element): static
+    public function layer(UIElement $element): static
     {
-        $this->layers[] = $element;
+        $this->children[] = UI::container()
+            ->absolute()
+            ->inset(Unit::none())
+            ->content($element);
         return $this;
-    }
-
-    public function build(): DomNode
-    {
-        $node = $this->dom()->setTag('div');
-
-        if ($this->primary !== null) {
-            $node->children($this->primary->build());
-        }
-
-        foreach ($this->layers as $layer) {
-            // Wrap each layer in absolute positioning
-            $wrapper = DomNode::el('div')
-                ->class('absolute', 'inset-0')
-                ->style('absolute', ['position' => 'absolute'])
-                ->style('inset-0', ['top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0'])
-                ->children($layer->build());
-
-            $node->children($wrapper);
-        }
-
-        return $node;
     }
 }
