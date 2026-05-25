@@ -2,7 +2,7 @@
 
 namespace Spwa\Js;
 
-class JsRuntime
+class Js
 {
     static array $calls = [];
 

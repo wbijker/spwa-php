@@ -7,7 +7,7 @@ use Spwa\Debug\WireframeRenderer;
 use Spwa\Debug\Timings;
 use Spwa\Error\DefaultErrorPage;
 use Spwa\Error\ErrorInfo;
-use Spwa\Js\JsRuntime;
+use Spwa\Js\Js;
 use Spwa\State\InMemoryStateManager;
 use Spwa\State\StateManager;
 use Spwa\UI\StyleGenerator;
@@ -542,21 +542,21 @@ JS;
         // Capture buffered output → console.log
         $output = ob_get_clean();
         if ($output !== '' && $output !== false) {
-            JsRuntime::invoke(['console', 'log'], [$output]);
+            Js::invoke(['console', 'log'], [$output]);
         }
 
         $newHash = self::computeStateHash($state);
         $t->mark('compute_hash');
 
         // Debug panel → console (prepended so it appears first)
-        $appCalls = JsRuntime::drain();
+        $appCalls = Js::drain();
         (new DebugPanel($newUi, $state, $t))->emit();
-        $debugCalls = JsRuntime::drain();
-        JsRuntime::prepend(array_merge($debugCalls, $appCalls));
+        $debugCalls = Js::drain();
+        Js::prepend(array_merge($debugCalls, $appCalls));
 
         $response = [
             'success' => true,
-            'js' => JsRuntime::dump(),
+            'js' => Js::dump(),
             'patches' => $patcher->getOperations(),
             'hash' => $newHash,
         ];
@@ -613,8 +613,9 @@ JS;
 
         $stateJs = $state->getClientJs();
 
-        // Collect custom JS registered by components.
-        $customJs = implode("\n", $entry->getCustomJs());
+        // Collect custom JS / inline CSS registered by components.
+        $inlineScripts = implode("\n", $entry->getScriptsInline());
+        $inlineStyles = implode("\n", $entry->getStylesInline());
 
         $stateHash = self::computeStateHash($state);
         // Same source-mtime hash that HMR watches; bumping it on any PHP/CSS
@@ -625,7 +626,7 @@ JS;
         // Debug panel → inline script for initial render. Construct AFTER
         // timings so far so they appear in the debug output.
         (new DebugPanel($ui, $state, $t))->emit();
-        $debugJs = self::callsToJs(JsRuntime::drain());
+        $debugJs = self::callsToJs(Js::drain());
 
         $bootJs = 'window.__SPWA_HASH=' . json_encode($stateHash) . ';'
                 . 'window.__SPWA_DEV=' . json_encode($isDev) . ';';
@@ -645,9 +646,26 @@ JS;
                 // /style.css bundles preflight + the extracted utility rules
                 // (in that order, so application rules win).
                 (new TagDomNode('link'))->attr('rel', 'stylesheet')->attr('href', '/style.css?h=' . $styleHash),
-                (new TagDomNode('script'))->attr('src', '/spwa.js')->rawContent(''),
-                (new TagDomNode('script'))->rawContent($customJs),
             );
+
+        // User-registered external stylesheets — placed after /style.css so
+        // their rules can override framework defaults.
+        foreach ($entry->getStyles() as $href) {
+            $head->content((new TagDomNode('link'))->attr('rel', 'stylesheet')->attr('href', $href));
+        }
+        // User inline styles after externals, so they override.
+        if ($inlineStyles !== '') {
+            $head->content((new TagDomNode('style'))->rawContent($inlineStyles));
+        }
+
+        // Framework runtime first so SPWA.* is available to user scripts.
+        $head->content((new TagDomNode('script'))->attr('src', '/spwa.js')->rawContent(''));
+        foreach ($entry->getScripts() as $src) {
+            $head->content((new TagDomNode('script'))->attr('src', $src)->rawContent(''));
+        }
+        if ($inlineScripts !== '') {
+            $head->content((new TagDomNode('script'))->rawContent($inlineScripts));
+        }
 
         if ($wireframe) {
             $head->content((new TagDomNode('style'))->rawContent(self::WIREFRAME_CSS));

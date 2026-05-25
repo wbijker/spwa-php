@@ -9,27 +9,32 @@ use Spwa\UI\UIElement;
 
 abstract class App extends Component
 {
-    /** @var string[] Custom JS snippets registered by components */
-    private array $customJs = [];
+    /** @var string[] Inline <script> bodies registered by components */
+    private array $inlineScripts = [];
 
-    /** @var string[] Custom CSS snippets registered by components */
-    private array $customCss = [];
+    /** @var string[] Inline <style> bodies registered by components */
+    private array $inlineStyles = [];
+
+    /** @var string[] External <script src=...> URLs registered by components */
+    private array $scripts = [];
+
+    /** @var string[] External <link rel="stylesheet" href=...> URLs registered by components */
+    private array $styles = [];
 
     abstract public function title(): string;
 
     abstract protected function view(): VNode;
 
     /**
-     * Override to register custom JS/CSS assets on this App.
+     * Override to register custom assets on this App.
      *
      * Called once by the framework on the initial GET, before the first
-     * render. The strings collected via $app->addJs() / $app->addCss() are
-     * inlined into <head> as a single <script> and <style> block.
+     * render. Four flavors:
      *
-     *   protected function registerAssets(App $app): void {
-     *       $app->addCss('.brand { color: tomato }');
-     *       $app->addJs('window.MyApp = { ready: true };');
-     *   }
+     *   $app->addStyle('https://cdn.example.com/lib.css');     // external <link>
+     *   $app->addScript('https://cdn.example.com/lib.js');     // external <script src>
+     *   $app->addStyleInline('.brand { color: tomato }');      // inline <style>
+     *   $app->addScriptInline('window.MyApp = { ready: 1 };'); // inline <script>
      *
      * Not called on POST event responses — assets persist from the initial
      * page load, so register everything you might need up front.
@@ -75,38 +80,52 @@ abstract class App extends Component
      */
     abstract public function state(): StateManager;
 
-    /**
-     * Add a custom JavaScript snippet.
-     */
-    public function addJs(string $js): void
+    /** Register an external stylesheet by URL — emitted as <link rel="stylesheet" href="..."> in <head>. */
+    public function addStyle(string $href): void
     {
-        $this->customJs[] = $js;
+        $this->styles[] = $href;
     }
 
-    /**
-     * Add a custom CSS snippet.
-     */
-    public function addCss(string $css): void
+    /** Register an external script by URL — emitted as <script src="..."></script> in <head>. */
+    public function addScript(string $src): void
     {
-        $this->customCss[] = $css;
+        $this->scripts[] = $src;
     }
 
-    /**
-     * Get all registered custom JS snippets.
-     * @return string[]
-     */
-    public function getCustomJs(): array
+    /** Register an inline CSS snippet — concatenated and emitted as a <style> block in <head>. */
+    public function addStyleInline(string $css): void
     {
-        return $this->customJs;
+        $this->inlineStyles[] = $css;
     }
 
-    /**
-     * Get all registered custom CSS snippets.
-     * @return string[]
-     */
-    public function getCustomCss(): array
+    /** Register an inline JS snippet — concatenated and emitted as a <script> block in <head>. */
+    public function addScriptInline(string $js): void
     {
-        return $this->customCss;
+        $this->inlineScripts[] = $js;
+    }
+
+    /** @return string[] */
+    public function getStyles(): array
+    {
+        return $this->styles;
+    }
+
+    /** @return string[] */
+    public function getScripts(): array
+    {
+        return $this->scripts;
+    }
+
+    /** @return string[] */
+    public function getStylesInline(): array
+    {
+        return $this->inlineStyles;
+    }
+
+    /** @return string[] */
+    public function getScriptsInline(): array
+    {
+        return $this->inlineScripts;
     }
 
     protected function build(): VNode

@@ -7,7 +7,7 @@ use Spwa\Http\HttpRequest;
 use Spwa\Http\HttpResponse;
 use Spwa\Http\MiddlewareHandler;
 use Spwa\Js\Console;
-use Spwa\Js\JsRuntime;
+use Spwa\Js\Js;
 use Spwa\Nodes\Component;
 use Spwa\Nodes\HtmlNode;
 use Spwa\Nodes\Node;
@@ -72,7 +72,7 @@ class SpwMiddleware implements MiddlewareHandler
 
             return HttpResponse::json([
                 'p' => $patch->patches,
-                'j' => JsRuntime::dump()
+                'j' => Js::dump()
             ]);
         }
 
@@ -177,7 +177,7 @@ class SpwMiddleware implements MiddlewareHandler
 
         return HttpResponse::json([
             'p' => $patch->patches,
-            'j' => JsRuntime::dump()
+            'j' => Js::dump()
         ]);
     }
 

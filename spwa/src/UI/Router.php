@@ -82,7 +82,7 @@ class Router extends Component
      */
     public static function registerAssets(App $app): void
     {
-        $app->addJs(<<<'JS'
+        $app->addScriptInline(<<<'JS'
 (function () {
     if (window.__spwaRouterAttached) return;
     window.__spwaRouterAttached = true;

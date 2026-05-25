@@ -6,56 +6,56 @@ class Console
 {
     static function log(...$args): void
     {
-        JsRuntime::invoke(["console", "log"], $args);
+        Js::invoke(["console", "log"], $args);
     }
 
     static function warn(...$args): void
     {
-        JsRuntime::invoke(["console", "warn"], $args);
+        Js::invoke(["console", "warn"], $args);
     }
 
     static function dir(...$args): void
     {
-        JsRuntime::invoke(["console", "dir"], $args);
+        Js::invoke(["console", "dir"], $args);
     }
 
     static function error(...$args): void
     {
-        JsRuntime::invoke(["console", "error"], $args);
+        Js::invoke(["console", "error"], $args);
     }
 
     static function info(...$args): void
     {
-        JsRuntime::invoke(["console", "info"], $args);
+        Js::invoke(["console", "info"], $args);
     }
 
     static function debug(...$args): void
     {
-        JsRuntime::invoke(["console", "debug"], $args);
+        Js::invoke(["console", "debug"], $args);
     }
 
     static function clear(): void
     {
-        JsRuntime::invoke(["console", "clear"], []);
+        Js::invoke(["console", "clear"], []);
     }
 
     static function group(...$args): void
     {
-        JsRuntime::invoke(["console", "group"], $args);
+        Js::invoke(["console", "group"], $args);
     }
 
     static function groupCollapsed(...$args): void
     {
-        JsRuntime::invoke(["console", "groupCollapsed"], $args);
+        Js::invoke(["console", "groupCollapsed"], $args);
     }
 
     static function groupEnd(): void
     {
-        JsRuntime::invoke(["console", "groupEnd"], []);
+        Js::invoke(["console", "groupEnd"], []);
     }
 
     static function table(...$args): void
     {
-        JsRuntime::invoke(["console", "table"], $args);
+        Js::invoke(["console", "table"], $args);
     }
 }
