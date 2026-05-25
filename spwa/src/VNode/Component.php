@@ -360,18 +360,18 @@ abstract class Component extends VNode
         $rendered = $child->render($state, $this, $phase);
 
         // In dev mode, overwrite the build-root's element label + file/line
-        // with the component class info so the inspector/skeleton sees the
+        // with the component class info so the inspector/wireframe sees the
         // component, not the UI element it happens to wrap. Production
         // (captureSource off) renders without touching either field.
         if ($rendered instanceof TagDomNode && \Spwa\UI\UIElement::$captureSource) {
             $cls = static::class;
             $short = ($pos = strrpos($cls, '\\')) !== false ? substr($cls, $pos + 1) : $cls;
-            $rendered->skeletonLabel = $short;
+            $rendered->wireframeLabel = $short;
 
             $rc = new \ReflectionClass(static::class);
             $file = $rc->getFileName() ?: null;
-            $rendered->skeletonFile = $file !== null ? \Spwa\UI\UIElement::mapHostPath($file) : null;
-            $rendered->skeletonLine = $rc->getStartLine() ?: null;
+            $rendered->wireframeFile = $file !== null ? \Spwa\UI\UIElement::mapHostPath($file) : null;
+            $rendered->wireframeLine = $rc->getStartLine() ?: null;
         }
 
         return $rendered;

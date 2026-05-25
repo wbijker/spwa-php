@@ -34,8 +34,8 @@ class UIElement extends Node
     /**
      * When true, every UIElement::__construct walks the call stack to find
      * the first non-framework frame and stamps its file:line onto the DOM
-     * node. Flipped on by Spwa::handleGet only when ?skeleton=true is
-     * present, so production renders skip the backtrace entirely.
+     * node. Flipped on by Spwa::run when isDevelopment is true, so
+     * production renders skip the backtrace entirely.
      */
     public static bool $captureSource = false;
 
@@ -57,14 +57,14 @@ class UIElement extends Node
     {
         parent::__construct(new TagDomNode($tag));
 
-        // Only stamp skeleton metadata in dev mode. The capture flag is
+        // Only stamp wireframe metadata in dev mode. The capture flag is
         // flipped by Spwa::run() from isDevelopment(); production renders
-        // produce zero data-skel-* output and skip the backtrace entirely.
+        // produce zero data-wf-* output and skip the backtrace entirely.
         if (self::$captureSource) {
             $cls = static::class;
             $short = ($pos = strrpos($cls, '\\')) !== false ? substr($cls, $pos + 1) : $cls;
             if ($short !== 'UIElement' && $short !== 'UIElementContent') {
-                $this->dom()->skeletonLabel = strtolower($short);
+                $this->dom()->wireframeLabel = strtolower($short);
             }
             $this->captureCallSite();
         }
@@ -82,8 +82,8 @@ class UIElement extends Node
             $file = $frame['file'] ?? '';
             if ($file === '') continue;
             if (str_contains($file, '/spwa/src/') || str_contains($file, '\\spwa\\src\\')) continue;
-            $this->dom()->skeletonFile = self::mapHostPath($file);
-            $this->dom()->skeletonLine = $frame['line'] ?? 0;
+            $this->dom()->wireframeFile = self::mapHostPath($file);
+            $this->dom()->wireframeLine = $frame['line'] ?? 0;
             return;
         }
     }

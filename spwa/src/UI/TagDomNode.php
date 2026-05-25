@@ -48,21 +48,21 @@ class TagDomNode extends DomNode
 
     /**
      * Label shown in the top-left corner of this node when the page is
-     * rendered in `?skeleton=true` mode. Stamped by UIElement::__construct
+     * rendered in `?wireframe=true` mode. Stamped by UIElement::__construct
      * with the element class short-name (lowercase), then overwritten by
      * Component::render with the component class short-name (capitalised)
      * at component boundaries.
      */
-    public ?string $skeletonLabel = null;
+    public ?string $wireframeLabel = null;
 
     /**
-     * Source location captured in skeleton mode — the file:line where this
+     * Source location captured in wireframe mode — the file:line where this
      * node was instantiated in user code (for UI elements) or the file where
      * the component class is declared (for components). Surfaced by the
      * frontend on ctrl+click so the dev can jump straight to the source.
      */
-    public ?string $skeletonFile = null;
-    public ?int $skeletonLine = null;
+    public ?string $wireframeFile = null;
+    public ?int $wireframeLine = null;
 
     /** @var bool Whether this node has a bound value ref */
     private bool $hasBoundRef = false;
@@ -197,7 +197,7 @@ class TagDomNode extends DomNode
 
     /**
      * Drop every registered listener — the node renders without any on*
-     * attributes after this. Used by the skeleton renderer so an accidental
+     * attributes after this. Used by the wireframe renderer so an accidental
      * click during inspection doesn't kick off the real app handler.
      */
     public function clearEvents(): static
@@ -400,18 +400,18 @@ class TagDomNode extends DomNode
             }
         }
 
-        // Auto-emit skeleton/inspect data attrs whenever the fields are set
+        // Auto-emit wireframe/inspect data attrs whenever the fields are set
         // (UIElement + Component stamp them only when UIElement::$captureSource
         // is on, which Spwa flips in dev mode). Kept out of $attributes so the
         // diff path never sees them — they're presentation-only metadata.
-        if ($this->skeletonLabel !== null) {
-            $attrHtml .= ' data-skel-label="' . htmlspecialchars($this->skeletonLabel) . '"';
+        if ($this->wireframeLabel !== null) {
+            $attrHtml .= ' data-wf-label="' . htmlspecialchars($this->wireframeLabel) . '"';
         }
-        if ($this->skeletonFile !== null) {
-            $attrHtml .= ' data-skel-file="' . htmlspecialchars($this->skeletonFile) . '"';
+        if ($this->wireframeFile !== null) {
+            $attrHtml .= ' data-wf-file="' . htmlspecialchars($this->wireframeFile) . '"';
         }
-        if ($this->skeletonLine !== null) {
-            $attrHtml .= ' data-skel-line="' . $this->skeletonLine . '"';
+        if ($this->wireframeLine !== null) {
+            $attrHtml .= ' data-wf-line="' . $this->wireframeLine . '"';
         }
 
         // Self-closing tags

@@ -3,7 +3,7 @@
 namespace Spwa;
 
 use Spwa\Debug\DebugPanel;
-use Spwa\Debug\SkeletonRenderer;
+use Spwa\Debug\WireframeRenderer;
 use Spwa\Debug\Timings;
 use Spwa\Error\DefaultErrorPage;
 use Spwa\Error\ErrorInfo;
@@ -30,20 +30,20 @@ class Spwa
     private static bool $errorRendered = false;
 
     /**
-     * Inline stylesheet for skeleton mode. Loaded only when the page is
-     * rendered with ?skeleton=true. Keeps the original element box (so
+     * Inline stylesheet for wireframe mode. Loaded only when the page is
+     * rendered with ?wireframe=true. Keeps the original element box (so
      * margins/paddings/sizing stay intact) and overlays a dashed outline +
      * a small top-left tag with the construct/component name. The image
      * placeholder uses two CSS gradients to draw the classic crossed-out
      * rectangle so a sized <img> turns into a same-sized X box.
      */
-    private const SKELETON_CSS = <<<'CSS'
-.spwa-skel{outline:1px dashed rgba(60,80,120,0.45);outline-offset:-1px;position:relative;}
-.spwa-skel-label{position:absolute;top:0;left:0;z-index:9999;font:10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;background:#ffec99;color:#222;padding:2px 5px;pointer-events:none;border-bottom-right-radius:3px;white-space:nowrap;letter-spacing:.02em;}
-.spwa-skel-img{background:
+    private const WIREFRAME_CSS = <<<'CSS'
+.spwa-wf{outline:1px dashed rgba(60,80,120,0.45);outline-offset:-1px;position:relative;}
+.spwa-wf-label{position:absolute;top:0;left:0;z-index:9999;font:10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;background:#ffec99;color:#222;padding:2px 5px;pointer-events:none;border-bottom-right-radius:3px;white-space:nowrap;letter-spacing:.02em;}
+.spwa-wf-img{background:
   linear-gradient(to top right,transparent calc(50% - 1px),rgba(60,80,120,0.4) 50%,transparent calc(50% + 1px)),
   linear-gradient(to top left,transparent calc(50% - 1px),rgba(60,80,120,0.4) 50%,transparent calc(50% + 1px));min-height:32px;}
-.spwa-skel-hover{background-color:rgba(255,235,100,0.45) !important;}
+.spwa-wf-hover{background-color:rgba(255,235,100,0.45) !important;}
 CSS;
 
     /**
@@ -54,6 +54,11 @@ CSS;
      * substituting {file}/{line}/{col}. If the template is empty (no
      * config.editor.url) the navigation step is skipped and only the
      * console line is emitted.
+     *
+     * Also installs a "w" keybind that flips ?wireframe= on/off via a
+     * full page reload (the wireframe transform runs server-side, so a
+     * fresh GET is the right way to toggle). Ignored when focus is in an
+     * editable field, or when a modifier key is held.
      */
     private const INSPECT_JS = <<<'JS'
 (function () {
@@ -67,42 +72,56 @@ CSS;
   }
   document.addEventListener('click', function (e) {
     if (!e.ctrlKey && !e.metaKey) return;
-    var el = e.target && e.target.closest ? e.target.closest('[data-skel-label]') : null;
+    var el = e.target && e.target.closest ? e.target.closest('[data-wf-label]') : null;
     if (!el) return;
     e.preventDefault();
     e.stopPropagation();
-    var label = el.getAttribute('data-skel-label') || '?';
-    var file = el.getAttribute('data-skel-file');
-    var line = el.getAttribute('data-skel-line');
+    var label = el.getAttribute('data-wf-label') || '?';
+    var file = el.getAttribute('data-wf-file');
+    var line = el.getAttribute('data-wf-line');
     var loc = file ? (file + (line ? ':' + line : '')) : '(unknown)';
     console.log('%c' + label, 'font-weight:bold;color:#a06010', '@', loc);
     var href = buildHref(file, line, 1);
     if (href) window.location.href = href;
   }, true);
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'w' && e.key !== 'W') return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var t = document.activeElement;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
+    e.preventDefault();
+    var url = new URL(window.location.href);
+    if (url.searchParams.get('wireframe') === 'true') {
+      url.searchParams.delete('wireframe');
+    } else {
+      url.searchParams.set('wireframe', 'true');
+    }
+    window.location.href = url.toString();
+  });
 })();
 JS;
 
     /**
-     * Inline IIFE injected only when ?skeleton=true (and dev mode is on).
+     * Inline IIFE injected only when ?wireframe=true (and dev mode is on).
      * Tracks the innermost tagged element under the cursor and toggles
-     * .spwa-skel-hover for a translucent background highlight. Plain
-     * (non-modifier) clicks are swallowed too — skeleton view is read-only.
+     * .spwa-wf-hover for a translucent background highlight. Plain
+     * (non-modifier) clicks are swallowed too — wireframe view is read-only.
      * Ctrl/cmd-click stays unhandled here; the INSPECT_JS handler logs it.
      */
-    private const SKELETON_JS = <<<'JS'
+    private const WIREFRAME_JS = <<<'JS'
 (function () {
   var active = null;
-  function clear() { if (active) { active.classList.remove('spwa-skel-hover'); active = null; } }
+  function clear() { if (active) { active.classList.remove('spwa-wf-hover'); active = null; } }
   document.addEventListener('mousemove', function (e) {
-    var el = e.target && e.target.closest ? e.target.closest('[data-skel-label]') : null;
+    var el = e.target && e.target.closest ? e.target.closest('[data-wf-label]') : null;
     if (el === active) return;
     clear();
-    if (el) { el.classList.add('spwa-skel-hover'); active = el; }
+    if (el) { el.classList.add('spwa-wf-hover'); active = el; }
   }, true);
   document.addEventListener('mouseleave', clear, true);
   document.addEventListener('click', function (e) {
     if (e.ctrlKey || e.metaKey) return;
-    var el = e.target && e.target.closest ? e.target.closest('[data-skel-label]') : null;
+    var el = e.target && e.target.closest ? e.target.closest('[data-wf-label]') : null;
     if (!el) return;
     e.preventDefault();
     e.stopPropagation();
@@ -556,11 +575,11 @@ JS;
     {
         $t = new Timings();
 
-        // Skeleton is a dev-only tool — production renders ignore ?skeleton=
-        // entirely. Source capture (UIElement::$captureSource) is already on
-        // for the whole request when isDevelopment, set in run() above.
+        // Wireframe is a dev-only tool — production renders ignore
+        // ?wireframe= entirely. Source capture (UIElement::$captureSource) is
+        // already on for the whole request when isDevelopment, set in run().
         $isDev = self::isDevelopment();
-        $skeleton = $isDev && (bool)filter_input(INPUT_GET, 'skeleton', FILTER_VALIDATE_BOOLEAN);
+        $wireframe = $isDev && (bool)filter_input(INPUT_GET, 'wireframe', FILTER_VALIDATE_BOOLEAN);
 
         // If restoring serialized state crashes the render, drop all state
         // and retry from defaults. A second failure is propagated.
@@ -580,11 +599,11 @@ JS;
         $t->mark('render');
 
         // Wireframe transform after the real render so the original styles
-        // (margins, paddings, sizing) are preserved — the skeleton only
+        // (margins, paddings, sizing) are preserved — the wireframe only
         // overlays a dashed outline + label and substitutes leaf content.
-        if ($skeleton) {
-            $ui = SkeletonRenderer::transform($ui);
-            $t->mark('skeleton');
+        if ($wireframe) {
+            $ui = WireframeRenderer::transform($ui);
+            $t->mark('wireframe');
         }
 
         // Render the optional loader overlay so the DOM tree is complete.
@@ -630,8 +649,8 @@ JS;
                 (new TagDomNode('script'))->rawContent($customJs),
             );
 
-        if ($skeleton) {
-            $head->content((new TagDomNode('style'))->rawContent(self::SKELETON_CSS));
+        if ($wireframe) {
+            $head->content((new TagDomNode('style'))->rawContent(self::WIREFRAME_CSS));
         }
 
         if ($stateJs !== null) {
@@ -655,14 +674,15 @@ JS;
 
         $body->content((new TagDomNode('script'))->rawContent($debugJs));
 
-        // Inspect logger goes on every dev page so ctrl+click works without
-        // having to switch into skeleton mode first. Skeleton mode then adds
-        // the hover-highlight + plain-click swallow on top.
+        // Inspect logger goes on every dev page so ctrl+click + the "w"
+        // keybind work without having to switch into wireframe mode first.
+        // Wireframe mode then adds the hover-highlight + plain-click swallow
+        // on top.
         if ($isDev) {
             $body->content((new TagDomNode('script'))->rawContent(self::INSPECT_JS));
         }
-        if ($skeleton) {
-            $body->content((new TagDomNode('script'))->rawContent(self::SKELETON_JS));
+        if ($wireframe) {
+            $body->content((new TagDomNode('script'))->rawContent(self::WIREFRAME_JS));
         }
 
         $document = (new TagDomNode('html'))

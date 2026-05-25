@@ -3,8 +3,8 @@
 return [
     // When true, the page emits the HMR long-poll that watches /hmr.php and
     // reloads on a detected source change. Also gates the ctrl+click "open
-    // in editor" inspector and the ?skeleton=true wireframe view. Set to
-    // false in production.
+    // in editor" inspector, the "w" wireframe-toggle keybind, and the
+    // ?wireframe=true view itself. Set to false in production.
     'development' => true,
 
     // Sources watched for the HMR change signal and the /style.css cache-
