@@ -73,7 +73,7 @@ CSS;
       var file = el.getAttribute('data-skel-file');
       var line = el.getAttribute('data-skel-line');
       var loc = file ? (file + (line ? ':' + line : '')) : '(unknown)';
-      console.log('%c' + label, 'font-weight:bold;color:#a06010', '@', loc, el);
+      console.log('%c' + label, 'font-weight:bold;color:#a06010', '@', loc);
     }
   }, true);
 })();
