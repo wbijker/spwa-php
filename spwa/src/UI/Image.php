@@ -10,7 +10,7 @@ namespace Spwa\UI;
  *
  * Usage:
  *   UI::image("/photo.jpg", "Profile photo")
- *       ->size(Unit::scale(48))
+ *       ->size(Unit::tick(48))
  *       ->rounded()
  *       ->objectCover()
  */

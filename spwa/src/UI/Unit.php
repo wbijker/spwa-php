@@ -8,7 +8,7 @@ namespace Spwa\UI;
  * Usage:
  *   Unit::px(16)           // 16 pixels
  *   Unit::rem(2)           // 2rem
- *   Unit::scale(4)         // Tailwind scale value (4 = 1rem)
+ *   Unit::tick(4)          // Tailwind spacing tick (4 = 1rem)
  *   Unit::percent(50)      // 50%
  *   Unit::full()           // 100%
  */
@@ -127,13 +127,16 @@ class Unit extends Property
     }
 
     // ============================================================
-    // Tailwind scale (value * 0.25rem)
+    // Tailwind spacing tick (one tick = 0.25rem = ~4px @ 16px root)
     // ============================================================
 
     /**
-     * Tailwind spacing scale (1 = 0.25rem, 4 = 1rem, etc.).
+     * Tailwind spacing tick. One tick is 0.25rem, so `tick(1)` = `p-1` /
+     * `m-1` (0.25rem), `tick(4)` = `p-4` (1rem), `tick(8)` = `p-8` (2rem).
+     * The half-tick rungs (0.5, 1.5, 2.5, 3.5) are reachable through the
+     * raw scale map — use `value()` for those.
      */
-    public static function scale(int $value): static
+    public static function tick(int $value): static
     {
         return new static((string)$value);
     }
