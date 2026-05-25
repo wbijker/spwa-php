@@ -264,6 +264,36 @@ JS;
         return sha1(serialize($state->getAll()));
     }
 
+    /**
+     * Hash every PHP file's path+mtime under the project root. Doubles as the
+     * cache-buster for /style.css (same trigger as HMR — when source moves,
+     * both the long-poll detects it and the stylesheet URL changes).
+     */
+    public static function sourceHash(string $root): string
+    {
+        $h = hash_init('sha1');
+        $skip = ['vendor' => 1, 'node_modules' => 1, '.git' => 1];
+        $dir = new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS);
+        $filter = new \RecursiveCallbackFilterIterator($dir, function ($f) use ($skip) {
+            return $f->isFile()
+                ? $f->getExtension() === 'php'
+                : !isset($skip[$f->getFilename()]);
+        });
+        foreach (new \RecursiveIteratorIterator($filter) as $f) {
+            hash_update($h, $f->getPathname() . ':' . $f->getMTime() . "\n");
+        }
+        return hash_final($h);
+    }
+
+    /**
+     * Project root (parent of www/) inferred from the entry script. Used to
+     * scope sourceHash() and config().
+     */
+    private static function projectRoot(): string
+    {
+        return dirname($_SERVER['SCRIPT_FILENAME'] ?? '', 2);
+    }
+
     private static function handlePost(App $entry, StateManager $state): void
     {
         $t = new Timings();
@@ -363,13 +393,6 @@ JS;
         $newUi->compare($oldUi, $patcher);
         $t->mark('diff');
 
-        // Styles delta
-        $oldStyles = $oldUi->collectStyles();
-        $newStyles = $newUi->collectStyles();
-        $deltaStyles = StyleGenerator::delta($oldStyles, $newStyles);
-        $deltaGenerator = StyleGenerator::from($deltaStyles);
-        $t->mark('styles_delta');
-
         // Capture buffered output → console.log
         $output = ob_get_clean();
         if ($output !== '' && $output !== false) {
@@ -389,7 +412,6 @@ JS;
             'success' => true,
             'js' => JsRuntime::dump(),
             'patches' => $patcher->getOperations(),
-            'styles' => $deltaGenerator->toRaw(),
             'hash' => $newHash,
         ];
 
@@ -424,26 +446,20 @@ JS;
         }
         $t->mark('render');
 
-        // Render the optional loader overlay before collecting styles so its
-        // CSS lands in the same <style> block.
+        // Render the optional loader overlay so the DOM tree is complete.
         $loaderVNode = $entry->getLoader();
         $loaderDom = $loaderVNode?->render($state, null, RenderPhase::Initial);
         $t->mark('render_loader');
 
-        $styles = $ui->collectStyles();
-        if ($loaderDom !== null) {
-            $styles = array_merge($styles, $loaderDom->collectStyles());
-        }
-        $generator = StyleGenerator::from($styles);
-        $t->mark('collect_styles');
-
         $stateJs = $state->getClientJs();
 
-        // Collect custom CSS/JS registered by components
-        $customCss = implode("\n", $entry->getCustomCss());
+        // Collect custom JS registered by components.
         $customJs = implode("\n", $entry->getCustomJs());
 
         $stateHash = self::computeStateHash($state);
+        // Same source-mtime hash that HMR watches; bumping it on any PHP
+        // change forces the browser to refetch /style.css.
+        $styleHash = self::sourceHash(self::projectRoot());
         $t->mark('compute_hash');
 
         // Debug panel → inline script for initial render. Construct AFTER
@@ -462,8 +478,7 @@ JS;
                 ),
                 // Preflight first so framework-generated rules can override it.
                 (new TagDomNode('link'))->attr('rel', 'stylesheet')->attr('href', '/preflight.css'),
-                (new TagDomNode('style'))->attr('id', 'spwa-styles')->rawContent($generator->toStyle()),
-                (new TagDomNode('style'))->attr('id', 'spwa-custom-styles')->rawContent($customCss),
+                (new TagDomNode('link'))->attr('rel', 'stylesheet')->attr('href', '/style.css?h=' . $styleHash),
                 (new TagDomNode('script'))->attr('src', '/spwa.js')->rawContent(''),
                 (new TagDomNode('script'))->rawContent($customJs),
             );

@@ -1,117 +1,5 @@
-// SPWA Style Manager with compression support
+// SPWA runtime
 var SPWA = (function() {
-    // Arrays for decompression (index = array position)
-    var P = ["display","flex-direction","justify-content","align-items","gap","padding","margin","width","height","background-color","color","font-size","font-weight","border-radius","box-shadow","flex-wrap","flex-grow","flex-shrink","position","top","right","bottom","left","text-align","text-decoration","line-height","overflow","opacity","z-index","cursor","grid-template-columns","column-gap","row-gap","max-width","min-width","max-height","min-height","padding-top","padding-right","padding-bottom","padding-left","margin-top","margin-right","margin-bottom","margin-left","object-fit","object-position","border-width","border-style","border-color","visibility","transition-property","transition-duration","transition-timing-function","transform","flex-basis","align-self","justify-self","overflow-x","overflow-y"];
-    var V = ["flex","block","inline","inline-block","grid","none","row","column","row-reverse","column-reverse","flex-start","flex-end","center","space-between","space-around","space-evenly","stretch","baseline","wrap","nowrap","absolute","relative","fixed","sticky","auto","0","0px","100%","1","pointer","inherit","transparent","#ffffff","#000000","cover","contain","fill","underline","bold","normal","hidden","visible","scroll","solid","dashed","dotted","all","inline-flex","fit-content","min-content","max-content"];
-    var B = ["(min-width: 640px)","(min-width: 768px)","(min-width: 1024px)","(min-width: 1280px)","(min-width: 1536px)"];
-    var C = ["(prefers-color-scheme: dark)","(prefers-color-scheme: light)"];
-    var X = [":hover",":active",":focus",":focus-visible",":focus-within",":visited",":disabled",":enabled",":checked",":required",":valid",":invalid","::placeholder",":first-child",":last-child",":only-child",":nth-child(odd)",":nth-child(even)",":empty"];
-
-    var styleEl = null;
-    var knownClasses = new Set();
-
-    function getStyleElement() {
-        if (!styleEl) {
-            styleEl = document.getElementById('spwa-styles');
-            if (!styleEl) {
-                styleEl = document.createElement('style');
-                styleEl.id = 'spwa-styles';
-                document.head.appendChild(styleEl);
-            }
-        }
-        return styleEl;
-    }
-
-    function initKnownClasses() {
-        // Parse existing stylesheet to track known classes
-        var el = getStyleElement();
-        var css = el.textContent || '';
-        var matches = css.match(/\.([^\s{:]+)/g);
-        if (matches) {
-            matches.forEach(function(m) {
-                // Unescape and add to known set
-                knownClasses.add(m.slice(1).replace(/\\([.:\[\]\/])/g, '$1'));
-            });
-        }
-    }
-
-    function escapeClass(cls) {
-        return cls.replace(/([.:\[\]\/])/g, '\\$1');
-    }
-
-    // Decompress and add styles
-    // Format: { className: [breakpoint, colorScheme, [pseudos], prop1, val1, prop2, val2, ...] }
-    function addCompressedStyles(styles) {
-        var css = '';
-        for (var cls in styles) {
-            if (knownClasses.has(cls)) continue;
-            knownClasses.add(cls);
-
-            var data = styles[cls];
-            var breakpoint = data[0];
-            var colorScheme = data[1];
-            var pseudos = data[2];
-
-            // Build selector
-            var selector = '.' + escapeClass(cls);
-            for (var i = 0; i < pseudos.length; i++) {
-                selector += X[pseudos[i]];
-            }
-
-            // Build properties (starting at index 3)
-            var rules = [];
-            for (var j = 3; j < data.length; j += 2) {
-                var prop = data[j];
-                var val = data[j + 1];
-                // Resolve property: number = index, string = literal
-                var propStr = typeof prop === 'number' ? P[prop] : prop;
-                // Resolve value: number = index, string = literal
-                var valStr = typeof val === 'number' ? V[val] : val;
-                rules.push(propStr + ':' + valStr);
-            }
-
-            var rule = selector + '{' + rules.join(';') + '}';
-
-            // Wrap in media query if needed
-            var mediaConditions = [];
-            if (breakpoint !== null) mediaConditions.push(B[breakpoint]);
-            if (colorScheme !== null) mediaConditions.push(C[colorScheme]);
-
-            if (mediaConditions.length > 0) {
-                rule = '@media ' + mediaConditions.join(' and ') + '{' + rule + '}';
-            }
-
-            css += rule;
-        }
-
-        if (css) {
-            var el = getStyleElement();
-            el.textContent += css;
-        }
-    }
-
-    // Add raw CSS rules (className => CSS rule string)
-    function addRawStyles(styles) {
-        var css = '';
-        for (var cls in styles) {
-            if (!knownClasses.has(cls)) {
-                css += styles[cls];
-                knownClasses.add(cls);
-            }
-        }
-        if (css) {
-            var el = getStyleElement();
-            el.textContent += css;
-        }
-    }
-
-    // Initialize on load
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initKnownClasses);
-    } else {
-        initKnownClasses();
-    }
-
     // --- State management ---
     var stateHandlers = {};
 
@@ -525,15 +413,6 @@ var SPWA = (function() {
             SPWA.setAll(data.state);
         }
 
-        // Add new styles before applying patches
-        // Supports both raw (className => CSS string) and compressed formats
-        if (data.styles) {
-            SPWA.addRawStyles(data.styles);
-        }
-        if (data.compressedStyles) {
-            SPWA.addCompressedStyles(data.compressedStyles);
-        }
-
         // Execute JS commands from server
         if (data.js) {
             executeJsDump(data.js);
@@ -937,8 +816,6 @@ var SPWA = (function() {
         post(data);
     }
     return {
-        addRawStyles: addRawStyles,
-        addCompressedStyles: addCompressedStyles,
         addStateHandler: addStateHandler,
         getState: getState,
         saveState: saveState,
