@@ -53,12 +53,12 @@ class News extends Component
                             ->register(NewsListRoute::class, fn() => $this->body())
                             ->register(ArticleRoute::class, function (ArticleRoute $route) {
                                 $article = NewsData::findBySlug($route->slug);
-                                return $article !== null ? $this->detailView($article) : $this->body();
+                                return $article !== null ? new DetailView($article) : $this->body();
                             })
                             ->fallback($this->body()),
                     ),
 
-                $this->footer(),
+                new Footer(),
             );
     }
 
@@ -166,7 +166,7 @@ class News extends Component
                     ->gap(Unit::rem(1.5))
                     ->gap(Unit::rem(2), Pseudo::md())
                     ->content(
-                        $this->featuredArticle(NewsData::featured()),
+                        new FeaturedArticle(NewsData::featured()),
                         $this->whatsNextStrip(NewsData::whatsNext()),
                         $this->articleList(NewsData::articles()),
                     ),
@@ -188,57 +188,13 @@ class News extends Component
     }
 
     // ============================================================
-    // Featured article
-    // ============================================================
-
-    private function featuredArticle(Article $article): UIElement
-    {
-        return UI::column()
-            ->background(Color::white())
-            ->rounded(Unit::rem(0.5))
-            ->overflow()
-            ->shadow(Shadow::Small)
-            ->shadow(Shadow::Large, Pseudo::hover())
-            ->animated()
-            ->clickable()
-            ->on('click', fn() => Router::navigate(new ArticleRoute($article->slug())))
-            ->content(
-                UI::image($article->coverImage, $article->title)
-                    ->width(Unit::full())
-                    ->height(Unit::px(220))
-                    ->height(Unit::px(320), Pseudo::md())
-                    ->height(Unit::px(380), Pseudo::lg())
-                    ->objectCover(),
-                UI::column()
-                    ->padding(Unit::rem(1))
-                    ->padding(Unit::rem(1.5), Pseudo::md())
-                    ->gap(Unit::rem(0.75))
-                    ->content(
-                        $this->categoryLabel($article->category),
-                        UI::text($article->title)
-                            ->fontSize(FontSize::ExtraLarge)
-                            ->fontSize(FontSize::TwoXL, Pseudo::md())
-                            ->fontSize(FontSize::ThreeXL, Pseudo::lg())
-                            ->weight(FontWeight::Bold)
-                            ->color(Color::gray(900))
-                            ->color(Color::red(600), Pseudo::hover()),
-                        UI::text($article->excerpt)
-                            ->fontSize(FontSize::Small)
-                            ->fontSize(FontSize::Base, Pseudo::md())
-                            ->color(Color::gray(600)),
-                        $this->articleMeta($article->formattedDate())
-                    )
-            );
-    }
-
-    // ============================================================
     // What's Next horizontal strip
     // ============================================================
 
     /** @param WhatsNextItem[] $items */
     private function whatsNextStrip(array $items): UIElement
     {
-        $cards = array_map(fn(WhatsNextItem $i) => $this->whatsNextCard($i), $items);
+        $cards = array_map(fn(WhatsNextItem $i) => new WhatsNextCard($i), $items);
 
         return UI::column()
             ->gap(Unit::rem(1))
@@ -252,37 +208,6 @@ class News extends Component
             );
     }
 
-    private function whatsNextCard(WhatsNextItem $item): UIElement
-    {
-        return UI::column()
-            ->background(Color::white())
-            ->rounded(Unit::rem(0.375))
-            ->overflow()
-            ->shadow(Shadow::Small)
-            ->shadow(Shadow::Medium, Pseudo::hover())
-            ->animated()
-            ->clickable()
-            ->width(Unit::px(220))
-            ->noShrink()
-            ->content(
-                UI::image($item->coverImage, $item->title)
-                    ->width(Unit::full())
-                    ->height(Unit::px(120))
-                    ->objectCover(),
-                UI::column()
-                    ->padding(Unit::rem(0.75))
-                    ->gap(Unit::rem(0.375))
-                    ->content(
-                        $this->categoryLabel($item->category),
-                        UI::text($item->title)
-                            ->fontSize(FontSize::Small)
-                            ->weight(FontWeight::SemiBold)
-                            ->color(Color::gray(900))
-                            ->color(Color::red(600), Pseudo::hover())
-                    )
-            );
-    }
-
     // ============================================================
     // Article list
     // ============================================================
@@ -290,57 +215,13 @@ class News extends Component
     /** @param Article[] $articles */
     private function articleList(array $articles): UIElement
     {
-        $cards = array_map(fn(Article $a) => $this->articleCard($a), $articles);
+        $cards = array_map(fn(Article $a) => new ArticleCard($a), $articles);
 
         return UI::column()
             ->gap(Unit::rem(1))
             ->content(
                 $this->sectionHeading('LATEST NEWS'),
                 ...$cards
-            );
-    }
-
-    private function articleCard(Article $article): UIElement
-    {
-        // Stacks (image above text) on small screens; image-left layout on md+.
-        return UI::row()
-            ->direction(Direction::column())
-            ->direction(Direction::row(), Pseudo::md())
-            ->background(Color::white())
-            ->rounded(Unit::rem(0.375))
-            ->overflow()
-            ->shadow(Shadow::Small)
-            ->shadow(Shadow::Medium, Pseudo::hover())
-            ->animated()
-            ->clickable()
-            ->alignTop()
-            ->on('click', fn() => Router::navigate(new ArticleRoute($article->slug())))
-            ->content(
-                UI::image($article->coverImage, $article->title)
-                    ->width(Unit::full())
-                    ->width(Unit::px(220), Pseudo::md())
-                    ->height(Unit::px(180))
-                    ->height(Unit::px(160), Pseudo::md())
-                    ->noShrink(Pseudo::md())
-                    ->objectCover(),
-                UI::column()
-                    ->grow()
-                    ->padding(Unit::rem(1))
-                    ->padding(Unit::rem(1.25), Pseudo::md())
-                    ->gap(Unit::rem(0.5))
-                    ->content(
-                        $this->categoryLabel($article->category),
-                        UI::text($article->title)
-                            ->fontSize(FontSize::Base)
-                            ->fontSize(FontSize::Large, Pseudo::md())
-                            ->weight(FontWeight::SemiBold)
-                            ->color(Color::gray(900))
-                            ->color(Color::red(600), Pseudo::hover()),
-                        UI::text($article->excerpt)
-                            ->fontSize(FontSize::Small)
-                            ->color(Color::gray(600)),
-                        $this->articleMeta($article->formattedDate())
-                    )
             );
     }
 
@@ -402,55 +283,6 @@ class News extends Component
     }
 
     // ============================================================
-    // Footer
-    // ============================================================
-
-    private function footer(): UIElement
-    {
-        return UI::container()
-            ->background(Color::gray(900))
-            ->padding(x: Unit::rem(1),   y: Unit::rem(2))
-            ->padding(x: Unit::rem(1.5), y: Unit::rem(2.5), pseudo: Pseudo::md())
-            ->content(
-                // Stacks on small screens; row with space-between on md+.
-                UI::row()
-                    ->direction(Direction::column())
-                    ->direction(Direction::row(), Pseudo::md())
-                    ->maxWidth(Unit::px(1200))
-                    ->width(Unit::full())
-                    ->marginX(Unit::auto())
-                    ->alignBetween()
-                    ->alignMiddle()
-                    ->gap(Unit::rem(1))
-                    ->content(
-                        UI::text('© 2026. All rights reserved.')
-                            ->fontSize(FontSize::Small)
-                            ->color(Color::gray(400)),
-                        UI::row()
-                            ->wrap()
-                            ->alignCenter()
-                            ->gap(Unit::rem(1))
-                            ->gap(Unit::rem(1.5), Pseudo::md())
-                            ->content(
-                                $this->footerLink('About'),
-                                $this->footerLink('Advertise'),
-                                $this->footerLink('Contact'),
-                                $this->footerLink('Privacy'),
-                            )
-                    )
-            );
-    }
-
-    private function footerLink(string $label): UIElement
-    {
-        return UI::text($label)
-            ->fontSize(FontSize::Small)
-            ->color(Color::gray(400))
-            ->color(Color::white(), Pseudo::hover())
-            ->clickable();
-    }
-
-    // ============================================================
     // Shared helpers
     // ============================================================
 
@@ -469,22 +301,22 @@ class News extends Component
             );
     }
 
-    private function categoryLabel(string $category): UIElement
+    public static function categoryLabel(string $category): UIElement
     {
         return UI::text(strtoupper($category))
             ->fontSize(FontSize::ExtraSmall)
             ->weight(FontWeight::Bold)
-            ->color($this->categoryColor($category));
+            ->color(self::categoryColor($category));
     }
 
-    private function articleMeta(string $date): UIElement
+    public static function articleMeta(string $date): UIElement
     {
         return UI::text($date)
             ->fontSize(FontSize::ExtraSmall)
             ->color(Color::gray(500));
     }
 
-    private function categoryColor(string $category): Color
+    public static function categoryColor(string $category): Color
     {
         return match (strtolower($category)) {
             'banking', 'business' => Color::blue(600),
@@ -500,70 +332,4 @@ class News extends Component
         };
     }
 
-    // ============================================================
-    // Detail view — /article/<slug>
-    // ============================================================
-
-    private function detailView(Article $article): UIElement
-    {
-        return UI::column()
-            ->maxWidth(Unit::px(900))
-            ->width(Unit::full())
-            ->marginX(Unit::auto())
-            ->padding(x: Unit::rem(1),   y: Unit::rem(1.25))
-            ->padding(x: Unit::rem(1.5), y: Unit::rem(2), pseudo: Pseudo::md())
-            ->gap(Unit::rem(1.5))
-            ->content(
-                $this->backLink(),
-                UI::column()
-                    ->background(Color::white())
-                    ->rounded(Unit::rem(0.5))
-                    ->overflow()
-                    ->shadow(Shadow::Small)
-                    ->content(
-                        UI::image($article->coverImage, $article->title)
-                            ->width(Unit::full())
-                            ->height(Unit::px(240))
-                            ->height(Unit::px(360), Pseudo::md())
-                            ->height(Unit::px(440), Pseudo::lg())
-                            ->objectCover(),
-                        UI::column()
-                            ->padding(Unit::rem(1.25))
-                            ->padding(Unit::rem(2), Pseudo::md())
-                            ->gap(Unit::rem(1))
-                            ->content(
-                                $this->categoryLabel($article->category),
-                                UI::text($article->title)
-                                    ->fontSize(FontSize::TwoXL)
-                                    ->fontSize(FontSize::ThreeXL, Pseudo::md())
-                                    ->fontSize(FontSize::FourXL, Pseudo::lg())
-                                    ->weight(FontWeight::Bold)
-                                    ->color(Color::gray(900)),
-                                UI::text($article->formattedDate())
-                                    ->fontSize(FontSize::Small)
-                                    ->color(Color::gray(500)),
-                                UI::text($article->excerpt)
-                                    ->fontSize(FontSize::Base)
-                                    ->fontSize(FontSize::Large, Pseudo::md())
-                                    ->weight(FontWeight::SemiBold)
-                                    ->color(Color::gray(700))
-                                    ->paddingTop(Unit::rem(0.5)),
-                                UI::text($article->content)
-                                    ->fontSize(FontSize::Base)
-                                    ->color(Color::gray(700))
-                            )
-                    )
-            );
-    }
-
-    private function backLink(): UIElement
-    {
-        return UI::text('← Back to all news')
-            ->fontSize(FontSize::Small)
-            ->weight(FontWeight::SemiBold)
-            ->color(Color::red(600))
-            ->color(Color::red(700), Pseudo::hover())
-            ->clickable()
-            ->on('click', fn() => Router::navigate(new NewsListRoute()));
-    }
 }
