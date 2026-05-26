@@ -5,7 +5,6 @@ namespace Samples\News;
 use Spwa\Js\Js;
 use Spwa\Js\JsLiteral;
 use Spwa\UI\Color;
-use Spwa\UI\DomNode;
 use Spwa\UI\UI;
 use Spwa\UI\Unit;
 use Spwa\VNode\App;
@@ -23,10 +22,17 @@ use Spwa\VNode\VNode;
  */
 class Leaflet extends StatelessComponent
 {
-    /** @var array{coordinates: array{0: float, 1: float}, zoom: int}|null */
-    private ?array $pendingView = null;
-
-    public function __construct(private string $key) {}
+    /**
+     * @param array{0: float, 1: float}|null $initialCoords Initial map
+     *   center. Applied once inside the created() hook, so subsequent
+     *   setView() calls (from event handlers, etc.) take over without
+     *   the initial view re-asserting itself on every render.
+     */
+    public function __construct(
+        private string $key,
+        private ?array $initialCoords = null,
+        private int $initialZoom = 14,
+    ) {}
 
     /**
      * First-time-only setup for this map. Wrapped in SPWA.ready so the
@@ -43,7 +49,7 @@ class Leaflet extends StatelessComponent
     {
         $ref = $this->mapRef();
 
-        Js::domReady(
+        $statements = [
             // window.leafLet[<key>] = L.map(<key>)
             Js::assign([$ref], Js::invoke(['L', 'map'], [$this->key])),
 
@@ -58,47 +64,39 @@ class Leaflet extends StatelessComponent
                 ]), 'addTo'],
                 [$ref],
             ),
-        );
+        ];
+
+        // Optional initial view — fires once on first appearance.
+        // Subsequent renders skip created() so the view is not reset
+        // and any post-click setView stays in effect.
+        if ($this->initialCoords !== null) {
+            $statements[] = Js::invoke(
+                [$ref, 'setView'],
+                [$this->initialCoords, $this->initialZoom],
+            );
+        }
+
+        Js::domReady(...$statements);
     }
 
     /**
-     * Record the desired view. We don't emit Js here — calling setView
-     * eagerly (e.g. from a body() that's evaluated twice because a
-     * router stores both a route closure and a fallback) would queue
-     * duplicate or order-wrong statements. Instead the actual
-     * Js::invoke happens in rendered(), which fires only for the
-     * Leaflet that's truly in the rendered tree AND queues after
-     * created() so the map is constructed first.
+     * Drive this map's view immediately by queueing a Js::invoke into
+     * the shared SPWA.ready block. Intended to be called from event
+     * handlers (e.g. a "click to pan to this landmark") rather than
+     * from render-time code: events fire once per user action so
+     * there's no duplication risk, and the resulting setView statement
+     * lands in the response that follows that one event.
+     *
+     *   SPWA.ready(function () {
+     *       window.leafLet["<key>"].setView([c1, c2], zoom);
+     *   });
      *
      * @param array{0: float, 1: float} $coordinates
      */
     public function setView(array $coordinates, int $zoom): void
     {
-        $this->pendingView = ['coordinates' => $coordinates, 'zoom' => $zoom];
-    }
-
-    /**
-     * Flush any pending setView intent. Runs after build() and after
-     * created()'s queued statements, so the resulting JS lands inside
-     * the shared SPWA.ready block in the correct order:
-     *
-     *   SPWA.ready(function () {
-     *       window.leafLet["<key>"] = L.map("<key>");         // from created
-     *       L.tileLayer(...).addTo(window.leafLet["<key>"]);  // from created
-     *       window.leafLet["<key>"].setView([c1, c2], zoom);  // from here
-     *   });
-     */
-    protected function rendered(DomNode $dom): void
-    {
-        if ($this->pendingView === null) {
-            return;
-        }
-
         Js::domReady(
-            Js::invoke(
-                [$this->mapRef(), 'setView'],
-                [$this->pendingView['coordinates'], $this->pendingView['zoom']],
-            ),
+            Js::invoke([$this->mapRef(), 'setView'], [$coordinates, $zoom]),
         );
     }
 

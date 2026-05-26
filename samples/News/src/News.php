@@ -69,8 +69,7 @@ class News extends Component
     private function body(): UIElement
     {
 
-        $leaflet = new Leaflet('story-map');
-        $leaflet->setView([51.505, -0.09], 16);
+        $leaflet = new Leaflet('story-map', Landmarks::all()[0]['coords']);
 
         // Stacks vertically on small screens; switches to side-by-side
         // (main + sidebar) at lg (>=1024px).
@@ -99,6 +98,7 @@ class News extends Component
                     ->content(
                         new FeaturedArticle(NewsData::featured()),
                         $leaflet,
+                        $this->landmarkRow($leaflet),
                         $this->whatsNextStrip(NewsData::whatsNext()),
                         $this->articleList(NewsData::articles()),
                     ),
@@ -117,6 +117,36 @@ class News extends Component
                         $this->industryNewsSidebar(NewsData::industryNews()),
                     )
             );
+    }
+
+    // ============================================================
+    // Landmark picker — click a name to pan the story map.
+    // ============================================================
+
+    private function landmarkRow(Leaflet $leaflet): UIElement
+    {
+        $chips = array_map(
+            fn(array $lm) => UI::text($lm['name'])
+                ->fontSize(FontSize::ExtraSmall)
+                ->weight(FontWeight::Medium)
+                ->color(Color::gray(700))
+                ->color(Color::red(600), Pseudo::hover())
+                ->paddingX(Unit::rem(0.6))
+                ->paddingY(Unit::rem(0.3))
+                ->background(Color::white())
+                ->background(Color::gray(100), Pseudo::hover())
+                ->rounded(Unit::rem(0.25))
+                ->shadow(Shadow::Small)
+                ->clickable()
+                ->on('click', fn() => $leaflet->setView($lm['coords'], 14)),
+            Landmarks::all(),
+        );
+
+        return UI::row()
+            ->wrap()
+            ->gap(Unit::rem(0.5))
+            ->paddingY(Unit::rem(0.5))
+            ->content(...$chips);
     }
 
     // ============================================================
