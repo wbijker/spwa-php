@@ -10,8 +10,16 @@ use Spwa\UI\TagDomNode;
 
 /**
  * A component virtual node that can have state and lifecycle.
+ *
+ * Inherits the basic render/created/shouldRender/finalize surface from
+ * BaseComponent. Adds:
+ *   - useState() / useGlobalState() / inject() / consume() — state and DI.
+ *   - restored() / updated() / deleted() lifecycle hooks beyond created().
+ *   - hasChanged() / captureStateSnapshot() — memoization helpers for
+ *     overriding shouldRender().
+ *   - finalize() saves bound state at the end of a request.
  */
-abstract class Component extends VNode
+abstract class Component extends BaseComponent
 {
     /** @var StateRef[] Registered state refs and their per-ref metadata */
     private array $stateRefs = [];
@@ -131,14 +139,9 @@ abstract class Component extends VNode
     }
 
     /**
-     * Called when the component is rendered for the first time (no prior state).
-     */
-    protected function created(): void
-    {
-    }
-
-    /**
      * Called when the component existed in the tree before and is being re-rendered.
+     * Fires whenever BaseComponent::created() doesn't (DiffOld, and Patch
+     * re-renders of components that were already in the OLD tree).
      */
     protected function updated(): void
     {
@@ -152,33 +155,15 @@ abstract class Component extends VNode
     }
 
     /**
-     * Decide whether this component needs to be re-rendered in the current
-     * diff cycle. Receives the matching instance from the OLD render at the
-     * same path — typically you compare a few state fields and short-circuit
-     * when nothing relevant has changed.
-     *
-     * Return `false` to skip both rendering AND diffing for this subtree:
-     * the framework substitutes a NoOpDomNode whose compare() is a no-op, so
-     * the frontend DOM keeps the existing subtree from the previous render.
-     *
-     * Default is `true` — re-render every cycle. A `false` default would be
-     * unsound for any parent component: a descendant's local state can
-     * change (e.g. via its own event handler) without touching the parent's
-     * state, and the parent never sees it. Skipping the parent here would
-     * also skip the descendant's build, so the change would never reach the
-     * DOM. Opt in to memoization on leaf components by overriding this and
-     * returning `hasChanged($old)`.
-     *
-     * Only consulted in RenderPhase::Patch (NEW tree during a POST).
-     *
-     * @param static $old The OLD component instance at the same path —
-     *   always the same concrete class as `$this`, safe to narrow in
-     *   overrides via `@param MySubclass $old` in the docblock.
+     * Component-flavored guidance for overriding the inherited
+     * shouldRender(BaseComponent $old) — for leaf components, return
+     * `hasChanged($old)` to opt into snapshot-based memoization. Note
+     * that a `false` default would be unsound for any parent component:
+     * a descendant's local state can change without touching the
+     * parent's, and the parent never sees it. Skipping a parent here
+     * also skips its descendants' builds, so the change wouldn't reach
+     * the DOM.
      */
-    protected function shouldRender(Component $old): bool
-    {
-        return true;
-    }
 
     /** @var string|null Serialized snapshot of state/props at the moment render() entered build() */
     private ?string $stateSnapshot = null;
@@ -340,8 +325,16 @@ abstract class Component extends VNode
         // Lifecycle: restored
         $this->restored();
 
-        // Lifecycle: created or updated
-        if ($isNew) {
+        // Lifecycle: created on first appearance at this path, updated
+        // when re-rendering a component that already existed. "First
+        // appearance" = Initial render (whole tree is new), or Patch
+        // where the OLD tree didn't have this path:class.
+        $firstAppearance = match ($phase) {
+            RenderPhase::Initial => true,
+            RenderPhase::Patch => !isset(self::$oldRegistry[$pathKey]),
+            default => false,
+        };
+        if ($firstAppearance) {
             $this->created();
         } else {
             $this->updated();
