@@ -455,7 +455,9 @@ JS;
 
         $event = $payload['event'] ?? '';
         $pathStr = $payload['path'] ?? '';
-        $path = array_map('intval', explode(',', $pathStr));
+        // Empty path = the root element itself. explode(',', '') returns
+        // [''] which intvals to [0] (== the first child), so guard.
+        $path = $pathStr === '' ? [] : array_map('intval', explode(',', $pathStr));
         $value = $payload['value'] ?? null;
         $bindings = $payload['bindings'] ?? [];
         $expectedHash = $payload['hash'] ?? null;
