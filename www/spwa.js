@@ -66,19 +66,25 @@ var SPWA = (function() {
         post({ event: '', path: '', value: null });
     }
 
-    function resolveObject(path) {
-        const last = path.pop();
-        const resolved = path.reduce((acc, cur) => acc[cur], window);
-        return [resolved, last];
+    // Run `fn` after DOMContentLoaded — or immediately if the document
+    // has already finished parsing. Used by Js::domReady() on the
+    // server to defer initial-GET head-script work that depends on the
+    // body being in place.
+    function ready(fn) {
+        if (document.readyState !== 'loading') {
+            fn();
+        } else {
+            document.addEventListener('DOMContentLoaded', fn);
+        }
     }
 
+    // Server now sends a flat array of JS statement strings (built by
+    // JsExpression::toJs on the PHP side), each safe to evaluate as a
+    // top-level expression. new Function() avoids leaking the enclosing
+    // closure's locals and keeps eval out of strict mode.
     function executeJsDump(dump) {
-        for (const [mode, path, args] of dump) {
-            const [obj, bind] = resolveObject(path);
-            if (mode === 'invoke')
-                obj[bind](...args);
-            else if (mode === 'assign')
-                obj[bind] = args;
+        for (const stmt of dump) {
+            new Function(stmt)();
         }
     }
 
@@ -413,10 +419,6 @@ var SPWA = (function() {
             SPWA.setAll(data.state);
         }
 
-        // Execute JS commands from server
-        if (data.js) {
-            executeJsDump(data.js);
-        }
 
         // Apply DOM patches
         if (data.patches && data.patches.length > 0) {
@@ -426,6 +428,11 @@ var SPWA = (function() {
 
         // Re-initialize bindings after patches (new elements may have data-bind)
         initBindings();
+
+        // Execute JS commands from server
+        if (data.js) {
+            executeJsDump(data.js);
+        }
 
         // Snapshot the URL the DOM is now rendered for. Includes any
         // pushState/replaceState issued by the server in data.js above. Sent
@@ -831,7 +838,8 @@ var SPWA = (function() {
         isStateEnabled: isStateEnabled,
         refresh: refresh,
         tick: refresh,
-        handleEvent: handleEvent
+        handleEvent: handleEvent,
+        ready: ready
     };
 })();
 

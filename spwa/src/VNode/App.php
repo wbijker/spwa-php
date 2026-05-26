@@ -15,7 +15,7 @@ abstract class App extends Component
     /** @var string[] Inline <style> bodies registered by components */
     private array $inlineStyles = [];
 
-    /** @var string[] External <script src=...> URLs registered by components */
+    /** @var array<array{src: string, defer: bool}> External <script src=...> entries registered by components */
     private array $scripts = [];
 
     /** @var string[] External <link rel="stylesheet" href=...> URLs registered by components */
@@ -86,10 +86,24 @@ abstract class App extends Component
         $this->styles[] = $href;
     }
 
-    /** Register an external script by URL — emitted as <script src="..."></script> in <head>. */
-    public function addScript(string $src): void
+    /**
+     * Register an external script by URL — emitted as `<script src="...">`
+     * in `<head>`.
+     *
+     * `$defer` (default `false`) toggles the `defer` attribute on the tag.
+     * A deferred script:
+     *   - is fetched in parallel with HTML parsing (never blocks the parser),
+     *   - executes after the document has finished parsing, just before
+     *     `DOMContentLoaded` fires,
+     *   - and preserves source order relative to other deferred scripts.
+     *
+     * Use `defer=true` for scripts that need the DOM to exist but don't
+     * have to run immediately; leave it `false` for scripts that other
+     * code (inline scripts, later head scripts) relies on synchronously.
+     */
+    public function addScript(string $src, bool $defer = false): void
     {
-        $this->scripts[] = $src;
+        $this->scripts[] = ['src' => $src, 'defer' => $defer];
     }
 
     /** Register an inline CSS snippet — concatenated and emitted as a <style> block in <head>. */
@@ -110,7 +124,7 @@ abstract class App extends Component
         return $this->styles;
     }
 
-    /** @return string[] */
+    /** @return array<array{src: string, defer: bool}> */
     public function getScripts(): array
     {
         return $this->scripts;

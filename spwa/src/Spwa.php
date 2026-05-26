@@ -660,8 +660,12 @@ JS;
 
         // Framework runtime first so SPWA.* is available to user scripts.
         $head->content((new TagDomNode('script'))->attr('src', '/spwa.js')->rawContent(''));
-        foreach ($entry->getScripts() as $src) {
-            $head->content((new TagDomNode('script'))->attr('src', $src)->rawContent(''));
+        foreach ($entry->getScripts() as $script) {
+            $tag = (new TagDomNode('script'))->attr('src', $script['src']);
+            if ($script['defer']) {
+                $tag->attr('defer', 'defer');
+            }
+            $head->content($tag->rawContent(''));
         }
         if ($inlineScripts !== '') {
             $head->content((new TagDomNode('script'))->rawContent($inlineScripts));
@@ -711,17 +715,18 @@ JS;
     }
 
     /**
-     * Convert raw JsRuntime call entries to inline JavaScript.
+     * Concatenate queued JsStatements into inline JavaScript for the
+     * initial GET response. Each statement renders itself (JsExpression
+     * for direct invoke/assign/raw, JsDomReadyBlock for the coalesced
+     * SPWA.ready wrapper), then we join with `;`.
+     *
+     * @param \Spwa\Js\JsStatement[] $calls
      */
     private static function callsToJs(array $calls): string
     {
         $js = '';
-        foreach ($calls as [$mode, $path, $args]) {
-            $pathStr = implode('.', $path);
-            if ($mode === 'invoke') {
-                $argsJson = implode(',', array_map(fn($a) => json_encode($a, JSON_UNESCAPED_SLASHES), $args));
-                $js .= $pathStr . '(' . $argsJson . ');';
-            }
+        foreach ($calls as $stmt) {
+            $js .= $stmt->toJs() . ';';
         }
         return $js;
     }
