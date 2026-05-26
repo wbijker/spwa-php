@@ -47,6 +47,26 @@ abstract class BaseComponent extends VNode
     }
 
     /**
+     * Fires after build() has produced this component's DomNode subtree,
+     * once per real render. Use it for side effects that depend on the
+     * component actually being in the rendered tree — most notably
+     * Js::invoke calls that must queue AFTER whatever created() emits
+     * (so creation runs first in the SPWA.ready block).
+     *
+     * Skipped during DiffOld (that phase only replays the OLD tree for
+     * diffing, and shouldn't queue user-visible side effects). Also
+     * skipped when shouldRender() returns false (no build happened).
+     *
+     * Compared to created(), which fires once on first appearance,
+     * rendered() fires every render — so component instances that are
+     * constructed but never placed in the tree (e.g. an eagerly-evaluated
+     * fallback expression in a router) never trigger their side effects.
+     */
+    protected function rendered(DomNode $dom): void
+    {
+    }
+
+    /**
      * Decide whether this component needs to be re-rendered in the
      * current diff cycle. Receives the matching instance from the OLD
      * render at the same path — typically you compare props/state and
@@ -89,7 +109,15 @@ abstract class BaseComponent extends VNode
             self::$oldRegistry[$key] = $this;
         }
 
-        return $this->build()->render($state, $parent, $phase);
+        $dom = $this->build()->render($state, $parent, $phase);
+
+        // Skip the rendered() hook in DiffOld — that phase just replays
+        // the prior tree for diffing and shouldn't side-effect.
+        if ($phase !== RenderPhase::DiffOld) {
+            $this->rendered($dom);
+        }
+
+        return $dom;
     }
 
     public function finalize(StateManager $state): void

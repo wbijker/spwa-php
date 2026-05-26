@@ -68,6 +68,10 @@ class News extends Component
 
     private function body(): UIElement
     {
+
+        $leaflet = new Leaflet('story-map');
+        $leaflet->setView([51.505, -0.09], 16);
+
         // Stacks vertically on small screens; switches to side-by-side
         // (main + sidebar) at lg (>=1024px).
         return UI::row()
@@ -94,6 +98,7 @@ class News extends Component
                     ->gap(Unit::rem(2), Pseudo::md())
                     ->content(
                         new FeaturedArticle(NewsData::featured()),
+                        $leaflet,
                         $this->whatsNextStrip(NewsData::whatsNext()),
                         $this->articleList(NewsData::articles()),
                     ),

@@ -23,6 +23,7 @@ class NewsApp extends App
     protected function registerAssets(App $app): void
     {
         Router::registerAssets($app);
+        Leaflet::registerAssets($app);
     }
 
     protected function view(): VNode
