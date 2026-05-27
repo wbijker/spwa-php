@@ -69,7 +69,7 @@ class FormsPage extends Component
                         ->bordered()
                         ->borderColor(Color::slate(300))
                         ->rounded(Unit::roundedLg())
-                        ->on('change', fn(InputEvent $e) => $this->name = $e->value ?? ''),
+                        ->onChange(fn(InputEvent $e) => $this->name = $e->value ?? ''),
                 ),
                 // Email field
                 UI::column()->gap(Unit::xs())->content(
@@ -86,7 +86,7 @@ class FormsPage extends Component
                         ->bordered()
                         ->borderColor(Color::slate(300))
                         ->rounded(Unit::roundedLg())
-                        ->on('change', fn(InputEvent $e) => $this->email = $e->value ?? ''),
+                        ->onChange(fn(InputEvent $e) => $this->email = $e->value ?? ''),
                 ),
                 // Role select
                 UI::column()->gap(Unit::xs())->content(
@@ -100,7 +100,7 @@ class FormsPage extends Component
                         ->bordered()
                         ->borderColor(Color::slate(300))
                         ->rounded(Unit::roundedLg())
-                        ->on('change', fn(InputEvent $e) => $this->role = $e->value ?? 'developer')
+                        ->onChange(fn(InputEvent $e) => $this->role = $e->value ?? 'developer')
                         ->content(
                             UI::option('Developer', 'developer'),
                             UI::option('Designer', 'designer'),
@@ -112,10 +112,10 @@ class FormsPage extends Component
                 UI::row()->gap(Unit::medium())->alignMiddle()->content(
                     UI::button('Submit')
                         ->primary()
-                        ->on('click', fn() => $this->submitted = $this->name !== '' && $this->email !== ''),
+                        ->onClick(fn() => $this->submitted = $this->name !== '' && $this->email !== ''),
                     UI::button('Reset')
                         ->ghost()
-                        ->on('click', function () {
+                        ->onClick(function () {
                             $this->name = '';
                             $this->email = '';
                             $this->role = 'developer';
@@ -166,11 +166,11 @@ protected function build(): VNode
             ->text()
             ->placeholder('Enter your name')
             ->value($this->name)
-            ->on('change', fn(InputEvent $e) => $this->name = $e->value ?? ''),
+            ->onChange(fn(InputEvent $e) => $this->name = $e->value ?? ''),
 
         UI::label('Role'),
         UI::select()
-            ->on('change', fn(InputEvent $e) => $this->role = $e->value ?? '')
+            ->onChange(fn(InputEvent $e) => $this->role = $e->value ?? '')
             ->content(
                 UI::option('Developer', 'developer'),
                 UI::option('Designer', 'designer'),
@@ -178,7 +178,7 @@ protected function build(): VNode
 
         UI::button('Submit')
             ->primary()
-            ->on('click', fn() => $this->handleSubmit()),
+            ->onClick(fn() => $this->handleSubmit()),
     );
 }
 PHP

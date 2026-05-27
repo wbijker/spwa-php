@@ -50,7 +50,7 @@ abstract class BaseComponent extends VNode
      * Fires after build() has produced this component's DomNode subtree,
      * once per real render. Use it for side effects that depend on the
      * component actually being in the rendered tree — most notably
-     * Js::invoke calls that must queue AFTER whatever created() emits
+     * Js::run calls that must queue AFTER whatever created() emits
      * (so creation runs first in the SPWA.ready block).
      *
      * Skipped during DiffOld (that phase only replays the OLD tree for

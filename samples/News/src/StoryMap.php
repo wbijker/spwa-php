@@ -51,7 +51,7 @@ class StoryMap extends StatelessComponent
                 ->rounded(Unit::rem(0.25))
                 ->shadow(Shadow::Small)
                 ->clickable()
-                ->on('click', fn() => $leaflet->setView($lm['coords'], 14)),
+                ->onClick(fn() => $leaflet->setView($lm['coords'], 14)),
             Landmarks::all(),
         );
 

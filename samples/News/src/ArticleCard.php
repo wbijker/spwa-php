@@ -39,7 +39,7 @@ class ArticleCard extends StatelessComponent
             ->animated()
             ->clickable()
             ->alignTop()
-            ->on('click', fn() => Router::navigate(new ArticleRoute($a->slug())))
+            ->onClick(fn() => Router::navigate(new ArticleRoute($a->slug())))
             ->content(
                 UI::image($a->coverImage, $a->title)
                     ->width(Unit::full())

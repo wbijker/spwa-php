@@ -71,7 +71,7 @@ class TodoItem extends Component
             ->borderColor($borderColor)
             ->roundedFull()
             ->clickable()
-            ->on('click', fn() => ($this->onToggle)($this->id))
+            ->onClick(fn() => ($this->onToggle)($this->id))
             ->content(
                 $this->completed
                     ? UI::text('✓')
@@ -88,7 +88,7 @@ class TodoItem extends Component
             ->paddingX(Unit::rem(0.5))
             ->fontSize(FontSize::TwoXL)
             ->weight(FontWeight::Light)
-            ->on('dblclick', function () {
+            ->onDblClick(function () {
                 $this->editing = true;
                 $this->editText = $this->text;
             });
@@ -112,7 +112,7 @@ class TodoItem extends Component
             ->fontSize(FontSize::TwoXL)
             ->color(Color::rose(300))
             ->color(Color::rose(500), Pseudo::hover())
-            ->on('click', fn() => ($this->onDestroy)($this->id));
+            ->onClick(fn() => ($this->onDestroy)($this->id));
     }
 
     private function buildEditInput(): UIElement
@@ -143,7 +143,7 @@ class TodoItem extends Component
             ->fontSize(FontSize::TwoXL)
             ->color(Color::teal(400))
             ->color(Color::teal(500), Pseudo::hover())
-            ->on('click', function () {
+            ->onClick(function () {
                 $next = trim($this->editText);
                 if ($next !== '') {
                     ($this->onSave)($this->id, $next);
@@ -163,7 +163,7 @@ class TodoItem extends Component
             ->fontSize(FontSize::TwoXL)
             ->color(Color::rose(300))
             ->color(Color::rose(500), Pseudo::hover())
-            ->on('click', function () {
+            ->onClick(function () {
                 $this->editing = false;
                 $this->editText = '';
             });

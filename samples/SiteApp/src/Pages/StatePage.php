@@ -68,10 +68,10 @@ class StatePage extends Component
                         ->bordered()
                         ->borderColor(Color::slate(300))
                         ->rounded(Unit::roundedLg())
-                        ->on('change', fn(InputEvent $e) => $this->newTodo = $e->value ?? ''),
+                        ->onChange(fn(InputEvent $e) => $this->newTodo = $e->value ?? ''),
                     UI::button('Add')
                         ->primary()
-                        ->on('click', function () {
+                        ->onClick(function () {
                             $text = trim($this->newTodo);
                             if ($text !== '') {
                                 $this->todos[] = [
@@ -110,7 +110,7 @@ class StatePage extends Component
                                     ->borderColor($todo['done'] ? Color::emerald(400) : Color::slate(300))
                                     ->roundedFull()
                                     ->clickable()
-                                    ->on('click', function () use ($todo) {
+                                    ->onClick(function () use ($todo) {
                                         foreach ($this->todos as &$t) {
                                             if ($t['id'] === $todo['id']) {
                                                 $t['done'] = !$t['done'];
@@ -135,7 +135,7 @@ class StatePage extends Component
                                 ->color(Color::red(500), Pseudo::hover())
                                 ->clickable()
                                 ->fontSize(FontSize::Small)
-                                ->on('click', function () use ($todo) {
+                                ->onClick(function () use ($todo) {
                                     $this->todos = array_values(array_filter(
                                         $this->todos,
                                         fn($t) => $t['id'] !== $todo['id']
@@ -149,7 +149,7 @@ class StatePage extends Component
                     ? [UI::button("Clear {$doneCount} completed")
                         ->ghost()
                         ->fontSize(FontSize::Small)
-                        ->on('click', function () {
+                        ->onClick(function () {
                             $this->todos = array_values(array_filter(
                                 $this->todos,
                                 fn($t) => !$t['done']

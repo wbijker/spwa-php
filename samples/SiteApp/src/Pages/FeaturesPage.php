@@ -77,7 +77,7 @@ PHP
                             <<<'PHP'
 UI::button('Delete')
     ->danger()
-    ->on('click', function () {
+    ->onClick(function () {
         // This runs on the PHP server
         $this->items = array_filter(
             $this->items,
@@ -383,7 +383,7 @@ class ShoppingCart extends Component
                     UI::text($item['name']),
                     UI::button('Remove')
                         ->ghost()
-                        ->on('click', fn() => $this->removeItem($item['id']))
+                        ->onClick(fn() => $this->removeItem($item['id']))
                 ),
                 $this->items
             ),
@@ -391,7 +391,7 @@ class ShoppingCart extends Component
             UI::input()
                 ->placeholder('Promo code')
                 ->value($this->promoCode)
-                ->on('change', fn(InputEvent $e) => $this->promoCode = $e->value ?? ''),
+                ->onChange(fn(InputEvent $e) => $this->promoCode = $e->value ?? ''),
         );
     }
 }

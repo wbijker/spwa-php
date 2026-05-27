@@ -84,6 +84,6 @@ class DetailView extends StatelessComponent
             ->color(Color::red(600))
             ->color(Color::red(700), Pseudo::hover())
             ->clickable()
-            ->on('click', fn() => Router::navigate(new NewsListRoute()));
+            ->onClick(fn() => Router::navigate(new NewsListRoute()));
     }
 }

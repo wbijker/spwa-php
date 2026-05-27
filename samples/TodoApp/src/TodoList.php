@@ -109,7 +109,7 @@ class TodoList extends Component
                 ->padding(Unit::rem(0.7))
                 ->fontSize(FontSize::Large)
                 ->color($allCompleted ? Color::neutral(700) : Color::neutral(200))
-                ->on('click', function () {
+                ->onClick(function () {
                     $allActive = count(array_filter($this->todos, fn(Todo $t) => !$t->completed)) > 0;
                     foreach ($this->todos as $todo) {
                         $todo->completed = $allActive;
@@ -130,7 +130,7 @@ class TodoList extends Component
             ->fontSize(FontSize::TwoXL)
             ->weight(FontWeight::Light)
             ->color(Color::neutral(900))
-            ->on('change', function () {
+            ->onChange(function () {
                 echo "We are about to add a new todo with text: " . $this->inputText . "\n";
                 $text = trim($this->inputText);
                 if ($text !== '') {
@@ -218,7 +218,7 @@ class TodoList extends Component
                         ->fontSize(FontSize::Small)
                         ->color(Color::neutral(500))
                         ->minWidth(Unit::rem(8))
-                        ->on('click', function () {
+                        ->onClick(function () {
                             $this->todos = array_values(array_filter(
                                 $this->todos,
                                 fn(Todo $t) => !$t->completed
@@ -241,7 +241,7 @@ class TodoList extends Component
             ->rounded(Unit::px(3))
             ->fontSize(FontSize::Small)
             ->color(Color::inherit())
-            ->on('click', function () use ($filter) {
+            ->onClick(function () use ($filter) {
                 $this->filter = $filter;
             });
 

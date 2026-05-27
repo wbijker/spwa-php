@@ -28,7 +28,7 @@ class Link extends UIElementContent
                 // SPA navigation — server-side route swap. spwa.js
                 // preventDefaults anchor clicks with an SPWA handler attached.
                 $route = $target;
-                $this->on('click', fn() => Router::navigate($route));
+                $this->onClick(fn() => Router::navigate($route));
             }
         } else {
             $this->href = $target;

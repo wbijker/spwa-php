@@ -63,7 +63,7 @@ class ComponentsPage extends Component
                 ->weight($isActive ? FontWeight::SemiBold : FontWeight::Normal)
                 ->shadow($isActive ? Shadow::Small : Shadow::Medium)
                 ->clickable()
-                ->on('click', fn() => $this->selectedTab = $key);
+                ->onClick(fn() => $this->selectedTab = $key);
         }
 
         return UI::row()
@@ -294,13 +294,13 @@ PHP
                                 ->color(Color::indigo(700)),
                             UI::button('+1')
                                 ->primary()
-                                ->on('click', fn() => $this->counter++),
+                                ->onClick(fn() => $this->counter++),
                             UI::button('-1')
                                 ->secondary()
-                                ->on('click', fn() => $this->counter = max(0, $this->counter - 1)),
+                                ->onClick(fn() => $this->counter = max(0, $this->counter - 1)),
                             UI::button('Reset')
                                 ->ghost()
-                                ->on('click', fn() => $this->counter = 0),
+                                ->onClick(fn() => $this->counter = 0),
                         ),
                     code: <<<'PHP'
 private int $counter = 0;
@@ -317,7 +317,7 @@ protected function build(): VNode
             ->fontSize(FontSize::TwoXL),
         UI::button('+1')
             ->primary()
-            ->on('click', fn() => $this->counter++),
+            ->onClick(fn() => $this->counter++),
     );
 }
 PHP
@@ -487,7 +487,7 @@ class ChildButton extends Component
     {
         return UI::button($this->label)
             ->primary()
-            ->on('click', $this->onClick);
+            ->onClick($this->onClick);
     }
 }
 PHP

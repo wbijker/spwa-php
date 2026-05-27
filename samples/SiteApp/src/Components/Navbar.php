@@ -34,7 +34,7 @@ class Navbar extends Component
                             ->weight(FontWeight::Bold)
                             ->color(Color::indigo(600))
                             ->clickable()
-                            ->on('click', fn() => Router::navigate('/')),
+                            ->onClick(fn() => Router::navigate('/')),
 
                         UI::row()
                             ->gap(Unit::small())
@@ -61,6 +61,6 @@ class Navbar extends Component
             ->rounded(Unit::roundedLg())
             ->fontSize(FontSize::Small)
             ->clickable()
-            ->on('click', fn() => Router::navigate($path));
+            ->onClick(fn() => Router::navigate($path));
     }
 }

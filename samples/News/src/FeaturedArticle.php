@@ -34,7 +34,7 @@ class FeaturedArticle extends StatelessComponent
             ->shadow(Shadow::Large, Pseudo::hover())
             ->animated()
             ->clickable()
-            ->on('click', fn() => Router::navigate(new ArticleRoute($a->slug())))
+            ->onClick(fn() => Router::navigate(new ArticleRoute($a->slug())))
             ->content(
                 UI::image($a->coverImage, $a->title)
                     ->width(Unit::full())

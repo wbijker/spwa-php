@@ -56,7 +56,7 @@ class HomePage extends Component
                             ->rounded(Unit::roundedLg())
                             ->weight(FontWeight::SemiBold)
                             ->clickable()
-                            ->on('click', fn() => Router::navigate('/features')),
+                            ->onClick(fn() => Router::navigate('/features')),
                         UI::button('See Components')
                             ->background(Color::transparent())
                             ->color(Color::white())
@@ -67,7 +67,7 @@ class HomePage extends Component
                             ->rounded(Unit::roundedLg())
                             ->weight(FontWeight::SemiBold)
                             ->clickable()
-                            ->on('click', fn() => Router::navigate('/components')),
+                            ->onClick(fn() => Router::navigate('/components')),
                     )
             );
     }
@@ -184,7 +184,7 @@ class Counter extends Component
 
                 UI::button('Increment')
                     ->primary()
-                    ->on('click', fn() => $this->count++)
+                    ->onClick(fn() => $this->count++)
             );
     }
 }
