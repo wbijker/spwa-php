@@ -544,7 +544,7 @@ JS;
         // Capture buffered output → console.log
         $output = ob_get_clean();
         if ($output !== '' && $output !== false) {
-            Js::invoke(['console', 'log'], [$output]);
+            Js::run(Js::invoke(Js::obj('console', 'log'), Js::str($output)));
         }
 
         $newHash = self::computeStateHash($state);
@@ -717,19 +717,14 @@ JS;
     }
 
     /**
-     * Concatenate queued JsStatements into inline JavaScript for the
-     * initial GET response. Each statement renders itself (JsExpression
-     * for direct invoke/assign/raw, JsDomReadyBlock for the coalesced
-     * SPWA.ready wrapper), then we join with `;`.
+     * Concatenate queued JS statement strings into inline JavaScript
+     * for the initial GET response. Just joins with `;` — callers
+     * already build each statement as a complete expression.
      *
-     * @param \Spwa\Js\JsStatement[] $calls
+     * @param string[] $calls
      */
     private static function callsToJs(array $calls): string
     {
-        $js = '';
-        foreach ($calls as $stmt) {
-            $js .= $stmt->toJs() . ';';
-        }
-        return $js;
+        return $calls === [] ? '' : implode(';', $calls) . ';';
     }
 }

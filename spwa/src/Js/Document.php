@@ -6,6 +6,6 @@ class Document
 {
     static function setTitle(string $title): void
     {
-        Js::assign(["document", "title"], $title);
+        Js::run(Js::assign(Js::obj('document', 'title'), Js::str($title)));
     }
 }

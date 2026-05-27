@@ -6,6 +6,6 @@ class App
 {
     static function refresh(): void
     {
-        Js::invoke(["spwa", "refresh"], []);
+        Js::run(Js::invoke(Js::obj('spwa', 'refresh')));
     }
 }

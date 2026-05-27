@@ -3,7 +3,6 @@
 namespace Samples\News;
 
 use Spwa\Js\Js;
-use Spwa\Js\JsLiteral;
 use Spwa\UI\Color;
 use Spwa\UI\UI;
 use Spwa\UI\Unit;
@@ -39,71 +38,62 @@ class Leaflet extends StatelessComponent
      * L.map(<key>) call sees the rendered <div id="<key>"> — on initial
      * GET the inline head-script runs before <body> parses, so without
      * the ready gate L.map() would error.
-     *
-     *   SPWA.ready(function () {
-     *       window.leafLet["<key>"] = L.map("<key>");
-     *       L.tileLayer(url, opts).addTo(window.leafLet["<key>"]);
-     *   });
      */
     protected function created(): void
     {
         $ref = $this->mapRef();
 
-        $statements = [
-            // window.leafLet[<key>] = L.map(<key>)
-            Js::assign([$ref], Js::invoke(['L', 'map'], [$this->key])),
+        // window.leafLet[<key>] = L.map("<key>")
+        $createMap = Js::assign($ref, Js::invoke(Js::obj('L', 'map'), Js::str($this->key)));
 
-            // L.tileLayer(url, opts).addTo(window.leafLet[<key>])
-            Js::invoke(
-                [Js::invoke(['L', 'tileLayer'], [
-                    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+        // L.tileLayer(url, opts).addTo(window.leafLet[<key>])
+        $tileLayer = Js::invoke(
+            Js::obj(
+                Js::invoke(
+                    Js::obj('L', 'tileLayer'),
+                    Js::str('https://tile.openstreetmap.org/{z}/{x}/{y}.png'),
                     [
                         'maxZoom'     => 19,
                         'attribution' => '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
                     ],
-                ]), 'addTo'],
-                [$ref],
+                ),
+                'addTo',
             ),
-        ];
+            $ref,
+        );
 
-        // Optional initial view — fires once on first appearance.
-        // Subsequent renders skip created() so the view is not reset
-        // and any post-click setView stays in effect.
+        $body = "$createMap;$tileLayer";
+
+        // Optional one-time setView — fires only inside created() so it
+        // doesn't reassert on every subsequent render.
         if ($this->initialCoords !== null) {
-            $statements[] = Js::invoke(
-                [$ref, 'setView'],
-                [$this->initialCoords, $this->initialZoom],
+            $body .= ';' . Js::invoke(
+                Js::obj($ref, 'setView'),
+                $this->initialCoords,
+                $this->initialZoom,
             );
         }
 
-        Js::domReady(...$statements);
+        Js::run("SPWA.ready(function(){{$body}})");
     }
 
     /**
-     * Drive this map's view immediately by queueing a Js::invoke into
-     * the shared SPWA.ready block. Intended to be called from event
-     * handlers (e.g. a "click to pan to this landmark") rather than
-     * from render-time code: events fire once per user action so
-     * there's no duplication risk, and the resulting setView statement
-     * lands in the response that follows that one event.
-     *
-     *   SPWA.ready(function () {
-     *       window.leafLet["<key>"].setView([c1, c2], zoom);
-     *   });
+     * Drive this map's view immediately. Wrapped in SPWA.ready so calls
+     * issued from inline head scripts on the initial GET still wait
+     * for the map (created inside its own ready callback).
      *
      * @param array{0: float, 1: float} $coordinates
      */
     public function setView(array $coordinates, int $zoom): void
     {
-        Js::domReady(
-            Js::invoke([$this->mapRef(), 'setView'], [$coordinates, $zoom]),
-        );
+        $call = Js::invoke(Js::obj($this->mapRef(), 'setView'), $coordinates, $zoom);
+        Js::run("SPWA.ready(function(){{$call}})");
     }
 
-    /** Bracket-form reference to window.leafLet[<key>] — safe for any string key. */
-    private function mapRef(): JsLiteral
+    /** Bracket-form `window.leafLet[<key>]` reference — safe for any string key. */
+    private function mapRef(): string
     {
-        return new JsLiteral('window.leafLet[' . json_encode($this->key) . ']');
+        return Js::obj('window', 'leafLet') . Js::index($this->key);
     }
 
     protected function build(): VNode
@@ -120,8 +110,6 @@ class Leaflet extends StatelessComponent
      * `window.leafLet` as an empty object — every Leaflet instance
      * stores its live L.map at `window.leafLet[<key>]`, so the
      * container needs to exist before any created() statements run.
-     * Emitted once per page from <head>, so a POST event response
-     * never resets it and destroys existing maps.
      */
     public static function registerAssets(App $app): void
     {

@@ -2,116 +2,104 @@
 
 namespace Spwa\Js;
 
+/**
+ * Server-side queue of JS statements to ship to the browser. Callers
+ * construct each statement as a raw string and append it via run().
+ * The framework drains the queue at response time, emits the strings
+ * inline in <head> on the initial GET, and ships them as an array in
+ * the POST response so the client can `new Function(stmt)()` each.
+ *
+ *   Js::run(Js::invoke(Js::obj('console', 'log'), Js::str('hello')));
+ *   Js::run(Js::assign(Js::obj('document', 'title'), Js::str('SPWA')));
+ *
+ * Helpers like Console / Document / History / Location wrap common
+ * call shapes.
+ */
 class Js
 {
-    /** @var JsStatement[] Pending statements to flush to the client */
+    /** @var string[] Pending JS statements */
     static array $calls = [];
 
-    /**
-     * Queue a function call. Returns a JsExpression that can be nested
-     * inside another invoke()/assign() to build call-chain syntax — when
-     * a nested expression is embedded, it's removed from the pending
-     * queue so it doesn't fire as a separate statement.
-     *
-     *   Js::invoke([Js::invoke(['L', 'map'], ['map']), 'setView'],
-     *              [[51.505, -0.09], 13]);
-     *   // → L.map("map").setView([51.505,-0.09],13)
-     */
-    static function invoke(array $path, array $args): JsExpression
+    /** Queue a raw JS statement. Runs on the client in queue order. */
+    static function run(string $js): void
     {
-        self::pluckEmbedded($path);
-        self::pluckEmbedded($args);
-        $expr = new JsExpression('invoke', $path, $args);
-        self::$calls[] = $expr;
-        return $expr;
+        self::$calls[] = $js;
+    }
+
+    /** A JS string literal — `Js::str("hi")` → `"hi"`. */
+    static function str(string $s): string
+    {
+        return json_encode($s, JSON_UNESCAPED_SLASHES);
     }
 
     /**
-     * Wrap statements so they run after DOMContentLoaded (synchronously
-     * if it's already fired). Each inner statement is plucked from the
-     * pending queue and appended to the single shared JsDomReadyBlock —
-     * every call across this request coalesces into ONE wrapper:
-     *
-     *   SPWA.ready(function () { s1; s2; s3; ... });
-     *
-     * The first call positions the block in the queue at its call site;
-     * subsequent calls only append to that block without reordering.
-     *
-     *   Js::domReady(
-     *       Js::assign(['window', 'foo'], Js::invoke(['Bar', 'make'], [])),
-     *       Js::invoke(['window', 'foo', 'init'], []),
-     *   );
+     * Dotted property path: `Js::obj("a", "b", "c")` → `a.b.c`. Segments
+     * are inserted verbatim, so you can pass another helper's output as
+     * the base — e.g. `Js::obj(Js::invoke(Js::obj("L", "map"), Js::str("m")), "setView")`
+     * → `L.map("m").setView`.
      */
-    static function domReady(JsExpression ...$statements): void
+    static function obj(string ...$path): string
     {
-        foreach ($statements as $stmt) {
-            $i = array_search($stmt, self::$calls, true);
-            if ($i !== false) {
-                array_splice(self::$calls, $i, 1);
-            }
-        }
-
-        $block = self::findDomReadyBlock();
-        if ($block === null) {
-            $block = new JsDomReadyBlock();
-            self::$calls[] = $block;
-        }
-
-        foreach ($statements as $stmt) {
-            $block->add($stmt);
-        }
-    }
-
-    /** Locate the shared ready-block in the current queue, or null if none exists yet. */
-    private static function findDomReadyBlock(): ?JsDomReadyBlock
-    {
-        foreach (self::$calls as $call) {
-            if ($call instanceof JsDomReadyBlock) {
-                return $call;
-            }
-        }
-        return null;
-    }
-
-    /** Queue a property assignment. The value may itself be a nested JsExpression. */
-    static function assign(array $obj, mixed $value): JsExpression
-    {
-        self::pluckEmbedded($obj);
-        self::pluckEmbedded($value);
-        $expr = new JsExpression('assign', $obj, $value);
-        self::$calls[] = $expr;
-        return $expr;
+        return implode('.', $path);
     }
 
     /**
-     * Walk a path/value (recursively into arrays) and yank any
-     * JsExpressions out of the pending queue — they're being embedded
-     * inside a new outer expression and shouldn't run as standalone
-     * statements.
+     * Bracket-form property access: `Js::index("story-map")` → `["story-map"]`,
+     * `Js::index(5)` → `[5]`. The key is always rendered as a JS literal
+     * (strings get quoted, ints stay as numbers) — distinct from
+     * `Js::invoke`'s rule of "strings verbatim" because here the key is
+     * always a value, never a raw expression.
+     *
+     *   Js::obj('window', 'leafLet') . Js::index($key)  // → window.leafLet["…"]
      */
-    private static function pluckEmbedded(mixed $node): void
+    static function index(mixed $key): string
     {
-        if ($node instanceof JsExpression) {
-            $i = array_search($node, self::$calls, true);
-            if ($i !== false) {
-                array_splice(self::$calls, $i, 1);
-            }
-            return;
-        }
-        if (is_array($node)) {
-            foreach ($node as $item) {
-                self::pluckEmbedded($item);
-            }
-        }
+        return '[' . json_encode($key, JSON_UNESCAPED_SLASHES) . ']';
     }
 
-    /** Re-insert statements at the front of the queue. Used to reorder when emitting the response. */
+    /**
+     * Assignment expression: `Js::assign($ref, Js::invoke(...))` → `$ref=…`.
+     * Follows the same string-vs-value rule as `invoke`: a string `$right`
+     * is inserted verbatim (so chained helper output composes), anything
+     * else is JSON-encoded into a JS literal.
+     *
+     *   Js::assign(Js::obj('document', 'title'), Js::str('SPWA'))
+     *   // → document.title="SPWA"
+     */
+    static function assign(string $left, mixed $right): string
+    {
+        $rendered = is_string($right) ? $right : json_encode($right, JSON_UNESCAPED_SLASHES);
+        return $left . '=' . $rendered;
+    }
+
+    /**
+     * Build a JS call expression: `Js::invoke(Js::obj("console","log"), Js::str("hi"), 42)`
+     * → `console.log("hi",42)`. Variadic args are mixed:
+     *
+     *   - **string** args are inserted verbatim — chain helper outputs
+     *     and raw JS expressions (`Js::str("hi")`, `Js::obj(…)`,
+     *     `Js::invoke(…)`) flow through unchanged.
+     *   - **non-string** args (ints, floats, arrays, bools, null) are
+     *     JSON-encoded so they appear as JS literals.
+     *
+     * `$name` is verbatim too — chain through `Js::obj(...)` for paths.
+     */
+    static function invoke(string $name, mixed ...$args): string
+    {
+        $rendered = array_map(
+            fn($a) => is_string($a) ? $a : json_encode($a, JSON_UNESCAPED_SLASHES),
+            $args,
+        );
+        return $name . '(' . implode(',', $rendered) . ')';
+    }
+
+    /** Re-insert statements at the front of the queue (reordering). */
     static function prepend(array $calls): void
     {
         array_unshift(self::$calls, ...$calls);
     }
 
-    /** @return JsStatement[] */
+    /** @return string[] Take and clear the pending queue. */
     static function drain(): array
     {
         $calls = self::$calls;
@@ -119,14 +107,9 @@ class Js
         return $calls;
     }
 
-    /**
-     * Wire format for the client: each pending statement rendered to a
-     * standalone JS string. Client evaluates them in order.
-     *
-     * @return string[]
-     */
+    /** @return string[] Wire format for the client response. */
     static function dump(): array
     {
-        return array_map(fn(JsStatement $s) => $s->toJs(), self::$calls);
+        return self::$calls;
     }
 }
