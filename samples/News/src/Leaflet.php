@@ -3,6 +3,7 @@
 namespace Samples\News;
 
 use Spwa\Events\EventData;
+use Spwa\Js\Console;
 use Spwa\Js\Js;
 use Spwa\UI\Color;
 use Spwa\UI\UI;
@@ -28,8 +29,18 @@ use Spwa\VNode\VNode;
  */
 class Leaflet extends StatelessComponent
 {
-    /** @var array<string, callable> Server-side handlers keyed by `leaflet:<event>` name */
-    private array $handlers = [];
+    /**
+     * Namespaced event names dispatched via `SPWA.dispatch` and
+     * registered with `EventData::register`. Kept as class constants
+     * so the literal `'leaflet:click'` only lives in one spot.
+     */
+    public const EVENT_CLICK = 'leaflet:click';
+
+    /** Prefix carved off when generating the matching native Leaflet event name. */
+    private const EVENT_PREFIX = 'leaflet:';
+
+    /** @var (\Closure(LeafletMouseEvent): void)|null Click handler set via onClick() */
+    private ?\Closure $onClick = null;
 
     /**
      * Decorative `addMarker` / `addCircle` / `addPolygon` / `addPopup`
@@ -51,8 +62,10 @@ class Leaflet extends StatelessComponent
     public function __construct(
         private string $key,
         private ?array $initialCoords = null,
-        private int $initialZoom = 14,
-    ) {}
+        private int    $initialZoom = 14,
+    )
+    {
+    }
 
     // ============================================================
     // Server-side events (forwarded via SPWA.dispatch)
@@ -67,7 +80,9 @@ class Leaflet extends StatelessComponent
      */
     public function onClick(callable $callback): self
     {
-        $this->handlers['leaflet:click'] = $callback;
+        $this->onClick = $callback instanceof \Closure
+            ? $callback
+            : \Closure::fromCallable($callback);
         return $this;
     }
 
@@ -78,43 +93,42 @@ class Leaflet extends StatelessComponent
     /** @param array{0: float, 1: float} $coordinates */
     public function setView(array $coordinates, int $zoom): void
     {
-        $this->emit(Js::invoke(Js::obj($this->mapRef(), 'setView'), $coordinates, $zoom));
+        $this->emit(Js::invoke(Js::obj("map", 'setView'), $coordinates, $zoom));
     }
 
     /** @param array{0: float, 1: float} $coordinates */
     public function panTo(array $coordinates): void
     {
-        $this->emit(Js::invoke(Js::obj($this->mapRef(), 'panTo'), $coordinates));
+        $this->emit(Js::invoke(Js::obj("map", 'panTo'), $coordinates));
     }
 
     public function setZoom(int $zoom): void
     {
-        $this->emit(Js::invoke(Js::obj($this->mapRef(), 'setZoom'), $zoom));
+        $this->emit(Js::invoke(Js::obj("map", 'setZoom'), $zoom));
     }
 
     public function zoomIn(int $delta = 1): void
     {
-        $this->emit(Js::invoke(Js::obj($this->mapRef(), 'zoomIn'), $delta));
+        $this->emit(Js::invoke(Js::obj("map", 'zoomIn'), $delta));
     }
 
     public function zoomOut(int $delta = 1): void
     {
-        $this->emit(Js::invoke(Js::obj($this->mapRef(), 'zoomOut'), $delta));
+        $this->emit(Js::invoke(Js::obj("map", 'zoomOut'), $delta));
     }
 
     /** @param array{0: float, 1: float} $coordinates */
     public function flyTo(array $coordinates, ?int $zoom = null): void
     {
         $args = $zoom === null ? [$coordinates] : [$coordinates, $zoom];
-        $this->emit(Js::invoke(Js::obj($this->mapRef(), 'flyTo'), ...$args));
+        $this->emit(Js::invoke(Js::obj("map", 'flyTo'), ...$args));
     }
 
     /** Remove every Layer from the map. */
     public function clearLayers(): void
     {
         // map.eachLayer(function(l) { map.removeLayer(l) })
-        $ref = $this->mapRef();
-        Js::ready("$ref.eachLayer(function(l){{$ref}.removeLayer(l)})");
+        Js::ready("map.eachLayer(function(l){map.removeLayer(l)})");
     }
 
     /**
@@ -124,8 +138,8 @@ class Leaflet extends StatelessComponent
      */
     public function addMarker(float $lat, float $lng, string $html = ''): void
     {
-        $marker  = Js::invoke(Js::obj('L', 'marker'), [$lat, $lng]);
-        $withMap = Js::invoke(Js::obj($marker, 'addTo'), $this->mapRef());
+        $marker = Js::invoke(Js::obj('L', 'marker'), [$lat, $lng]);
+        $withMap = Js::invoke(Js::obj($marker, 'addTo'), "map");
         $this->staged[] = $html === ''
             ? $withMap
             : Js::invoke(Js::obj($withMap, 'bindPopup'), Js::str($html));
@@ -134,8 +148,8 @@ class Leaflet extends StatelessComponent
     /** `L.circle([lat,lng], opts).addTo(map)`. Staged for created(). */
     public function addCircle(float $lat, float $lng, Circle $circle): void
     {
-        $expr           = Js::invoke(Js::obj('L', 'circle'), [$lat, $lng], $circle->toArray());
-        $this->staged[] = Js::invoke(Js::obj($expr, 'addTo'), $this->mapRef());
+        $expr = Js::invoke(Js::obj('L', 'circle'), [$lat, $lng], $circle->toArray());
+        $this->staged[] = Js::invoke(Js::obj($expr, 'addTo'), "map");
     }
 
     /**
@@ -144,8 +158,8 @@ class Leaflet extends StatelessComponent
      */
     public function addPolygon(array $coords): void
     {
-        $poly           = Js::invoke(Js::obj('L', 'polygon'), $coords);
-        $this->staged[] = Js::invoke(Js::obj($poly, 'addTo'), $this->mapRef());
+        $poly = Js::invoke(Js::obj('L', 'polygon'), $coords);
+        $this->staged[] = Js::invoke(Js::obj($poly, 'addTo'), "map");
     }
 
     /**
@@ -154,10 +168,10 @@ class Leaflet extends StatelessComponent
      */
     public function addPopup(float $lat, float $lng, string $content): void
     {
-        $popup       = Js::invoke(Js::obj('L', 'popup'));
-        $withLatLng  = Js::invoke(Js::obj($popup, 'setLatLng'), [$lat, $lng]);
+        $popup = Js::invoke(Js::obj('L', 'popup'));
+        $withLatLng = Js::invoke(Js::obj($popup, 'setLatLng'), [$lat, $lng]);
         $withContent = Js::invoke(Js::obj($withLatLng, 'setContent'), Js::str($content));
-        $this->staged[] = Js::invoke(Js::obj($withContent, 'openOn'), $this->mapRef());
+        $this->staged[] = Js::invoke(Js::obj($withContent, 'openOn'), "map");
     }
 
     // ============================================================
@@ -167,53 +181,44 @@ class Leaflet extends StatelessComponent
     /**
      * First-render setup inside a single `SPWA.ready` block:
      *
-     *   var d = document.getElementById("<key>");
      *   window.leafLet["<key>"] = L.map("<key>");
      *   L.tileLayer(…).addTo(window.leafLet["<key>"]);
      *   (optional) window.leafLet["<key>"].setView([lat,lng], zoom);
-     *   window.leafLet["<key>"].on('click', e => SPWA.dispatch('leaflet:click', d, {…}));
+     *   window.leafLet["<key>"].on('click', function(event) {
+     *       SPWA.dispatch('leaflet:click', event.target.getContainer(), {…});
+     *   });
      */
     protected function created(): void
     {
         $ref = $this->mapRef();
-        $divVar = '__d';
 
         $lines = [
-            // var __d = document.getElementById("<key>");
-            "var $divVar=" . Js::invoke(Js::obj('document', 'getElementById'), Js::str($this->key)),
-
-            // window.leafLet[<key>] = L.map("<key>");
-            Js::assign($ref, Js::invoke(Js::obj('L', 'map'), Js::str($this->key))),
-
-            // L.tileLayer(url, opts).addTo(map);
+            // var map = L.map("key");
+            Js::assign("var map ", Js::invoke(Js::obj('L', 'map'), Js::str($this->key))),
+            // window.leaflet[key] = map;
+            Js::assign($ref, "map"),
             Js::invoke(
                 Js::obj(
                     Js::invoke(Js::obj('L', 'tileLayer'),
                         Js::str('https://tile.openstreetmap.org/{z}/{x}/{y}.png'),
                         [
-                            'maxZoom'     => 19,
+                            'maxZoom' => 19,
                             'attribution' => '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
                         ],
                     ),
                     'addTo',
                 ),
-                $ref,
+                "map",
             ),
         ];
 
         if ($this->initialCoords !== null) {
-            $lines[] = Js::invoke(Js::obj($ref, 'setView'), $this->initialCoords, $this->initialZoom);
+            $lines[] = Js::invoke(Js::obj("map", 'setView'), $this->initialCoords, $this->initialZoom);
         }
 
-        // Wire every registered server-side handler.
-        // map.on('click', function(e) {
-        //     SPWA.dispatch('leaflet:click', __d, { latlng: { lat: e.latlng.lat, lng: e.latlng.lng } });
-        // });
-        foreach (array_keys($this->handlers) as $serverEvent) {
-            $leafletEvent = substr($serverEvent, strlen('leaflet:')); // strip namespace
-            $lines[] = "{$ref}.on(" . Js::str($leafletEvent)
-                . ",function(e){SPWA.dispatch(" . Js::str($serverEvent) . ","
-                . "$divVar,{latlng:{lat:e.latlng.lat,lng:e.latlng.lng}})})";
+        // Wire registered server-side handlers — one variable per handler.
+        if ($this->onClick !== null) {
+            $lines[] = $this->wireEvent(self::EVENT_CLICK);
         }
 
         // Drain staged additions (markers, circles, polygons, popups)
@@ -234,26 +239,48 @@ class Leaflet extends StatelessComponent
     /** Emit a single map operation wrapped in SPWA.ready. */
     private function emit(string $stmt): void
     {
-        Js::ready($stmt);
+        // add map
+        Js::ready(
+            Js::assign("var map ", $this->mapRef()),
+            $stmt
+        );
     }
 
     protected function build(): VNode
     {
-        $div = UI::div()
+        return UI::div()
             ->width(Unit::full())
             ->height(Unit::px(320))
             ->background(Color::gray(100))
-            ->attr('id', $this->key);
+            ->attr('id', $this->key)
+            ->customEvent(self::EVENT_CLICK, $this->onClick);
+    }
 
-        // Attach each registered handler to the underlying div under
-        // its `leaflet:<name>` event key — SPWA.dispatch on the client
-        // posts events with that name to this div's path, and the
-        // framework's executeEvent dispatches to these callbacks.
-        foreach ($this->handlers as $event => $cb) {
-            $div->dom()->on($event, $cb);
-        }
+    /**
+     * Build the JS that wires a single server-side event:
+     *
+     *   map.on('<leafletEvent>', function(event) {
+     *       SPWA.dispatch('<serverEvent>',
+     *                     event.target.getContainer(),
+     *                     event.latlng);
+     *   });
+     */
+    private function wireEvent(string $serverEvent): string
+    {
+        $leafletEvent = substr($serverEvent, strlen(self::EVENT_PREFIX));
 
-        return $div;
+        $dispatch = Js::invoke(
+            Js::obj('SPWA', 'dispatch'),
+            Js::str($serverEvent),
+            Js::invoke(Js::obj('event', 'target', 'getContainer')),
+            Js::obj('event', 'latlng'),
+        );
+
+        return Js::invoke(
+            Js::obj('map', 'on'),
+            Js::str($leafletEvent),
+            "function(event){{$dispatch}}",
+        );
     }
 
     /**
@@ -267,6 +294,7 @@ class Leaflet extends StatelessComponent
         $app->addStyle('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
         $app->addScript('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js');
         $app->addScriptInline('window.leafLet = {};');
-        EventData::register('leaflet:click', LeafletMouseEvent::from(...));
+
+//        EventData::register(self::EVENT_CLICK, LeafletMouseEvent::from(...));
     }
 }

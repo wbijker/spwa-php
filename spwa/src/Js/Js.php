@@ -40,7 +40,7 @@ class Js
      */
     static function ready(string ...$lines): void
     {
-        self::$calls[] = 'SPWA.ready(function(){' . implode(';', $lines) . '})';
+        self::$calls[] = 'SPWA.ready(function(){' . implode(";".PHP_EOL , $lines) . '})';
     }
 
     /** A JS string literal — `Js::str("hi")` → `"hi"`. */

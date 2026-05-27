@@ -2,6 +2,7 @@
 
 namespace Samples\News;
 
+use Spwa\Js\Console;
 use Spwa\UI\Color;
 use Spwa\UI\FontSize;
 use Spwa\UI\FontWeight;
@@ -28,6 +29,10 @@ class StoryMap extends StatelessComponent
     {
         $landmarks = Landmarks::all();
         $leaflet   = new Leaflet('story-map', $landmarks[0]['coords']);
+
+        $leaflet->onClick(function($event) {
+           Console::log("You have clicked the map, Sir", $event);
+        });
 
         // Just declare the data — Leaflet stages each addMarker and
         // emits them inside its own setup block, so neither timing

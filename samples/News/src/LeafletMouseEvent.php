@@ -3,12 +3,12 @@
 namespace Samples\News;
 
 /**
- * Server-side counterpart of Leaflet's `MouseEvent`. Fired by the
- * Leaflet wrapper for `click`, `dblclick`, `mousedown`, `mouseup`,
- * `mouseover`, `mouseout`, `mousemove`, and `contextmenu` map events.
- *
- * Only carries the geographic coordinate (`latlng`); add more fields
- * (layerPoint / containerPoint / originalEvent) if a use case needs
+ * Server-side counterpart of Leaflet's `MouseEvent`. The client
+ * forwards `event.latlng` (a `L.LatLng`) verbatim, which serializes
+ * over the wire as `{lat, lng}` — so `::from()` receives that flat
+ * shape and wraps it back into a `LeafletLatLng` inside the event
+ * object. Other Leaflet event fields (layerPoint, containerPoint,
+ * originalEvent) are intentionally left out until a use case needs
  * them.
  */
 class LeafletMouseEvent
@@ -17,9 +17,9 @@ class LeafletMouseEvent
         public readonly LeafletLatLng $latlng,
     ) {}
 
-    /** @param array{latlng: array{lat: float, lng: float}} $raw */
+    /** @param array{lat: float, lng: float} $raw */
     public static function from(array $raw): self
     {
-        return new self(LeafletLatLng::from($raw['latlng']));
+        return new self(LeafletLatLng::from($raw));
     }
 }

@@ -16,6 +16,7 @@ use Spwa\Events\ScrollEvent;
 use Spwa\Events\TouchEvent;
 use Spwa\Events\TransitionEvent;
 use Spwa\Events\WheelEvent;
+use Spwa\Events\Events;
 use Spwa\State\StateManager;
 use Spwa\VNode\Component;
 use Spwa\VNode\Node;
@@ -303,73 +304,82 @@ class UIElement extends Node
     // Mouse Events
     // ============================================================
 
+    public function customEvent(string $event, ?callable $callback): static
+    {
+        if ($callback == null)
+            return $this;
+
+        $this->dom()->on($event, $callback);
+        return $this;
+    }
+
     /** @param callable(MouseEvent): void $callback */
     public function onClick(callable $callback): static
     {
-        $this->dom()->on('click', $callback);
+        $this->dom()->on(Events::CLICK, $callback);
         return $this;
     }
 
     /** @param callable(MouseEvent): void $callback */
     public function onDblClick(callable $callback): static
     {
-        $this->dom()->on('dblclick', $callback);
+        $this->dom()->on(Events::DBL_CLICK, $callback);
         return $this;
     }
 
     /** @param callable(MouseEvent): void $callback */
     public function onMouseDown(callable $callback): static
     {
-        $this->dom()->on('mousedown', $callback);
+        $this->dom()->on(Events::MOUSE_DOWN, $callback);
         return $this;
     }
 
     /** @param callable(MouseEvent): void $callback */
     public function onMouseUp(callable $callback): static
     {
-        $this->dom()->on('mouseup', $callback);
+        $this->dom()->on(Events::MOUSE_UP, $callback);
         return $this;
     }
 
     /** @param callable(MouseEvent): void $callback */
     public function onMouseOver(callable $callback): static
     {
-        $this->dom()->on('mouseover', $callback);
+        $this->dom()->on(Events::MOUSE_OVER, $callback);
         return $this;
     }
 
     /** @param callable(MouseEvent): void $callback */
     public function onMouseOut(callable $callback): static
     {
-        $this->dom()->on('mouseout', $callback);
+        $this->dom()->on(Events::MOUSE_OUT, $callback);
         return $this;
     }
 
     /** @param callable(MouseEvent): void $callback */
     public function onMouseEnter(callable $callback): static
     {
-        $this->dom()->on('mouseenter', $callback);
+        $this->dom()->on(Events::MOUSE_ENTER, $callback);
         return $this;
     }
 
     /** @param callable(MouseEvent): void $callback */
     public function onMouseLeave(callable $callback): static
     {
-        $this->dom()->on('mouseleave', $callback);
+        $this->dom()->on(Events::MOUSE_LEAVE, $callback);
         return $this;
     }
 
     /** @param callable(MouseEvent): void $callback */
     public function onMouseMove(callable $callback): static
     {
-        $this->dom()->on('mousemove', $callback);
+        $this->dom()->on(Events::MOUSE_MOVE, $callback);
         return $this;
     }
 
     /** @param callable(MouseEvent): void $callback */
     public function onContextMenu(callable $callback): static
     {
-        $this->dom()->on('contextmenu', $callback);
+        $this->dom()->on(Events::CONTEXT_MENU, $callback);
         return $this;
     }
 
@@ -380,14 +390,14 @@ class UIElement extends Node
     /** @param callable(KeyboardEvent): void $callback */
     public function onKeyDown(callable $callback): static
     {
-        $this->dom()->on('keydown', $callback);
+        $this->dom()->on(Events::KEY_DOWN, $callback);
         return $this;
     }
 
     /** @param callable(KeyboardEvent): void $callback */
     public function onKeyUp(callable $callback): static
     {
-        $this->dom()->on('keyup', $callback);
+        $this->dom()->on(Events::KEY_UP, $callback);
         return $this;
     }
 
@@ -398,77 +408,77 @@ class UIElement extends Node
     /** @param callable(InputEvent): void $callback */
     public function onChange(callable $callback): static
     {
-        $this->dom()->on('change', $callback);
+        $this->dom()->on(Events::CHANGE, $callback);
         return $this;
     }
 
     /** @param callable(InputEvent): void $callback */
     public function onInput(callable $callback): static
     {
-        $this->dom()->on('input', $callback);
+        $this->dom()->on(Events::INPUT, $callback);
         return $this;
     }
 
     /** @param callable(): void $callback */
     public function onSubmit(callable $callback): static
     {
-        $this->dom()->on('submit', $callback);
+        $this->dom()->on(Events::SUBMIT, $callback);
         return $this;
     }
 
     /** @param callable(): void $callback */
     public function onReset(callable $callback): static
     {
-        $this->dom()->on('reset', $callback);
+        $this->dom()->on(Events::RESET, $callback);
         return $this;
     }
 
     /** @param callable(): void $callback */
     public function onFocus(callable $callback): static
     {
-        $this->dom()->on('focus', $callback);
+        $this->dom()->on(Events::FOCUS, $callback);
         return $this;
     }
 
     /** @param callable(): void $callback */
     public function onBlur(callable $callback): static
     {
-        $this->dom()->on('blur', $callback);
+        $this->dom()->on(Events::BLUR, $callback);
         return $this;
     }
 
     /** @param callable(): void $callback */
     public function onFocusIn(callable $callback): static
     {
-        $this->dom()->on('focusin', $callback);
+        $this->dom()->on(Events::FOCUS_IN, $callback);
         return $this;
     }
 
     /** @param callable(): void $callback */
     public function onFocusOut(callable $callback): static
     {
-        $this->dom()->on('focusout', $callback);
+        $this->dom()->on(Events::FOCUS_OUT, $callback);
         return $this;
     }
 
     /** @param callable(InputEvent): void $callback */
     public function onSelect(callable $callback): static
     {
-        $this->dom()->on('select', $callback);
+        $this->dom()->on(Events::SELECT, $callback);
         return $this;
     }
 
     /** @param callable(InputEvent): void $callback */
     public function onInvalid(callable $callback): static
     {
-        $this->dom()->on('invalid', $callback);
+        $this->dom()->on(Events::INVALID, $callback);
         return $this;
     }
 
     /** @param callable(FileEvent): void $callback */
     public function onUpload(callable $callback): static
     {
-        $this->dom()->on('upload', $callback);
+        $this->dom()->on(Events::UPLOAD, $callback);
         return $this;
     }
 
@@ -479,28 +489,28 @@ class UIElement extends Node
     /** @param callable(TouchEvent): void $callback */
     public function onTouchStart(callable $callback): static
     {
-        $this->dom()->on('touchstart', $callback);
+        $this->dom()->on(Events::TOUCH_START, $callback);
         return $this;
     }
 
     /** @param callable(TouchEvent): void $callback */
     public function onTouchEnd(callable $callback): static
     {
-        $this->dom()->on('touchend', $callback);
+        $this->dom()->on(Events::TOUCH_END, $callback);
         return $this;
     }
 
     /** @param callable(TouchEvent): void $callback */
     public function onTouchMove(callable $callback): static
     {
-        $this->dom()->on('touchmove', $callback);
+        $this->dom()->on(Events::TOUCH_MOVE, $callback);
         return $this;
     }
 
     /** @param callable(TouchEvent): void $callback */
     public function onTouchCancel(callable $callback): static
     {
-        $this->dom()->on('touchcancel', $callback);
+        $this->dom()->on(Events::TOUCH_CANCEL, $callback);
         return $this;
     }
 
@@ -511,56 +521,56 @@ class UIElement extends Node
     /** @param callable(PointerEvent): void $callback */
     public function onPointerDown(callable $callback): static
     {
-        $this->dom()->on('pointerdown', $callback);
+        $this->dom()->on(Events::POINTER_DOWN, $callback);
         return $this;
     }
 
     /** @param callable(PointerEvent): void $callback */
     public function onPointerUp(callable $callback): static
     {
-        $this->dom()->on('pointerup', $callback);
+        $this->dom()->on(Events::POINTER_UP, $callback);
         return $this;
     }
 
     /** @param callable(PointerEvent): void $callback */
     public function onPointerMove(callable $callback): static
     {
-        $this->dom()->on('pointermove', $callback);
+        $this->dom()->on(Events::POINTER_MOVE, $callback);
         return $this;
     }
 
     /** @param callable(PointerEvent): void $callback */
     public function onPointerOver(callable $callback): static
     {
-        $this->dom()->on('pointerover', $callback);
+        $this->dom()->on(Events::POINTER_OVER, $callback);
         return $this;
     }
 
     /** @param callable(PointerEvent): void $callback */
     public function onPointerOut(callable $callback): static
     {
-        $this->dom()->on('pointerout', $callback);
+        $this->dom()->on(Events::POINTER_OUT, $callback);
         return $this;
     }
 
     /** @param callable(PointerEvent): void $callback */
     public function onPointerEnter(callable $callback): static
     {
-        $this->dom()->on('pointerenter', $callback);
+        $this->dom()->on(Events::POINTER_ENTER, $callback);
         return $this;
     }
 
     /** @param callable(PointerEvent): void $callback */
     public function onPointerLeave(callable $callback): static
     {
-        $this->dom()->on('pointerleave', $callback);
+        $this->dom()->on(Events::POINTER_LEAVE, $callback);
         return $this;
     }
 
     /** @param callable(PointerEvent): void $callback */
     public function onPointerCancel(callable $callback): static
     {
-        $this->dom()->on('pointercancel', $callback);
+        $this->dom()->on(Events::POINTER_CANCEL, $callback);
         return $this;
     }
 
@@ -571,49 +581,49 @@ class UIElement extends Node
     /** @param callable(DragEvent): void $callback */
     public function onDragStart(callable $callback): static
     {
-        $this->dom()->on('dragstart', $callback);
+        $this->dom()->on(Events::DRAG_START, $callback);
         return $this;
     }
 
     /** @param callable(DragEvent): void $callback */
     public function onDrag(callable $callback): static
     {
-        $this->dom()->on('drag', $callback);
+        $this->dom()->on(Events::DRAG, $callback);
         return $this;
     }
 
     /** @param callable(DragEvent): void $callback */
     public function onDragEnd(callable $callback): static
     {
-        $this->dom()->on('dragend', $callback);
+        $this->dom()->on(Events::DRAG_END, $callback);
         return $this;
     }
 
     /** @param callable(DragEvent): void $callback */
     public function onDragEnter(callable $callback): static
     {
-        $this->dom()->on('dragenter', $callback);
+        $this->dom()->on(Events::DRAG_ENTER, $callback);
         return $this;
     }
 
     /** @param callable(DragEvent): void $callback */
     public function onDragLeave(callable $callback): static
     {
-        $this->dom()->on('dragleave', $callback);
+        $this->dom()->on(Events::DRAG_LEAVE, $callback);
         return $this;
     }
 
     /** @param callable(DragEvent): void $callback */
     public function onDragOver(callable $callback): static
     {
-        $this->dom()->on('dragover', $callback);
+        $this->dom()->on(Events::DRAG_OVER, $callback);
         return $this;
     }
 
     /** @param callable(DragEvent): void $callback */
     public function onDrop(callable $callback): static
     {
-        $this->dom()->on('drop', $callback);
+        $this->dom()->on(Events::DROP, $callback);
         return $this;
     }
 
@@ -624,21 +634,21 @@ class UIElement extends Node
     /** @param callable(ClipboardEvent): void $callback */
     public function onCopy(callable $callback): static
     {
-        $this->dom()->on('copy', $callback);
+        $this->dom()->on(Events::COPY, $callback);
         return $this;
     }
 
     /** @param callable(ClipboardEvent): void $callback */
     public function onCut(callable $callback): static
     {
-        $this->dom()->on('cut', $callback);
+        $this->dom()->on(Events::CUT, $callback);
         return $this;
     }
 
     /** @param callable(ClipboardEvent): void $callback */
     public function onPaste(callable $callback): static
     {
-        $this->dom()->on('paste', $callback);
+        $this->dom()->on(Events::PASTE, $callback);
         return $this;
     }
 
@@ -649,14 +659,14 @@ class UIElement extends Node
     /** @param callable(ScrollEvent): void $callback */
     public function onScroll(callable $callback): static
     {
-        $this->dom()->on('scroll', $callback);
+        $this->dom()->on(Events::SCROLL, $callback);
         return $this;
     }
 
     /** @param callable(WheelEvent): void $callback */
     public function onWheel(callable $callback): static
     {
-        $this->dom()->on('wheel', $callback);
+        $this->dom()->on(Events::WHEEL, $callback);
         return $this;
     }
 
@@ -667,35 +677,35 @@ class UIElement extends Node
     /** @param callable(TransitionEvent): void $callback */
     public function onTransitionEnd(callable $callback): static
     {
-        $this->dom()->on('transitionend', $callback);
+        $this->dom()->on(Events::TRANSITION_END, $callback);
         return $this;
     }
 
     /** @param callable(TransitionEvent): void $callback */
     public function onTransitionStart(callable $callback): static
     {
-        $this->dom()->on('transitionstart', $callback);
+        $this->dom()->on(Events::TRANSITION_START, $callback);
         return $this;
     }
 
     /** @param callable(AnimationEvent): void $callback */
     public function onAnimationEnd(callable $callback): static
     {
-        $this->dom()->on('animationend', $callback);
+        $this->dom()->on(Events::ANIMATION_END, $callback);
         return $this;
     }
 
     /** @param callable(AnimationEvent): void $callback */
     public function onAnimationStart(callable $callback): static
     {
-        $this->dom()->on('animationstart', $callback);
+        $this->dom()->on(Events::ANIMATION_START, $callback);
         return $this;
     }
 
     /** @param callable(AnimationEvent): void $callback */
     public function onAnimationIteration(callable $callback): static
     {
-        $this->dom()->on('animationiteration', $callback);
+        $this->dom()->on(Events::ANIMATION_ITERATION, $callback);
         return $this;
     }
 
@@ -706,91 +716,91 @@ class UIElement extends Node
     /** @param callable(MediaEvent): void $callback */
     public function onPlay(callable $callback): static
     {
-        $this->dom()->on('play', $callback);
+        $this->dom()->on(Events::PLAY, $callback);
         return $this;
     }
 
     /** @param callable(MediaEvent): void $callback */
     public function onPause(callable $callback): static
     {
-        $this->dom()->on('pause', $callback);
+        $this->dom()->on(Events::PAUSE, $callback);
         return $this;
     }
 
     /** @param callable(MediaEvent): void $callback */
     public function onEnded(callable $callback): static
     {
-        $this->dom()->on('ended', $callback);
+        $this->dom()->on(Events::ENDED, $callback);
         return $this;
     }
 
     /** @param callable(MediaEvent): void $callback */
     public function onTimeUpdate(callable $callback): static
     {
-        $this->dom()->on('timeupdate', $callback);
+        $this->dom()->on(Events::TIME_UPDATE, $callback);
         return $this;
     }
 
     /** @param callable(MediaEvent): void $callback */
     public function onVolumeChange(callable $callback): static
     {
-        $this->dom()->on('volumechange', $callback);
+        $this->dom()->on(Events::VOLUME_CHANGE, $callback);
         return $this;
     }
 
     /** @param callable(MediaEvent): void $callback */
     public function onSeeking(callable $callback): static
     {
-        $this->dom()->on('seeking', $callback);
+        $this->dom()->on(Events::SEEKING, $callback);
         return $this;
     }
 
     /** @param callable(MediaEvent): void $callback */
     public function onSeeked(callable $callback): static
     {
-        $this->dom()->on('seeked', $callback);
+        $this->dom()->on(Events::SEEKED, $callback);
         return $this;
     }
 
     /** @param callable(MediaEvent): void $callback */
     public function onLoadedData(callable $callback): static
     {
-        $this->dom()->on('loadeddata', $callback);
+        $this->dom()->on(Events::LOADED_DATA, $callback);
         return $this;
     }
 
     /** @param callable(MediaEvent): void $callback */
     public function onLoadedMetadata(callable $callback): static
     {
-        $this->dom()->on('loadedmetadata', $callback);
+        $this->dom()->on(Events::LOADED_METADATA, $callback);
         return $this;
     }
 
     /** @param callable(MediaEvent): void $callback */
     public function onCanPlay(callable $callback): static
     {
-        $this->dom()->on('canplay', $callback);
+        $this->dom()->on(Events::CAN_PLAY, $callback);
         return $this;
     }
 
     /** @param callable(MediaEvent): void $callback */
     public function onCanPlayThrough(callable $callback): static
     {
-        $this->dom()->on('canplaythrough', $callback);
+        $this->dom()->on(Events::CAN_PLAY_THROUGH, $callback);
         return $this;
     }
 
     /** @param callable(MediaEvent): void $callback */
     public function onWaiting(callable $callback): static
     {
-        $this->dom()->on('waiting', $callback);
+        $this->dom()->on(Events::WAITING, $callback);
         return $this;
     }
 
     /** @param callable(MediaEvent): void $callback */
     public function onPlaying(callable $callback): static
     {
-        $this->dom()->on('playing', $callback);
+        $this->dom()->on(Events::PLAYING, $callback);
         return $this;
     }
 
@@ -801,21 +811,21 @@ class UIElement extends Node
     /** @param callable(): void $callback */
     public function onLoad(callable $callback): static
     {
-        $this->dom()->on('load', $callback);
+        $this->dom()->on(Events::LOAD, $callback);
         return $this;
     }
 
     /** @param callable(): void $callback */
     public function onError(callable $callback): static
     {
-        $this->dom()->on('error', $callback);
+        $this->dom()->on(Events::ERROR, $callback);
         return $this;
     }
 
     /** @param callable(ResizeEvent): void $callback */
     public function onResize(callable $callback): static
     {
-        $this->dom()->on('resize', $callback);
+        $this->dom()->on(Events::RESIZE, $callback);
         return $this;
     }
 
