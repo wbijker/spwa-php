@@ -807,6 +807,13 @@ var SPWA = (function() {
         return indices.join(',');
     }
 
+    // Framework-extension hook: send a server event with a pre-built
+    // value object, bypassing extractEventData. Used by wrappers (e.g.
+    // Leaflet) that dispatch their own events with custom shapes.
+    function dispatch(event, el, value) {
+        post({ event: event, path: computePath(el), value: value });
+    }
+
     function handleEvent(evt, event, el) {
         // Anchor with an SPWA click handler = SPA-handled link. Stop the
         // browser from following the href so the server can swap content
@@ -839,6 +846,7 @@ var SPWA = (function() {
         refresh: refresh,
         tick: refresh,
         handleEvent: handleEvent,
+        dispatch: dispatch,
         ready: ready
     };
 })();

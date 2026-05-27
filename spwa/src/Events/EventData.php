@@ -60,8 +60,32 @@ class EventData
     /**
      * Hydrate raw event data into a strongly typed event object.
      */
+    /**
+     * @var array<string, callable(mixed): mixed> Hydrators registered for
+     *   custom event names by framework extensions (Leaflet wrapper, etc.).
+     */
+    private static array $custom = [];
+
+    /**
+     * Register a hydrator for a custom event name. Wrappers that
+     * dispatch via `SPWA.dispatch(event, …)` call this so the server
+     * knows how to turn the raw value array into a strongly typed
+     * event object. Namespace the event name (`"leaflet:click"`) so
+     * it can't collide with DOM events.
+     *
+     * @param callable(mixed): mixed $hydrator
+     */
+    public static function register(string $event, callable $hydrator): void
+    {
+        self::$custom[$event] = $hydrator;
+    }
+
     public static function hydrate(string $event, mixed $raw): mixed
     {
+        if (isset(self::$custom[$event])) {
+            return (self::$custom[$event])($raw);
+        }
+
         if ($event === 'upload') return FileEvent::from($raw);
         if (in_array($event, self::MOUSE_EVENTS)) return MouseEvent::from($raw);
         if (in_array($event, self::KEYBOARD_EVENTS)) return KeyboardEvent::from($raw);

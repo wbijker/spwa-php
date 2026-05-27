@@ -445,6 +445,13 @@ JS;
         $t = new Timings();
         ob_start();
 
+        // Asset registration also installs event-hydrators (EventData::register)
+        // for framework extensions like Leaflet. Run it on POST too so the
+        // server knows how to hydrate custom event names that arrive in the
+        // payload — the addScript / addStyleInline side-effects are harmless
+        // here (we don't re-emit <head> on a POST response).
+        $entry->runRegisterAssets();
+
         // Parse payload from JSON or multipart form
         $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
         if (str_contains($contentType, 'multipart/form-data')) {

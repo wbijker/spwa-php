@@ -103,7 +103,13 @@ class UIElement extends Node
         return self::$hostRoot . substr($file, strlen(self::$sourceRoot));
     }
 
-    protected function dom(): TagDomNode
+    /**
+     * Underlying DOM node. Public so framework extensions (e.g. the
+     * Leaflet wrapper) can attach custom-name event handlers via
+     * `$el->dom()->on('leaflet:click', $cb)` — user code should use the
+     * typed `onClick` / `onChange` / … wrappers instead.
+     */
+    public function dom(): TagDomNode
     {
         return $this->domNode;
     }

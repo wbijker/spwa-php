@@ -26,6 +26,23 @@ class Js
         self::$calls[] = $js;
     }
 
+    /**
+     * Queue a `SPWA.ready(function(){ … })` wrapper around one or more
+     * statements. The inner block runs after DOMContentLoaded (or
+     * immediately if already past it), so it's the right home for any
+     * setup that needs the body to exist — relevant on the initial GET
+     * where the head-script runs before <body> parses.
+     *
+     *   Js::ready(
+     *       Js::assign($ref, Js::invoke(Js::obj('L', 'map'), Js::str($key))),
+     *       Js::invoke(Js::obj($tile, 'addTo'), $ref),
+     *   );
+     */
+    static function ready(string ...$lines): void
+    {
+        self::$calls[] = 'SPWA.ready(function(){' . implode(';', $lines) . '})';
+    }
+
     /** A JS string literal — `Js::str("hi")` → `"hi"`. */
     static function str(string $s): string
     {

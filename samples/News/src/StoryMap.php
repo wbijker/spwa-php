@@ -26,7 +26,15 @@ class StoryMap extends StatelessComponent
 {
     protected function build(): VNode
     {
-        $leaflet = new Leaflet('story-map', Landmarks::all()[0]['coords']);
+        $landmarks = Landmarks::all();
+        $leaflet   = new Leaflet('story-map', $landmarks[0]['coords']);
+
+        // Just declare the data — Leaflet stages each addMarker and
+        // emits them inside its own setup block, so neither timing
+        // nor duplication is our problem.
+        foreach ($landmarks as $lm) {
+            $leaflet->addMarker($lm['coords'][0], $lm['coords'][1], $lm['name']);
+        }
 
         return UI::column()
             ->gap(Unit::rem(0.75))
@@ -51,7 +59,7 @@ class StoryMap extends StatelessComponent
                 ->rounded(Unit::rem(0.25))
                 ->shadow(Shadow::Small)
                 ->clickable()
-                ->onClick(fn() => $leaflet->setView($lm['coords'], 14)),
+                ->onClick(fn() => $leaflet->flyTo($lm['coords'], 14)),
             Landmarks::all(),
         );
 
