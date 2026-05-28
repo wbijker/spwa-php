@@ -5,7 +5,7 @@ namespace Spwa\UI;
 /**
  * Video element.
  */
-class Video extends UIElement
+class Video extends Media
 {
     public function __construct()
     {
@@ -94,7 +94,7 @@ class Video extends UIElement
 
     public function build(): DomNode
     {
-        $node = $this->dom()->setTag('video');
+        $node = $this->dom();
 
         if ($this->src !== null) {
             $node->attr('src', $this->src);

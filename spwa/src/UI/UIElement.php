@@ -8,7 +8,6 @@ use Spwa\Events\DragEvent;
 use Spwa\Events\FileEvent;
 use Spwa\Events\InputEvent;
 use Spwa\Events\KeyboardEvent;
-use Spwa\Events\MediaEvent;
 use Spwa\Events\MouseEvent;
 use Spwa\Events\PointerEvent;
 use Spwa\Events\ResizeEvent;
@@ -112,7 +111,7 @@ class UIElement extends Node
      * `$el->dom()->on('leaflet:click', $cb)` — user code should use the
      * typed `onClick` / `onChange` / … wrappers instead.
      */
-    public function dom(): TagDomNode
+    public function dom(): DomNode
     {
         return $this->domNode;
     }
@@ -713,101 +712,6 @@ class UIElement extends Node
     public function onAnimationIteration(callable $callback, EventPhase $phase = EventPhase::Bubble): static
     {
         $this->dom()->on(Events::ANIMATION_ITERATION, $callback, null, null, $phase);
-        return $this;
-    }
-
-    // ============================================================
-    // Media Events
-    // ============================================================
-
-    /** @param callable(MediaEvent): void $callback */
-    public function onPlay(callable $callback, EventPhase $phase = EventPhase::Bubble): static
-    {
-        $this->dom()->on(Events::PLAY, $callback, null, null, $phase);
-        return $this;
-    }
-
-    /** @param callable(MediaEvent): void $callback */
-    public function onPause(callable $callback, EventPhase $phase = EventPhase::Bubble): static
-    {
-        $this->dom()->on(Events::PAUSE, $callback, null, null, $phase);
-        return $this;
-    }
-
-    /** @param callable(MediaEvent): void $callback */
-    public function onEnded(callable $callback, EventPhase $phase = EventPhase::Bubble): static
-    {
-        $this->dom()->on(Events::ENDED, $callback, null, null, $phase);
-        return $this;
-    }
-
-    /** @param callable(MediaEvent): void $callback */
-    public function onTimeUpdate(callable $callback, EventPhase $phase = EventPhase::Bubble): static
-    {
-        $this->dom()->on(Events::TIME_UPDATE, $callback, null, null, $phase);
-        return $this;
-    }
-
-    /** @param callable(MediaEvent): void $callback */
-    public function onVolumeChange(callable $callback, EventPhase $phase = EventPhase::Bubble): static
-    {
-        $this->dom()->on(Events::VOLUME_CHANGE, $callback, null, null, $phase);
-        return $this;
-    }
-
-    /** @param callable(MediaEvent): void $callback */
-    public function onSeeking(callable $callback, EventPhase $phase = EventPhase::Bubble): static
-    {
-        $this->dom()->on(Events::SEEKING, $callback, null, null, $phase);
-        return $this;
-    }
-
-    /** @param callable(MediaEvent): void $callback */
-    public function onSeeked(callable $callback, EventPhase $phase = EventPhase::Bubble): static
-    {
-        $this->dom()->on(Events::SEEKED, $callback, null, null, $phase);
-        return $this;
-    }
-
-    /** @param callable(MediaEvent): void $callback */
-    public function onLoadedData(callable $callback, EventPhase $phase = EventPhase::Bubble): static
-    {
-        $this->dom()->on(Events::LOADED_DATA, $callback, null, null, $phase);
-        return $this;
-    }
-
-    /** @param callable(MediaEvent): void $callback */
-    public function onLoadedMetadata(callable $callback, EventPhase $phase = EventPhase::Bubble): static
-    {
-        $this->dom()->on(Events::LOADED_METADATA, $callback, null, null, $phase);
-        return $this;
-    }
-
-    /** @param callable(MediaEvent): void $callback */
-    public function onCanPlay(callable $callback, EventPhase $phase = EventPhase::Bubble): static
-    {
-        $this->dom()->on(Events::CAN_PLAY, $callback, null, null, $phase);
-        return $this;
-    }
-
-    /** @param callable(MediaEvent): void $callback */
-    public function onCanPlayThrough(callable $callback, EventPhase $phase = EventPhase::Bubble): static
-    {
-        $this->dom()->on(Events::CAN_PLAY_THROUGH, $callback, null, null, $phase);
-        return $this;
-    }
-
-    /** @param callable(MediaEvent): void $callback */
-    public function onWaiting(callable $callback, EventPhase $phase = EventPhase::Bubble): static
-    {
-        $this->dom()->on(Events::WAITING, $callback, null, null, $phase);
-        return $this;
-    }
-
-    /** @param callable(MediaEvent): void $callback */
-    public function onPlaying(callable $callback, EventPhase $phase = EventPhase::Bubble): static
-    {
-        $this->dom()->on(Events::PLAYING, $callback, null, null, $phase);
         return $this;
     }
 

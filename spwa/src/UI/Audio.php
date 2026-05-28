@@ -5,7 +5,7 @@ namespace Spwa\UI;
 /**
  * Audio element.
  */
-class Audio extends UIElement
+class Audio extends Media
 {
     public function __construct()
     {
@@ -72,7 +72,7 @@ class Audio extends UIElement
 
     public function build(): DomNode
     {
-        $node = $this->dom()->setTag('audio');
+        $node = $this->dom();
 
         if ($this->src !== null) {
             $node->attr('src', $this->src);
