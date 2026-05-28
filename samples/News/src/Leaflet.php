@@ -2,9 +2,7 @@
 
 namespace Samples\News;
 
-use Spwa\Events\EventData;
 use Spwa\Events\EventRegistration;
-use Spwa\Js\Console;
 use Spwa\Js\Js;
 use Spwa\UI\Color;
 use Spwa\UI\UI;
@@ -213,9 +211,7 @@ class Leaflet extends StatelessComponent
             ),
         ];
 
-        if ($this->initialCoords !== null) {
-            $lines[] = Js::invoke(Js::obj("map", 'setView'), $this->initialCoords, $this->initialZoom);
-        }
+        $lines[] = Js::invoke(Js::obj("map", 'setView'), $this->initialCoords ?? [0, 0], $this->initialZoom);
 
         // Drain staged additions (markers, circles, polygons, popups)
         // into the same SPWA.ready block, after map setup.
@@ -316,7 +312,5 @@ class Leaflet extends StatelessComponent
         $app->addStyle('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
         $app->addScript('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js');
         $app->addScriptInline('window.leafLet = {};');
-
-//        EventData::register(self::EVENT_CLICK, LeafletMouseEvent::from(...));
     }
 }
