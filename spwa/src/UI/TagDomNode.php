@@ -417,23 +417,6 @@ class TagDomNode extends DomNode
     }
 
     /**
-     * Collect CssStyle objects from this node and descendants.
-     * @return CssStyle[]
-     */
-    public function collectCssStyles(): array
-    {
-        $allStyles = $this->cssStyles;
-
-        foreach ($this->children as $child) {
-            if ($child instanceof DomNode) {
-                $allStyles = array_merge($allStyles, $child->collectCssStyles());
-            }
-        }
-
-        return $allStyles;
-    }
-
-    /**
      * Render to HTML string.
      */
     public function toHtml(): string

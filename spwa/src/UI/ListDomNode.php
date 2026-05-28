@@ -3,7 +3,6 @@
 namespace Spwa\UI;
 
 use Spwa\Dom\Levenshtein;
-use Spwa\UI\Css\CssStyle;
 use Spwa\VNode\Patcher;
 
 /**
@@ -61,21 +60,6 @@ class ListDomNode extends TagDomNode
 
         foreach ($this->keyedChildren as $keyed) {
             $allStyles = array_merge($allStyles, $keyed->node->collectStyles());
-        }
-
-        return $allStyles;
-    }
-
-    /**
-     * Collect CssStyle objects from this node and descendants.
-     * @return CssStyle[]
-     */
-    public function collectCssStyles(): array
-    {
-        $allStyles = $this->cssStyles;
-
-        foreach ($this->keyedChildren as $keyed) {
-            $allStyles = array_merge($allStyles, $keyed->node->collectCssStyles());
         }
 
         return $allStyles;
