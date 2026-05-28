@@ -2,7 +2,6 @@
 
 namespace Samples\News;
 
-use Spwa\Events\EventRegistration;
 use Spwa\Js\Js;
 use Spwa\UI\Color;
 use Spwa\UI\UI;
@@ -240,28 +239,31 @@ class Leaflet extends StatelessComponent
 
     protected function build(): VNode
     {
-        return UI::div()
+        $map = UI::div()
             ->width(Unit::full())
             ->height(Unit::px(320))
             ->background(Color::gray(100))
-            ->attr('id', $this->key)
-            ->customEvent(self::EVENT_CLICK, $this->onClick, $this->clickRegistration());
+            ->attr('id', $this->key);
+
+        // Only register the click when a handler is set, so the map never
+        // posts an unhandled click. The registration owns the event name.
+        if ($this->onClick !== null) {
+            $map->customEvent($this->onClick, $this->clickRegistration());
+        }
+
+        return $map;
     }
 
     /**
      * Registration that wires/unwires the map's click listener as the diff
-     * adds and removes this node. Null when no handler is set — customEvent()
-     * then registers nothing, so the map never posts an unhandled click.
+     * adds and removes this node.
      */
-    private function clickRegistration(): ?EventRegistration
+    private function clickRegistration(): LeafletEventRegistration
     {
-        if ($this->onClick === null) {
-            return null;
-        }
-
         $off = Js::invoke(Js::obj('map', 'off'), Js::str(self::leafletEvent(self::EVENT_CLICK)));
 
         return new LeafletEventRegistration(
+            self::EVENT_CLICK,
             $this->mapRef(),
             $this->wireEvent(self::EVENT_CLICK),
             $off,

@@ -306,16 +306,13 @@ class UIElement extends Node
     // ============================================================
 
     /**
-     * Register a custom-named server event. An optional EventRegistration
-     * lets the event carry imperative client wiring (e.g. Leaflet map.on)
-     * that the diff drives via add/update/remove/delete.
+     * Register a custom event. The EventRegistration owns the event name and
+     * the client wiring (e.g. Leaflet's map.on) — this just binds the server
+     * $callback to the registration's event so a dispatch resolves to it.
      */
-    public function customEvent(string $event, ?callable $callback, ?EventRegistration $registration = null): static
+    public function customEvent(callable $callback, EventRegistration $registration): static
     {
-        if ($callback == null)
-            return $this;
-
-        $this->dom()->on($event, $callback, null, $registration);
+        $this->dom()->on($registration->eventName(), $callback, null, $registration);
         return $this;
     }
 

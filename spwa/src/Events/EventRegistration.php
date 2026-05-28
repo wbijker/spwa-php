@@ -8,6 +8,10 @@ namespace Spwa\Events;
  * event carries one — native DOM events use NativeEventRegistration, custom
  * events (e.g. Leaflet's map click) supply their own.
  *
+ * A registration owns the event name it dispatches (eventName()) and knows
+ * how to wire/unwire its own client listener — callers never thread the
+ * name or the attachment through; they just hand over the registration.
+ *
  * An event is only ever added or removed — there is no separate "node
  * deleted" case (a listener leaving with its node is just a removal) and no
  * update (a re-render with the listener still in place emits nothing; the
@@ -19,14 +23,20 @@ namespace Spwa\Events;
  *   - remove() — the listener went away: handler dropped from a surviving
  *                node, or the node itself left the tree.
  *
- * $path is the target node's path in the rendered tree; $event is the
- * logical event name. Implementations typically queue JS via Js::run/ready.
+ * $path is the target node's path in the rendered tree. Implementations
+ * typically queue JS via Js::run/ready.
  */
 interface EventRegistration
 {
-    /** @param int[] $path */
-    public function add(array $path, string $event): void;
+    /**
+     * Logical event name this registration dispatches — the key the server
+     * uses to find the handler, and the name baked into the emitted JS.
+     */
+    public function eventName(): string;
 
     /** @param int[] $path */
-    public function remove(array $path, string $event): void;
+    public function add(array $path): void;
+
+    /** @param int[] $path */
+    public function remove(array $path): void;
 }

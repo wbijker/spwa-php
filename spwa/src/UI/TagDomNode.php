@@ -195,7 +195,7 @@ class TagDomNode extends DomNode
         // boundary so every downstream consumer can rely on a uniform
         // type when storing and dispatching the handler.
         $closure = $callback instanceof \Closure ? $callback : \Closure::fromCallable($callback);
-        $registration ??= new NativeEventRegistration(self::DOM_EVENT_MAP[$event] ?? $event, $phase);
+        $registration ??= new NativeEventRegistration($event, self::DOM_EVENT_MAP[$event] ?? $event, $phase);
         $this->events[$event] = ['callback' => $closure, 'owner' => $owner, 'registration' => $registration];
         return $this;
     }
@@ -211,11 +211,11 @@ class TagDomNode extends DomNode
 
     /**
      * Visit every event registration in this subtree, calling
-     * $visit($registration, int[] $path, string $event). The basis for
-     * bindEvents()/unbindEvents() (see DomNode). Walks plain children;
-     * ListDomNode overrides to walk its keyed children.
+     * $visit($registration, int[] $path). The basis for bindEvents()/
+     * unbindEvents() (see DomNode). Walks plain children; ListDomNode
+     * overrides to walk its keyed children.
      *
-     * @param callable(EventRegistration, int[], string): void $visit
+     * @param callable(EventRegistration, int[]): void $visit
      */
     public function walkRegistrations(callable $visit): void
     {
@@ -232,12 +232,12 @@ class TagDomNode extends DomNode
      * Visit this node's own event registrations (no recursion). Shared by
      * TagDomNode and ListDomNode, which differ only in child storage.
      *
-     * @param callable(EventRegistration, int[], string): void $visit
+     * @param callable(EventRegistration, int[]): void $visit
      */
     protected function walkOwnRegistrations(callable $visit): void
     {
-        foreach ($this->events as $event => $data) {
-            $visit($data['registration'], $this->path, $event);
+        foreach ($this->events as $data) {
+            $visit($data['registration'], $this->path);
         }
     }
 
@@ -251,12 +251,12 @@ class TagDomNode extends DomNode
     {
         foreach ($this->events as $event => $data) {
             if (!isset($old->events[$event])) {
-                $data['registration']->add($this->path, $event);
+                $data['registration']->add($this->path);
             }
         }
         foreach ($old->events as $event => $data) {
             if (!isset($this->events[$event])) {
-                $data['registration']->remove($this->path, $event);
+                $data['registration']->remove($this->path);
             }
         }
     }

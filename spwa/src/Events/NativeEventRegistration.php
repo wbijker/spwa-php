@@ -6,8 +6,8 @@ use Spwa\Js\Js;
 
 /**
  * Wires a native DOM listener through the diff via addEventListener, so
- * native events flow through the same add/remove/delete lifecycle as custom
- * ones — no inline `on<event>` attributes.
+ * native events flow through the same add/remove lifecycle as custom ones —
+ * no inline `on<event>` attributes.
  *
  * add() binds `SPWA.bindEvent(path, domType, event, capture)`; remove()
  * unbinds it. When remove() fires because the handler was dropped from a
@@ -16,30 +16,36 @@ use Spwa\Js\Js;
  * a harmless no-op (the browser drops the listeners with the node and the
  * client's patch handler scrubs them as it removes the element).
  *
- * `$domType` is the real DOM event name passed to addEventListener (e.g.
- * 'change' for the logical 'upload'); the logical event name is forwarded
- * separately so the dispatched server event keeps its identity.
+ * `$event` is the logical event name (the dispatched server event); `$domType`
+ * is the real DOM event name passed to addEventListener (e.g. 'change' for
+ * the logical 'upload').
  */
 final class NativeEventRegistration implements EventRegistration
 {
     public function __construct(
+        private string     $event,
         private string     $domType,
         private EventPhase $phase,
     ) {
     }
 
-    public function add(array $path, string $event): void
+    public function eventName(): string
+    {
+        return $this->event;
+    }
+
+    public function add(array $path): void
     {
         Js::run(Js::invoke(
             Js::obj('SPWA', 'bindEvent'),
             $path,
             Js::str($this->domType),
-            Js::str($event),
+            Js::str($this->event),
             $this->phase->useCapture(),
         ));
     }
 
-    public function remove(array $path, string $event): void
+    public function remove(array $path): void
     {
         Js::run(Js::invoke(
             Js::obj('SPWA', 'unbindEvent'),
