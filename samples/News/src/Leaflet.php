@@ -39,8 +39,8 @@ class Leaflet extends StatelessComponent
     /** Prefix carved off when generating the matching native Leaflet event name. */
     private const EVENT_PREFIX = 'leaflet:';
 
-    /** @var (\Closure(LeafletMouseEvent): void)|null Click handler set via onClick() */
-    private ?\Closure $onClick = null;
+    /** @var (callable(LeafletMouseEvent): void)|null Click handler set via onClick() */
+    private $onClick = null;
 
     /**
      * Decorative `addMarker` / `addCircle` / `addPolygon` / `addPopup`
@@ -80,9 +80,7 @@ class Leaflet extends StatelessComponent
      */
     public function onClick(callable $callback): self
     {
-        $this->onClick = $callback instanceof \Closure
-            ? $callback
-            : \Closure::fromCallable($callback);
+        $this->onClick = $callback;
         return $this;
     }
 

@@ -182,7 +182,12 @@ class TagDomNode extends DomNode
      */
     public function on(string $event, callable $callback, ?Component $owner = null): static
     {
-        $this->events[$event] = ['callback' => $callback, 'owner' => $owner];
+        // Normalize any callable shape (string, [obj,'method'], invokable
+        // object, first-class callable) into a Closure at the DOM-node
+        // boundary so every downstream consumer can rely on a uniform
+        // type when storing and dispatching the handler.
+        $closure = $callback instanceof \Closure ? $callback : \Closure::fromCallable($callback);
+        $this->events[$event] = ['callback' => $closure, 'owner' => $owner];
         return $this;
     }
 
