@@ -548,6 +548,10 @@ JS;
         $newUi->compare($oldUi, $patcher);
         $t->mark('diff');
 
+        // Event (de)registration rides on the diff itself: compare() above
+        // emits bind/unbind as nodes are inserted, replaced, removed, or
+        // change their listeners. Nothing extra to do here.
+
         // Capture buffered output → console.log
         $output = ob_get_clean();
         if ($output !== '' && $output !== false) {
@@ -619,6 +623,11 @@ JS;
         $loaderVNode = $entry->getLoader();
         $loaderDom = $loaderVNode?->render($state, null, RenderPhase::Initial);
         $t->mark('render_loader');
+
+        // Initial render: bind every listener in the tree (each event's
+        // add() queues its client wiring) before the JS dump is drained.
+        $ui->bindEvents();
+        $t->mark('bind_events');
 
         $stateJs = $state->getClientJs();
 

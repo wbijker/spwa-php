@@ -3,6 +3,9 @@
 namespace Spwa\UI;
 
 use Spwa\Events\EventData;
+use Spwa\Events\EventPhase;
+use Spwa\Events\EventRegistration;
+use Spwa\Events\NativeEventRegistration;
 use Spwa\State\StateManager;
 use Spwa\UI\Css\CssStyle;
 use Spwa\VNode\Component;
@@ -31,7 +34,7 @@ class TagDomNode extends DomNode
     /** @var CssStyle[] */
     protected array $cssStyles = [];
 
-    /** @var array<string, array{callback: callable, owner: ?Component}> */
+    /** @var array<string, array{callback: callable, owner: ?Component, registration: ?EventRegistration}> */
     protected array $events = [];
 
     /** @var string[] Collected class names */
@@ -178,16 +181,22 @@ class TagDomNode extends DomNode
     }
 
     /**
-     * Add an event listener.
+     * Add an event listener. Every event carries an EventRegistration that
+     * the diff drives (add/remove/delete): native DOM events default to a
+     * NativeEventRegistration (addEventListener, with $phase choosing the
+     * bubble/capture phase), custom events (e.g. Leaflet's map click) pass
+     * their own. There are no inline on<event> attributes — all wiring is
+     * imperative JS keyed on the node's path.
      */
-    public function on(string $event, callable $callback, ?Component $owner = null): static
+    public function on(string $event, callable $callback, ?Component $owner = null, ?EventRegistration $registration = null, EventPhase $phase = EventPhase::Bubble): static
     {
         // Normalize any callable shape (string, [obj,'method'], invokable
         // object, first-class callable) into a Closure at the DOM-node
         // boundary so every downstream consumer can rely on a uniform
         // type when storing and dispatching the handler.
         $closure = $callback instanceof \Closure ? $callback : \Closure::fromCallable($callback);
-        $this->events[$event] = ['callback' => $closure, 'owner' => $owner];
+        $registration ??= new NativeEventRegistration(self::DOM_EVENT_MAP[$event] ?? $event, $phase);
+        $this->events[$event] = ['callback' => $closure, 'owner' => $owner, 'registration' => $registration];
         return $this;
     }
 
@@ -198,6 +207,58 @@ class TagDomNode extends DomNode
     public function getEvents(): array
     {
         return $this->events;
+    }
+
+    /**
+     * Visit every event registration in this subtree, calling
+     * $visit($registration, int[] $path, string $event). The basis for
+     * bindEvents()/unbindEvents() (see DomNode). Walks plain children;
+     * ListDomNode overrides to walk its keyed children.
+     *
+     * @param callable(EventRegistration, int[], string): void $visit
+     */
+    public function walkRegistrations(callable $visit): void
+    {
+        $this->walkOwnRegistrations($visit);
+
+        foreach ($this->children as $child) {
+            if ($child instanceof DomNode) {
+                $child->walkRegistrations($visit);
+            }
+        }
+    }
+
+    /**
+     * Visit this node's own event registrations (no recursion). Shared by
+     * TagDomNode and ListDomNode, which differ only in child storage.
+     *
+     * @param callable(EventRegistration, int[], string): void $visit
+     */
+    protected function walkOwnRegistrations(callable $visit): void
+    {
+        foreach ($this->events as $event => $data) {
+            $visit($data['registration'], $this->path, $event);
+        }
+    }
+
+    /**
+     * Diff this (NEW) node's own listeners against the OLD node at the same
+     * position: bind listeners that appeared, unbind ones that vanished.
+     * Listeners present in both are left untouched (no update) — the binding
+     * from the previous render persists on the surviving element.
+     */
+    public function diffEvents(TagDomNode $old): void
+    {
+        foreach ($this->events as $event => $data) {
+            if (!isset($old->events[$event])) {
+                $data['registration']->add($this->path, $event);
+            }
+        }
+        foreach ($old->events as $event => $data) {
+            if (!isset($this->events[$event])) {
+                $data['registration']->remove($this->path, $event);
+            }
+        }
     }
 
     /**
@@ -398,12 +459,9 @@ class TagDomNode extends DomNode
             $attrHtml .= ' ' . $name . '="' . htmlspecialchars($value) . '"';
         }
 
-        if ($this->managed) {
-            foreach ($this->events as $event => $callback) {
-                $domEvent = self::DOM_EVENT_MAP[$event] ?? $event;
-                $attrHtml .= ' on' . $domEvent . "=\"SPWA.handleEvent(event, '" . $event . "', this)\"";
-            }
-        }
+        // Events carry no inline on<event> attributes — every listener is
+        // wired imperatively via its EventRegistration (SPWA.bindEvent),
+        // driven by the diff. See on() / NativeEventRegistration.
 
         // Auto-emit wireframe/inspect data attrs whenever the fields are set
         // (UIElement + Component stamp them only when UIElement::$captureSource
@@ -500,9 +558,13 @@ class TagDomNode extends DomNode
             return;
         }
 
-        // If other is not a TagDomNode or tag differs, replace entirely
+        // If other is not a TagDomNode or tag differs, replace entirely.
+        // The old element (and its listeners) is discarded; the new subtree
+        // is freshly materialised, so unbind the old and bind the new.
         if (!$other instanceof TagDomNode || $this->tag !== $other->tag) {
+            $other->unbindEvents();
             $patcher->replaceNode($this->path, $this);
+            $this->bindEvents();
             return;
         }
 
@@ -538,6 +600,10 @@ class TagDomNode extends DomNode
         if ($classForced || $thisClasses !== $otherClasses) {
             $patcher->setAttribute($this->path, 'class', implode(' ', array_unique($thisClasses)));
         }
+
+        // This element survives — diff its own listeners (bind appeared,
+        // unbind vanished; unchanged ones keep their existing binding).
+        $this->diffEvents($other);
 
         // Compare children
         $this->compareChildren($other, $patcher);
@@ -585,6 +651,7 @@ class TagDomNode extends DomNode
 
         // Delete removed children in reverse order
         for ($i = $otherCount - 1; $i >= $thisCount; $i--) {
+            $other->children[$i]->unbindEvents();
             $patcher->deleteNode([...$this->path, $i]);
         }
 
@@ -596,6 +663,7 @@ class TagDomNode extends DomNode
         // Insert new children
         for ($i = $otherCount; $i < $thisCount; $i++) {
             $patcher->insertNode([...$this->path, $i], $this->children[$i]);
+            $this->children[$i]->bindEvents();
         }
     }
 
@@ -640,6 +708,7 @@ class TagDomNode extends DomNode
 
         for ($i = count($other->children) - 1; $i >= 0; $i--) {
             if (!isset($usedOld[$i])) {
+                $other->children[$i]->unbindEvents();
                 $patcher->removeAt($this->path, $i);
             }
         }
@@ -647,6 +716,7 @@ class TagDomNode extends DomNode
         foreach ($this->children as $newIdx => $newChild) {
             if ($matched[$newIdx] === null) {
                 $patcher->insertAt($this->path, $newIdx, $newChild);
+                $newChild->bindEvents();
                 continue;
             }
             $oldChild = $other->children[$matched[$newIdx]];

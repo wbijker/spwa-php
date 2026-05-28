@@ -113,6 +113,7 @@ var SPWA = (function() {
                 case 'replace_node': {
                     const node = findNodeByPath(path);
                     if (node) {
+                        cleanupListeners(node);
                         const temp = document.createElement('div');
                         temp.innerHTML = patch.html;
                         node.replaceWith(temp.firstElementChild);
@@ -140,6 +141,7 @@ var SPWA = (function() {
                 case 'delete_node': {
                     const node = findNodeByPath(path);
                     if (node) {
+                        cleanupListeners(node);
                         node.remove();
                     }
                     break;
@@ -197,6 +199,7 @@ var SPWA = (function() {
                     // Remove child at specific index in a list
                     const parent = findNodeByPath(path);
                     if (parent && parent.children[patch.index]) {
+                        cleanupListeners(parent.children[patch.index]);
                         parent.children[patch.index].remove();
                     }
                     break;
@@ -205,6 +208,7 @@ var SPWA = (function() {
                     // Replace child at specific index in a list
                     const parent = findNodeByPath(path);
                     if (parent && parent.children[patch.index]) {
+                        cleanupListeners(parent.children[patch.index]);
                         const temp = document.createElement('div');
                         temp.innerHTML = patch.html;
                         parent.children[patch.index].replaceWith(temp.firstElementChild);
@@ -814,6 +818,50 @@ var SPWA = (function() {
         post({ event: event, path: computePath(el), value: value });
     }
 
+    // Attach a server-dispatched listener to the element at `path`. domType
+    // is the real DOM event (e.g. 'change'); `event` is the logical name
+    // forwarded to the server. capture picks the addEventListener phase.
+    // Tracked on the element (keyed by domType+phase) so it can be unbound
+    // and is never double-bound.
+    function bindEvent(path, domType, event, capture) {
+        var el = findNodeByPath(path);
+        if (!el) return;
+        el.__spwaEvents = el.__spwaEvents || {};
+        var key = domType + '|' + (capture ? 'c' : 'b');
+        if (el.__spwaEvents[key]) return;
+        var fn = function (evt) { handleEvent(evt, event, el); };
+        el.addEventListener(domType, fn, capture);
+        el.__spwaEvents[key] = fn;
+    }
+
+    // Detach a previously bound listener from a surviving element.
+    function unbindEvent(path, domType, capture) {
+        var el = findNodeByPath(path);
+        if (!el || !el.__spwaEvents) return;
+        var key = domType + '|' + (capture ? 'c' : 'b');
+        var fn = el.__spwaEvents[key];
+        if (!fn) return;
+        el.removeEventListener(domType, fn, capture);
+        delete el.__spwaEvents[key];
+    }
+
+    // Remove every SPWA listener tracked on `el` and its descendants. Called
+    // as a node is about to leave the DOM (delete/replace) so no listener is
+    // left dangling on the detached subtree.
+    function cleanupListeners(el) {
+        if (!el || el.nodeType !== 1) return;
+        if (el.__spwaEvents) {
+            for (var key in el.__spwaEvents) {
+                var capture = key.charAt(key.length - 1) === 'c';
+                var domType = key.slice(0, -2);
+                el.removeEventListener(domType, el.__spwaEvents[key], capture);
+            }
+            el.__spwaEvents = null;
+        }
+        var kids = el.children;
+        for (var i = 0; i < kids.length; i++) cleanupListeners(kids[i]);
+    }
+
     function handleEvent(evt, event, el) {
         // Anchor with an SPWA click handler = SPA-handled link. Stop the
         // browser from following the href so the server can swap content
@@ -847,6 +895,8 @@ var SPWA = (function() {
         tick: refresh,
         handleEvent: handleEvent,
         dispatch: dispatch,
+        bindEvent: bindEvent,
+        unbindEvent: unbindEvent,
         ready: ready
     };
 })();

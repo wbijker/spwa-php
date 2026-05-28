@@ -3,6 +3,7 @@
 namespace Samples\News;
 
 use Spwa\Events\EventData;
+use Spwa\Events\EventRegistration;
 use Spwa\Js\Console;
 use Spwa\Js\Js;
 use Spwa\UI\Color;
@@ -182,9 +183,11 @@ class Leaflet extends StatelessComponent
      *   window.leafLet["<key>"] = L.map("<key>");
      *   L.tileLayer(…).addTo(window.leafLet["<key>"]);
      *   (optional) window.leafLet["<key>"].setView([lat,lng], zoom);
-     *   window.leafLet["<key>"].on('click', function(event) {
-     *       SPWA.dispatch('leaflet:click', event.target.getContainer(), {…});
-     *   });
+     *
+     * The click listener is NOT wired here — it rides on the node's
+     * EventRegistration (see clickRegistration()), which the diff attaches
+     * on add and detaches on remove/delete, so it only listens when a
+     * handler is set.
      */
     protected function created(): void
     {
@@ -214,13 +217,8 @@ class Leaflet extends StatelessComponent
             $lines[] = Js::invoke(Js::obj("map", 'setView'), $this->initialCoords, $this->initialZoom);
         }
 
-        // Wire registered server-side handlers — one variable per handler.
-        if ($this->onClick !== null) {
-            $lines[] = $this->wireEvent(self::EVENT_CLICK);
-        }
-
         // Drain staged additions (markers, circles, polygons, popups)
-        // into the same SPWA.ready block, after setup and event wiring.
+        // into the same SPWA.ready block, after map setup.
         foreach ($this->staged as $stmt) {
             $lines[] = $stmt;
         }
@@ -251,7 +249,27 @@ class Leaflet extends StatelessComponent
             ->height(Unit::px(320))
             ->background(Color::gray(100))
             ->attr('id', $this->key)
-            ->customEvent(self::EVENT_CLICK, $this->onClick);
+            ->customEvent(self::EVENT_CLICK, $this->onClick, $this->clickRegistration());
+    }
+
+    /**
+     * Registration that wires/unwires the map's click listener as the diff
+     * adds and removes this node. Null when no handler is set — customEvent()
+     * then registers nothing, so the map never posts an unhandled click.
+     */
+    private function clickRegistration(): ?EventRegistration
+    {
+        if ($this->onClick === null) {
+            return null;
+        }
+
+        $off = Js::invoke(Js::obj('map', 'off'), Js::str(self::leafletEvent(self::EVENT_CLICK)));
+
+        return new LeafletEventRegistration(
+            $this->mapRef(),
+            $this->wireEvent(self::EVENT_CLICK),
+            $off,
+        );
     }
 
     /**
@@ -265,7 +283,7 @@ class Leaflet extends StatelessComponent
      */
     private function wireEvent(string $serverEvent): string
     {
-        $leafletEvent = substr($serverEvent, strlen(self::EVENT_PREFIX));
+        $leafletEvent = self::leafletEvent($serverEvent);
 
         $dispatch = Js::invoke(
             Js::obj('SPWA', 'dispatch'),
@@ -279,6 +297,12 @@ class Leaflet extends StatelessComponent
             Js::str($leafletEvent),
             "function(event){{$dispatch}}",
         );
+    }
+
+    /** Native Leaflet event name for a namespaced server event — `leaflet:click` → `click`. */
+    private static function leafletEvent(string $serverEvent): string
+    {
+        return substr($serverEvent, strlen(self::EVENT_PREFIX));
     }
 
     /**

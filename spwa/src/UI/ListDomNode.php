@@ -81,6 +81,15 @@ class ListDomNode extends TagDomNode
         return $allStyles;
     }
 
+    public function walkRegistrations(callable $visit): void
+    {
+        $this->walkOwnRegistrations($visit);
+
+        foreach ($this->keyedChildren as $keyed) {
+            $keyed->node->walkRegistrations($visit);
+        }
+    }
+
     /**
      * Render to HTML string.
      */
@@ -139,9 +148,12 @@ class ListDomNode extends TagDomNode
      */
     public function compare(DomNode $other, Patcher $patcher): void
     {
-        // If other is not a ListDomNode or tag differs, replace entirely
+        // If other is not a ListDomNode or tag differs, replace entirely.
+        // Unbind the old subtree's listeners and bind the new one's.
         if (!$other instanceof ListDomNode || $this->tag !== $other->tag) {
+            $other->unbindEvents();
             $patcher->replaceNode($this->path, $this);
+            $this->bindEvents();
             return;
         }
 
@@ -166,6 +178,9 @@ class ListDomNode extends TagDomNode
             $patcher->setAttribute($this->path, 'class', implode(' ', array_unique($this->classes)));
         }
 
+        // This list element survives — diff its own listeners.
+        $this->diffEvents($other);
+
         // Use Levenshtein for keyed children comparison
         $keyFn = fn(KeyedDomNode $item) => $item->key;
 
@@ -188,9 +203,12 @@ class ListDomNode extends TagDomNode
                     break;
 
                 case Levenshtein::SUBSTITUTE:
-                    // Key changed - update node at index
+                    // Key changed - replace node at index: old listeners go,
+                    // new ones bind.
                     if ($newItem !== null) {
+                        $oldItem?->node->unbindEvents();
                         $patcher->updateAt($this->path, $newIndex, $newItem->node);
+                        $newItem->node->bindEvents();
                     }
                     $newIndex++;
                     break;
@@ -199,12 +217,14 @@ class ListDomNode extends TagDomNode
                     // New item inserted at index
                     if ($newItem !== null) {
                         $patcher->insertAt($this->path, $newIndex, $newItem->node);
+                        $newItem->node->bindEvents();
                     }
                     $newIndex++;
                     break;
 
                 case Levenshtein::DELETE:
                     // Item removed - use adjusted index accounting for previous removals
+                    $oldItem?->node->unbindEvents();
                     $patcher->removeAt($this->path, $newIndex + $removeOffset);
                     $removeOffset++;
                     break;

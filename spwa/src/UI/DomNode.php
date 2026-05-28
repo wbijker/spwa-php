@@ -163,6 +163,29 @@ abstract class DomNode
     }
 
     /**
+     * Visit every event registration in this subtree, calling
+     * $visit($registration, int[] $path, string $event). Node types without
+     * events or children contribute nothing; TagDomNode/ListDomNode override.
+     *
+     * @param callable(\Spwa\Events\EventRegistration, int[], string): void $visit
+     */
+    public function walkRegistrations(callable $visit): void
+    {
+    }
+
+    /** Bind every listener in this subtree (materialisation: initial render, insert, replace). */
+    public function bindEvents(): void
+    {
+        $this->walkRegistrations(fn($reg, $path, $event) => $reg->add($path, $event));
+    }
+
+    /** Unbind every listener in this subtree (the node is leaving the tree). */
+    public function unbindEvents(): void
+    {
+        $this->walkRegistrations(fn($reg, $path, $event) => $reg->remove($path, $event));
+    }
+
+    /**
      * Compare this node with another and generate patches.
      * @param DomNode $other The other node to compare with
      * @param Patcher $patcher The patcher to record operations
