@@ -37,7 +37,15 @@ final class LeafletEventRegistration implements EventRegistration
 
     public function add(array $path): void
     {
-        $this->ready($this->onStmt);
+        // Idempotent: detach first, then attach. Leaflet's map.on() has no
+        // dedup of its own (unlike SPWA's native bindEvent, which is guarded
+        // client-side and "never double-bound"), and the map is cached at
+        // window.leafLet[<key>] across renders. So a re-wire — navigating back
+        // to the map page, a re-render that re-inserts the node, or a map
+        // re-init that left the old listener in place — would otherwise stack
+        // a second listener, and every click would dispatch (and POST) twice.
+        // off-before-on guarantees exactly one listener.
+        $this->ready($this->offStmt, $this->onStmt);
     }
 
     public function remove(array $path): void
@@ -45,12 +53,12 @@ final class LeafletEventRegistration implements EventRegistration
         $this->ready($this->offStmt);
     }
 
-    /** Run a statement against the cached map inside SPWA.ready. */
-    private function ready(string $stmt): void
+    /** Run statements against the cached map inside SPWA.ready. */
+    private function ready(string ...$stmts): void
     {
         Js::ready(
             Js::assign('var map ', $this->mapRef),
-            $stmt,
+            ...$stmts,
         );
     }
 }

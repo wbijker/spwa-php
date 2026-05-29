@@ -367,6 +367,16 @@ abstract class Component extends BaseComponent
             $rendered->wireframeLine = $rc->getStartLine() ?: null;
         }
 
+        // Top-level render (the App, rendered with no parent): assign positional
+        // paths across the whole DOM tree in one O(n) pass. This is the true
+        // root — a component's build-root UIElement is rendered with the
+        // component as its parent, so the parent===null guard in
+        // UIElement::render never fires for it. Without this, every node keeps
+        // an empty path and every native event binds to the root element.
+        if ($parent === null) {
+            $rendered->assignPaths();
+        }
+
         return $rendered;
     }
 
