@@ -39,14 +39,33 @@ class UI
         return new Stack();
     }
 
-    public static function grid(int $columns = 1): Grid
+    public static function grid(?int $columns = null): Grid
     {
         return new Grid($columns);
+    }
+
+    public static function gridItem(DomNode|\Spwa\VNode\VNode|string|null ...$children): GridItem
+    {
+        $item = new GridItem();
+        if ($children !== []) {
+            $item->content(...$children);
+        }
+        return $item;
     }
 
     public static function inlined(): Inlined
     {
         return new Inlined();
+    }
+
+    public static function unconstrained(): Unconstrained
+    {
+        return new Unconstrained();
+    }
+
+    public static function multiColumn(int $count = 2): MultiColumn
+    {
+        return new MultiColumn($count);
     }
 
     public static function container(): Container

@@ -55,7 +55,7 @@ class CssExtractor
     private const HARVESTABLE = [
         'Color', 'Unit', 'Pseudo',
         'FontSize', 'FontWeight', 'Shadow', 'Cursor',
-        'Direction', 'Align', 'GridColumns', 'Breakpoint', 'ColorScheme',
+        'Direction', 'Align', 'GridColumns', 'GridFlow', 'GridAlign', 'Breakpoint', 'ColorScheme',
     ];
 
     public function __construct()
@@ -93,7 +93,7 @@ class CssExtractor
         class_exists(Grid::class);
 
         $names = ['Color','Unit','Pseudo','Cursor','FontSize','FontWeight','Shadow',
-                  'Align','Direction','GridColumns','Breakpoint','ColorScheme',
+                  'Align','Direction','GridColumns','GridFlow','GridAlign','Breakpoint','ColorScheme',
                   'Selector','BaseRoute','UI'];
         foreach ($names as $name) {
             if (class_exists($name, false) || enum_exists($name, false)) continue;

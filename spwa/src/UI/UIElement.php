@@ -1401,7 +1401,7 @@ class UIElement extends Node
     // Z-Index / Layering
     // ============================================================
 
-    public function layer(int $index, ?Pseudo $pseudo = null): static
+    public function zIndex(int $index, ?Pseudo $pseudo = null): static
     {
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . 'z-' . $index, ['z-index' => (string)$index]);
