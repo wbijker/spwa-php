@@ -29,6 +29,9 @@ class Spwa
     /** @var bool Set once an error has been rendered so the shutdown handler doesn't render twice. */
     private static bool $errorRendered = false;
 
+    /** @var float microtime when run() entered — start of the app's own PHP code execution. */
+    private static float $runStart = 0.0;
+
     /**
      * Inline stylesheet for wireframe mode. Loaded only when the page is
      * rendered with ?wireframe=true. Keeps the original element box (so
@@ -140,6 +143,11 @@ JS;
      */
     public static function run(App|string $entry): void
     {
+        // Start of the app's own code execution — everything before this is
+        // PHP engine startup + compiling index.php/autoload (the gap between
+        // this and REQUEST_TIME_FLOAT). See codeMs() / phpMs().
+        self::$runStart = microtime(true);
+
         self::installErrorTraps();
 
         // Dev mode flips the capture flag for the whole request — every
@@ -162,16 +170,22 @@ JS;
             }
             self::$current = $entry;
 
+            // Section timer for the per-request console breakdown. Started
+            // here so the first section ("restore state") captures the state
+            // manager load; the handlers mark the remaining sections.
+            $t = new Timings();
+
             // Pull the state manager ONCE; do not call state() again.
             // Many managers are stateful within a request (in-process
             // caches), so two instances would have divergent caches and
             // the request would see inconsistent data.
             $state = $entry->state();
+            $t->mark('restore state');
 
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                self::handlePost($entry, $state);
+                self::handlePost($entry, $state, $t);
             } else {
-                self::handleGet($entry, $state);
+                self::handleGet($entry, $state, $t);
             }
         } catch (Throwable $e) {
             self::renderError(ErrorInfo::fromThrowable($e));
@@ -404,6 +418,50 @@ JS;
     }
 
     /**
+     * Milliseconds of the app's own code execution — from run() entering
+     * (self::$runStart) to now. Excludes the PHP startup + compile that
+     * happened before run() was reached.
+     */
+    private static function codeMs(): float
+    {
+        $start = self::$runStart ?: microtime(true);
+        return round((microtime(true) - $start) * 1000, 2);
+    }
+
+    /**
+     * Milliseconds of total PHP time for this request, measured from when the
+     * SAPI received it (REQUEST_TIME_FLOAT). Includes everything codeMs()
+     * does plus the pre-run engine startup + bootstrap compile; the gap
+     * phpMs() - codeMs() is that fixed bootstrap cost.
+     */
+    private static function phpMs(): float
+    {
+        $start = $_SERVER['REQUEST_TIME_FLOAT'] ?? microtime(true);
+        return round((microtime(true) - $start) * 1000, 2);
+    }
+
+    /**
+     * Perf-relevant extension state for the running SAPI, shipped to the
+     * client so the timing logs show what was active: opcache + apcu speed
+     * requests up, xdebug slows them down. Lets you read a benchmark number
+     * together with the config that produced it.
+     *
+     * @return array{xdebug: bool, opcache: bool, apcu: bool}
+     */
+    private static function phpEnv(): array
+    {
+        $opcache = function_exists('opcache_get_status')
+            && is_array($s = @opcache_get_status(false))
+            && !empty($s['opcache_enabled']);
+
+        return [
+            'xdebug'  => extension_loaded('xdebug'),
+            'opcache' => $opcache,
+            'apcu'    => function_exists('apcu_enabled') && apcu_enabled(),
+        ];
+    }
+
+    /**
      * Cheap source fingerprint: newest mtime + file count, joined with a
      * colon. Doubles as HMR change signal and /style.css cache-buster — an
      * edit bumps mtime, an add/remove bumps count. Walks .php and .css under
@@ -440,9 +498,8 @@ JS;
         return $max . ':' . $n;
     }
 
-    private static function handlePost(App $entry, StateManager $state): void
+    private static function handlePost(App $entry, StateManager $state, Timings $t): void
     {
-        $t = new Timings();
         ob_start();
 
         // Asset registration also installs event-hydrators (EventData::register)
@@ -474,7 +531,7 @@ JS;
         // only, so the diff against the NEW render at the current URL
         // produces the correct list↔detail swap.
         $previousPath = $payload['previousPath'] ?? null;
-        $t->mark('parse_payload');
+        $t->mark('parse payload');
 
         // Optimistic concurrency: the frontend echoes the hash it was
         // rendered against. If the backend's current state hashes differently
@@ -486,7 +543,7 @@ JS;
             echo json_encode(['success' => false, 'reload' => true]);
             exit;
         }
-        $t->mark('verify_hash');
+        $t->mark('verify hash');
 
         // Render the old tree, execute event, save state. If the render or
         // event handler crashes because serialized state no longer matches
@@ -508,29 +565,29 @@ JS;
             if ($origRequestUri !== null) {
                 $_SERVER['REQUEST_URI'] = $origRequestUri;
             }
-            $t->mark('render_old');
+            $t->mark('render old');
 
             if (!empty($bindings) && $oldUi instanceof TagDomNode) {
                 $oldUi->hydrateBindings($bindings);
             }
-            $t->mark('hydrate_bindings');
+            $t->mark('hydrate bindings');
 
             $node = $oldUi->findByPath($path);
             if ($node !== null) {
                 $node->executeEvent($event, $state, $value);
             }
-            $t->mark('execute_event');
+            $t->mark('perform action');
 
             // Finalize every old-tree component, not just the root. An event
             // handler can mutate state on any ancestor component via captured
             // `$this`; without this sweep those mutations never persist.
             Component::finalizeAll($state);
-            $t->mark('finalize_old');
+            $t->mark('saving state');
 
             PortalTarget::reset();
             $newApp = new ($entry::class)();
             $newUi = $newApp->render($state, null, RenderPhase::Patch);
-            $t->mark('render_new');
+            $t->mark('render new');
         } catch (\Throwable $e) {
             $state->clearAll();
             ob_end_clean();
@@ -541,12 +598,12 @@ JS;
 
         // Lifecycle: deleted (old tree components not in new tree)
         Component::processDeleted();
-        $t->mark('process_deleted');
+        $t->mark('process deleted');
 
         // Diff
         $patcher = new Patcher();
         $newUi->compare($oldUi, $patcher);
-        $t->mark('diff');
+        $t->mark('diffing');
 
         // Event (de)registration rides on the diff itself: compare() above
         // emits bind/unbind as nodes are inserted, replaced, removed, or
@@ -559,7 +616,11 @@ JS;
         }
 
         $newHash = self::computeStateHash($state);
-        $t->mark('compute_hash');
+        $t->mark('compute hash');
+
+        // Serialize the patch nodes to HTML — the "output of patches" cost.
+        $patches = $patcher->getOperations();
+        $t->mark('output patches');
 
         // Debug panel → console (prepended so it appears first)
         $appCalls = Js::drain();
@@ -570,7 +631,7 @@ JS;
         $response = [
             'success' => true,
             'js' => Js::dump(),
-            'patches' => $patcher->getOperations(),
+            'patches' => $patches,
             'hash' => $newHash,
         ];
 
@@ -579,15 +640,21 @@ JS;
             $response['state'] = $clientState;
         }
 
+        // Server timings the client logs against its own round-trip:
+        // codeMs = app code execution, phpMs = total PHP time (incl. bootstrap),
+        // sections = per-phase breakdown of codeMs.
+        $response['codeMs'] = self::codeMs();
+        $response['phpMs'] = self::phpMs();
+        $response['env'] = self::phpEnv();
+        $response['sections'] = $t->all();
+
         header('Content-Type: application/json');
         echo json_encode($response);
         exit;
     }
 
-    private static function handleGet(App $entry, StateManager $state): void
+    private static function handleGet(App $entry, StateManager $state, Timings $t): void
     {
-        $t = new Timings();
-
         // Wireframe is a dev-only tool — production renders ignore
         // ?wireframe= entirely. Source capture (UIElement::$captureSource) is
         // already on for the whole request when isDevelopment, set in run().
@@ -600,16 +667,17 @@ JS;
             PortalTarget::reset();
             $entry->runRegisterAssets();
             $ui = $entry->render($state, null, RenderPhase::Initial);
-            $entry->finalize($state);
         } catch (\Throwable $e) {
             $state->clearAll();
             PortalTarget::reset();
             $entry = new ($entry::class)();
             $entry->runRegisterAssets();
             $ui = $entry->render($state, null, RenderPhase::Initial);
-            $entry->finalize($state);
         }
         $t->mark('render');
+
+        $entry->finalize($state);
+        $t->mark('saving state');
 
         // Wireframe transform after the real render so the original styles
         // (margins, paddings, sizing) are preserved — the wireframe only
@@ -622,12 +690,12 @@ JS;
         // Render the optional loader overlay so the DOM tree is complete.
         $loaderVNode = $entry->getLoader();
         $loaderDom = $loaderVNode?->render($state, null, RenderPhase::Initial);
-        $t->mark('render_loader');
+        $t->mark('render loader');
 
         // Initial render: bind every listener in the tree (each event's
         // add() queues its client wiring) before the JS dump is drained.
         $ui->bindEvents();
-        $t->mark('bind_events');
+        $t->mark('bind events');
 
         $stateJs = $state->getClientJs();
 
@@ -639,7 +707,7 @@ JS;
         // Same source-mtime hash that HMR watches; bumping it on any PHP/CSS
         // change forces the browser to refetch /style.css.
         $styleHash = self::sourceHash();
-        $t->mark('compute_hash');
+        $t->mark('compute hash');
 
         // Debug panel → inline script for initial render. Construct AFTER
         // timings so far so they appear in the debug output.
@@ -647,7 +715,13 @@ JS;
         $debugJs = self::callsToJs(Js::drain());
 
         $bootJs = 'window.__SPWA_HASH=' . json_encode($stateHash) . ';'
-                . 'window.__SPWA_DEV=' . json_encode($isDev) . ';';
+                . 'window.__SPWA_DEV=' . json_encode($isDev) . ';'
+                . 'window.__SPWA_ENV=' . json_encode(self::phpEnv()) . ';'
+                // Replaced at echo time with the real timings (below), so they
+                // cover the whole request including toHtml().
+                . 'window.__SPWA_CODE_MS=__SPWA_CODE_MS__;'
+                . 'window.__SPWA_PHP_MS=__SPWA_PHP_MS__;'
+                . 'window.__SPWA_SECTIONS=__SPWA_SECTIONS__;';
         if ($isDev) {
             $tpl = self::editorUrlTemplate();
             if ($tpl !== '') {
@@ -729,7 +803,14 @@ JS;
             ->attr('lang', 'en')
             ->content($head, $body);
 
-        echo '<!DOCTYPE html>' . $document->toHtml();
+        $html = '<!DOCTYPE html>' . $document->toHtml();
+        $t->mark('output');
+
+        echo str_replace(
+            ['__SPWA_CODE_MS__', '__SPWA_PHP_MS__', '__SPWA_SECTIONS__'],
+            [(string) self::codeMs(), (string) self::phpMs(), json_encode($t->all())],
+            $html,
+        );
     }
 
     /**

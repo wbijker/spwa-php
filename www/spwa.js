@@ -506,6 +506,50 @@ var SPWA = (function() {
         }
     }
 
+    // Console timing for one request, three nested numbers:
+    //   round-trip : client-measured (request sent → response received)
+    //   code       : server-reported app code execution (Spwa::run → done)
+    //   php        : server-reported total PHP time (since SAPI receipt)
+    // round-trip ⊇ php ⊇ code, so round-trip−php ≈ network and php−code ≈ PHP
+    // bootstrap. The trailing [opcache/apcu/xdebug] flags show which
+    // perf-relevant extensions were active, so a number is read with its
+    // config. Watch them shrink as you tune opcache / xdebug.
+    function logTiming(kind, roundTripMs, codeMs, phpMs, env, sections) {
+        var fmt = function (v) { return (typeof v === 'number') ? v.toFixed(1) + 'ms' : '?'; };
+        console.log(
+            '[SPWA] ' + kind +
+            '  round-trip=' + roundTripMs.toFixed(1) + 'ms' +
+            '  code=' + fmt(codeMs) +
+            '  php=' + fmt(phpMs) +
+            envSummary(env)
+        );
+        logSections(kind, sections);
+    }
+
+    // Per-section breakdown of the server's code time (restore state, render
+    // old, perform action, render new, diffing, output patches, saving state,
+    // …), sorted slowest-first. Collapsed so it doesn't spam the console.
+    function logSections(kind, sections) {
+        if (!sections || typeof sections !== 'object') return;
+        var rows = Object.keys(sections)
+            .map(function (k) { return [k, sections[k]]; })
+            .filter(function (r) { return typeof r[1] === 'number'; })
+            .sort(function (a, b) { return b[1] - a[1]; });
+        if (rows.length === 0) return;
+        console.groupCollapsed('[SPWA] ' + kind + ' sections');
+        rows.forEach(function (r) {
+            console.log('  ' + (r[0] + '                  ').slice(0, 18) + r[1].toFixed(1) + 'ms');
+        });
+        console.groupEnd();
+    }
+
+    // Compact "[opcache✓ apcu✓ xdebug✗]" suffix from the server's env flags.
+    function envSummary(env) {
+        if (!env) return '';
+        var flag = function (name) { return name + (env[name] ? '✓' : '✗'); };
+        return '  [' + flag('opcache') + ' ' + flag('apcu') + ' ' + flag('xdebug') + ']';
+    }
+
     function post(data, headers) {
         if (__spwa_busy) {
             __spwa_queue.push({ kind: 'json', data: data, headers: headers });
@@ -563,10 +607,13 @@ var SPWA = (function() {
             if (clientState) data.state = clientState;
         }
 
+        var t0 = performance.now();
         xhr.onreadystatechange = function () {
             if (xhr.readyState !== 4) return;
             if (xhr.status === 200) {
-                callback(null, JSON.parse(xhr.responseText));
+                var resp = JSON.parse(xhr.responseText);
+                logTiming('POST', performance.now() - t0, resp.codeMs, resp.phpMs, resp.env, resp.sections);
+                callback(null, resp);
             } else {
                 callback(new Error("Request failed: " + xhr.status));
             }
@@ -594,10 +641,13 @@ var SPWA = (function() {
 
         var xhr = new XMLHttpRequest();
         xhr.open("POST", window.location.href, true);
+        var t0 = performance.now();
         xhr.onreadystatechange = function () {
             if (xhr.readyState !== 4) return;
             if (xhr.status === 200) {
-                callback(null, JSON.parse(xhr.responseText));
+                var resp = JSON.parse(xhr.responseText);
+                logTiming('POST', performance.now() - t0, resp.codeMs, resp.phpMs, resp.env, resp.sections);
+                callback(null, resp);
             } else {
                 callback(new Error("Request failed: " + xhr.status));
             }
@@ -883,6 +933,19 @@ var SPWA = (function() {
         data.value = extractEventData(evt, el);
         post(data);
     }
+    // Initial GET: the server stamps window.__SPWA_CODE_MS / __SPWA_PHP_MS
+    // into the page. Pair them with the browser's navigation timing (request
+    // sent → last byte) to log the same round-trip / code / php breakdown.
+    if (typeof window.__SPWA_PHP_MS === 'number') {
+        var logGet = function () {
+            var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+            if (!nav) return;
+            logTiming('GET', nav.responseEnd - nav.requestStart, window.__SPWA_CODE_MS, window.__SPWA_PHP_MS, window.__SPWA_ENV, window.__SPWA_SECTIONS);
+        };
+        if (document.readyState === 'complete') logGet();
+        else window.addEventListener('load', logGet);
+    }
+
     return {
         addStateHandler: addStateHandler,
         getState: getState,
