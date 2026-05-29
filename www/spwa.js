@@ -655,6 +655,43 @@ var SPWA = (function() {
         xhr.send(formData);
     }
 
+    // client=false transport: dispatch the event as a real (non-AJAX) form
+    // POST — a full-page navigation the server answers with a freshly rendered
+    // HTML document. Carries the same payload sendJson builds (event / path /
+    // value / bindings / hash / previousPath / state), but as urlencoded form
+    // fields the server reads from $_POST (see Spwa::handleNavPost). State is
+    // embedded so client-side managers (localStorage) survive the navigation.
+    function submitForm(data) {
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = window.location.href;
+        form.style.display = 'none';
+
+        function hidden(name, value) {
+            var input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = name;
+            input.value = value;
+            form.appendChild(input);
+        }
+
+        hidden('_spwaEvent', data.event != null ? data.event : '');
+        hidden('_spwaPath', data.path != null ? data.path : '');
+        hidden('_spwaValue', JSON.stringify(data.value !== undefined ? data.value : null));
+        hidden('_spwaPrevPath', __spwa_renderedPath);
+
+        var bindings = collectBindings();
+        if (bindings) hidden('_spwaBindings', JSON.stringify(bindings));
+        if (typeof window.__SPWA_HASH === 'string') hidden('_spwaHash', window.__SPWA_HASH);
+        if (isStateEnabled()) {
+            var clientState = getAll();
+            if (clientState) hidden('_spwaState', JSON.stringify(clientState));
+        }
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+
     function extractEventData(evt, el) {
         if (!evt) {
             // Fallback: just return element value
@@ -870,15 +907,18 @@ var SPWA = (function() {
     // Attach a server-dispatched listener to the element at `path`. domType
     // is the real DOM event (e.g. 'change'); `event` is the logical name
     // forwarded to the server. capture picks the addEventListener phase.
-    // Tracked on the element (keyed by domType+phase) so it can be unbound
-    // and is never double-bound.
-    function bindEvent(path, domType, event, capture) {
+    // `client` (default true) decides transport: true keeps the in-place AJAX
+    // patch; false makes the listener submit a full-page form POST. Tracked on
+    // the element (keyed by domType+phase) so it can be unbound and is never
+    // double-bound.
+    function bindEvent(path, domType, event, capture, client) {
         var el = findNodeByPath(path);
         if (!el) return;
         el.__spwaEvents = el.__spwaEvents || {};
         var key = domType + '|' + (capture ? 'c' : 'b');
         if (el.__spwaEvents[key]) return;
-        var fn = function (evt) { handleEvent(evt, event, el); };
+        var serverNav = client === false;
+        var fn = function (evt) { handleEvent(evt, event, el, serverNav); };
         el.addEventListener(domType, fn, capture);
         el.__spwaEvents[key] = fn;
     }
@@ -911,7 +951,7 @@ var SPWA = (function() {
         for (var i = 0; i < kids.length; i++) cleanupListeners(kids[i]);
     }
 
-    function handleEvent(evt, event, el) {
+    function handleEvent(evt, event, el, client) {
         // Anchor with an SPWA click handler = SPA-handled link. Stop the
         // browser from following the href so the server can swap content
         // in-place. Modifier keys / middle-click fall through to the
@@ -931,6 +971,14 @@ var SPWA = (function() {
             return;
         }
         data.value = extractEventData(evt, el);
+        // client === false: dispatch as a full-page form POST instead of the
+        // in-place AJAX patch. extractEventData already ran any needed
+        // preventDefault (submit/reset/contextmenu), so the native navigation
+        // we kick off below won't double-fire.
+        if (client === false) {
+            submitForm(data);
+            return;
+        }
         post(data);
     }
     // Initial GET: the server stamps window.__SPWA_CODE_MS / __SPWA_PHP_MS

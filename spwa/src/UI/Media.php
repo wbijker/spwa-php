@@ -117,93 +117,93 @@ abstract class Media extends UIElement
     // ============================================================
 
     /** @param callable(MediaEvent): void $callback */
-    public function onPlay(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onPlay(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::PLAY, $callback, null, null, $phase);
+        $this->dom()->on(Events::PLAY, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(MediaEvent): void $callback */
-    public function onPause(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onPause(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::PAUSE, $callback, null, null, $phase);
+        $this->dom()->on(Events::PAUSE, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(MediaEvent): void $callback */
-    public function onEnded(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onEnded(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::ENDED, $callback, null, null, $phase);
+        $this->dom()->on(Events::ENDED, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(MediaEvent): void $callback */
-    public function onTimeUpdate(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onTimeUpdate(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::TIME_UPDATE, $callback, null, null, $phase);
+        $this->dom()->on(Events::TIME_UPDATE, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(MediaEvent): void $callback */
-    public function onVolumeChange(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onVolumeChange(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::VOLUME_CHANGE, $callback, null, null, $phase);
+        $this->dom()->on(Events::VOLUME_CHANGE, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(MediaEvent): void $callback */
-    public function onSeeking(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onSeeking(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::SEEKING, $callback, null, null, $phase);
+        $this->dom()->on(Events::SEEKING, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(MediaEvent): void $callback */
-    public function onSeeked(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onSeeked(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::SEEKED, $callback, null, null, $phase);
+        $this->dom()->on(Events::SEEKED, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(MediaEvent): void $callback */
-    public function onLoadedData(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onLoadedData(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::LOADED_DATA, $callback, null, null, $phase);
+        $this->dom()->on(Events::LOADED_DATA, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(MediaEvent): void $callback */
-    public function onLoadedMetadata(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onLoadedMetadata(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::LOADED_METADATA, $callback, null, null, $phase);
+        $this->dom()->on(Events::LOADED_METADATA, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(MediaEvent): void $callback */
-    public function onCanPlay(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onCanPlay(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::CAN_PLAY, $callback, null, null, $phase);
+        $this->dom()->on(Events::CAN_PLAY, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(MediaEvent): void $callback */
-    public function onCanPlayThrough(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onCanPlayThrough(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::CAN_PLAY_THROUGH, $callback, null, null, $phase);
+        $this->dom()->on(Events::CAN_PLAY_THROUGH, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(MediaEvent): void $callback */
-    public function onWaiting(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onWaiting(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::WAITING, $callback, null, null, $phase);
+        $this->dom()->on(Events::WAITING, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(MediaEvent): void $callback */
-    public function onPlaying(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onPlaying(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::PLAYING, $callback, null, null, $phase);
+        $this->dom()->on(Events::PLAYING, $callback, null, null, $phase, $client);
         return $this;
     }
 }

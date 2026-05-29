@@ -592,6 +592,15 @@ JS;
 
     private static function handlePost(App $entry, StateManager $state, Timings $t): void
     {
+        // A full-page (client=false) event arrives as a real form POST with
+        // $_POST['_spwaEvent'] set (see submitForm in spwa.js). It's answered
+        // with a freshly rendered HTML document, not JSON patches — handle it
+        // on its own path.
+        if (isset($_POST['_spwaEvent'])) {
+            self::handleNavPost($entry, $state, $t);
+            return;
+        }
+
         ob_start();
 
         // Asset registration also installs event-hydrators (EventData::register)
@@ -745,7 +754,72 @@ JS;
         exit;
     }
 
-    private static function handleGet(App $entry, StateManager $state, Timings $t): void
+    /**
+     * Handle a full-page (client=false) event POST. The browser submitted a
+     * real form rather than an AJAX request, so we execute the event against
+     * the tree the user had on screen, persist the resulting state, then render
+     * a complete HTML document for the current URL — a true navigation, not an
+     * in-place patch. If restoring/executing against drifted state throws, the
+     * state is cleared and a clean page is rendered instead.
+     */
+    private static function handleNavPost(App $entry, StateManager $state, Timings $t): void
+    {
+        $event = $_POST['_spwaEvent'] ?? '';
+        $pathStr = $_POST['_spwaPath'] ?? '';
+        // Empty path = the root element itself (see handlePost for the [''] → [0] guard).
+        $path = $pathStr === '' ? [] : array_map('intval', explode(',', $pathStr));
+        $value = json_decode($_POST['_spwaValue'] ?? 'null', true);
+        $bindings = isset($_POST['_spwaBindings']) ? (json_decode($_POST['_spwaBindings'], true) ?: []) : [];
+        $previousPath = $_POST['_spwaPrevPath'] ?? null;
+        $t->mark('parse payload');
+
+        try {
+            PortalTarget::reset();
+            $oldApp = new ($entry::class)();
+            // Custom event-name hydrators (e.g. Leaflet) are installed in
+            // registerAssets; run it on the throwaway OLD app so executeEvent
+            // can hydrate them. $entry stays untouched, so handleGet's own
+            // runRegisterAssets won't double-register the page's assets.
+            $oldApp->runRegisterAssets();
+
+            // OLD must mirror what was on the user's screen — the path the page
+            // was rendered for, which can differ from REQUEST_URI.
+            $origRequestUri = $_SERVER['REQUEST_URI'] ?? null;
+            if ($previousPath !== null && $previousPath !== '' && $previousPath !== $origRequestUri) {
+                $_SERVER['REQUEST_URI'] = $previousPath;
+            }
+            $oldUi = $oldApp->render($state, null, RenderPhase::DiffOld);
+            if ($origRequestUri !== null) {
+                $_SERVER['REQUEST_URI'] = $origRequestUri;
+            }
+
+            if (!empty($bindings) && $oldUi instanceof TagDomNode) {
+                $oldUi->hydrateBindings($bindings);
+            }
+
+            $node = $oldUi->findByPath($path);
+            if ($node !== null) {
+                $node->executeEvent($event, $state, $value);
+            }
+
+            // Persist mutations from every old-tree component, not just the
+            // event owner (an ancestor's captured $this may have been mutated).
+            Component::finalizeAll($state);
+            $t->mark('perform action');
+        } catch (\Throwable $e) {
+            // Serialized state no longer matches the code's shape — drop it and
+            // render the page from defaults.
+            $state->clearAll();
+        }
+
+        // Render the full page from the (now-mutated) state. pushClientState
+        // re-seeds client-side storage so a localStorage / sessionStorage
+        // manager reflects the event across the navigation.
+        PortalTarget::reset();
+        self::handleGet($entry, $state, $t, true);
+    }
+
+    private static function handleGet(App $entry, StateManager $state, Timings $t, bool $pushClientState = false): void
     {
         // Wireframe is a dev-only tool — production renders ignore
         // ?wireframe= entirely. Source capture (UIElement::$captureSource) is
@@ -859,6 +933,21 @@ JS;
 
         if ($stateJs !== null) {
             $head->content((new TagDomNode('script'))->rawContent($stateJs));
+
+            // After a full-page (client=false) navigation, the server already
+            // applied the event to client-side state — push it into storage so
+            // the localStorage/sessionStorage manager reflects the change
+            // instead of reloading the pre-event value. Runs right after the
+            // handler is registered; server-side managers return null here and
+            // emit nothing.
+            if ($pushClientState) {
+                $clientState = $state->getClientState();
+                if ($clientState !== null) {
+                    $head->content((new TagDomNode('script'))->rawContent(
+                        'SPWA.setAll(' . json_encode($clientState) . ');'
+                    ));
+                }
+            }
         }
 
         $body = (new TagDomNode('body'))

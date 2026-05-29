@@ -22,9 +22,17 @@ class ClientStateManager extends StateManager
 
     public static function fromRequest(ClientStorage $storage = ClientStorage::LocalStorage): self
     {
-        $payload = json_decode(file_get_contents('php://input'), true);
-        $clientState = $payload['state'] ?? null;
-        return new self($storage, $clientState);
+        // A full-page (client=false) event posts a urlencoded form, not the
+        // usual JSON body, with the state blob in a hidden _spwaState field.
+        // Read it from there so client-side state survives the navigation;
+        // otherwise fall back to the JSON body the AJAX path sends.
+        if (isset($_POST['_spwaState'])) {
+            $clientState = json_decode($_POST['_spwaState'], true);
+        } else {
+            $payload = json_decode(file_get_contents('php://input'), true);
+            $clientState = $payload['state'] ?? null;
+        }
+        return new self($storage, is_array($clientState) ? $clientState : null);
     }
 
     public function getState(string $path): array

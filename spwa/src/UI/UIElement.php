@@ -324,72 +324,72 @@ class UIElement extends Node
     }
 
     /** @param callable(MouseEvent): void $callback */
-    public function onClick(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onClick(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::CLICK, $callback, null, null, $phase);
+        $this->dom()->on(Events::CLICK, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(MouseEvent): void $callback */
-    public function onDblClick(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onDblClick(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::DBL_CLICK, $callback, null, null, $phase);
+        $this->dom()->on(Events::DBL_CLICK, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(MouseEvent): void $callback */
-    public function onMouseDown(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onMouseDown(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::MOUSE_DOWN, $callback, null, null, $phase);
+        $this->dom()->on(Events::MOUSE_DOWN, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(MouseEvent): void $callback */
-    public function onMouseUp(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onMouseUp(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::MOUSE_UP, $callback, null, null, $phase);
+        $this->dom()->on(Events::MOUSE_UP, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(MouseEvent): void $callback */
-    public function onMouseOver(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onMouseOver(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::MOUSE_OVER, $callback, null, null, $phase);
+        $this->dom()->on(Events::MOUSE_OVER, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(MouseEvent): void $callback */
-    public function onMouseOut(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onMouseOut(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::MOUSE_OUT, $callback, null, null, $phase);
+        $this->dom()->on(Events::MOUSE_OUT, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(MouseEvent): void $callback */
-    public function onMouseEnter(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onMouseEnter(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::MOUSE_ENTER, $callback, null, null, $phase);
+        $this->dom()->on(Events::MOUSE_ENTER, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(MouseEvent): void $callback */
-    public function onMouseLeave(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onMouseLeave(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::MOUSE_LEAVE, $callback, null, null, $phase);
+        $this->dom()->on(Events::MOUSE_LEAVE, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(MouseEvent): void $callback */
-    public function onMouseMove(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onMouseMove(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::MOUSE_MOVE, $callback, null, null, $phase);
+        $this->dom()->on(Events::MOUSE_MOVE, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(MouseEvent): void $callback */
-    public function onContextMenu(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onContextMenu(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::CONTEXT_MENU, $callback, null, null, $phase);
+        $this->dom()->on(Events::CONTEXT_MENU, $callback, null, null, $phase, $client);
         return $this;
     }
 
@@ -398,16 +398,16 @@ class UIElement extends Node
     // ============================================================
 
     /** @param callable(KeyboardEvent): void $callback */
-    public function onKeyDown(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onKeyDown(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::KEY_DOWN, $callback, null, null, $phase);
+        $this->dom()->on(Events::KEY_DOWN, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(KeyboardEvent): void $callback */
-    public function onKeyUp(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onKeyUp(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::KEY_UP, $callback, null, null, $phase);
+        $this->dom()->on(Events::KEY_UP, $callback, null, null, $phase, $client);
         return $this;
     }
 
@@ -416,79 +416,79 @@ class UIElement extends Node
     // ============================================================
 
     /** @param callable(InputEvent): void $callback */
-    public function onChange(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onChange(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::CHANGE, $callback, null, null, $phase);
+        $this->dom()->on(Events::CHANGE, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(InputEvent): void $callback */
-    public function onInput(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onInput(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::INPUT, $callback, null, null, $phase);
+        $this->dom()->on(Events::INPUT, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(): void $callback */
-    public function onSubmit(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onSubmit(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::SUBMIT, $callback, null, null, $phase);
+        $this->dom()->on(Events::SUBMIT, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(): void $callback */
-    public function onReset(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onReset(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::RESET, $callback, null, null, $phase);
+        $this->dom()->on(Events::RESET, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(): void $callback */
-    public function onFocus(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onFocus(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::FOCUS, $callback, null, null, $phase);
+        $this->dom()->on(Events::FOCUS, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(): void $callback */
-    public function onBlur(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onBlur(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::BLUR, $callback, null, null, $phase);
+        $this->dom()->on(Events::BLUR, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(): void $callback */
-    public function onFocusIn(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onFocusIn(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::FOCUS_IN, $callback, null, null, $phase);
+        $this->dom()->on(Events::FOCUS_IN, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(): void $callback */
-    public function onFocusOut(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onFocusOut(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::FOCUS_OUT, $callback, null, null, $phase);
+        $this->dom()->on(Events::FOCUS_OUT, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(InputEvent): void $callback */
-    public function onSelect(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onSelect(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::SELECT, $callback, null, null, $phase);
+        $this->dom()->on(Events::SELECT, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(InputEvent): void $callback */
-    public function onInvalid(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onInvalid(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::INVALID, $callback, null, null, $phase);
+        $this->dom()->on(Events::INVALID, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(FileEvent): void $callback */
-    public function onUpload(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onUpload(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::UPLOAD, $callback, null, null, $phase);
+        $this->dom()->on(Events::UPLOAD, $callback, null, null, $phase, $client);
         return $this;
     }
 
@@ -497,30 +497,30 @@ class UIElement extends Node
     // ============================================================
 
     /** @param callable(TouchEvent): void $callback */
-    public function onTouchStart(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onTouchStart(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::TOUCH_START, $callback, null, null, $phase);
+        $this->dom()->on(Events::TOUCH_START, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(TouchEvent): void $callback */
-    public function onTouchEnd(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onTouchEnd(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::TOUCH_END, $callback, null, null, $phase);
+        $this->dom()->on(Events::TOUCH_END, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(TouchEvent): void $callback */
-    public function onTouchMove(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onTouchMove(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::TOUCH_MOVE, $callback, null, null, $phase);
+        $this->dom()->on(Events::TOUCH_MOVE, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(TouchEvent): void $callback */
-    public function onTouchCancel(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onTouchCancel(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::TOUCH_CANCEL, $callback, null, null, $phase);
+        $this->dom()->on(Events::TOUCH_CANCEL, $callback, null, null, $phase, $client);
         return $this;
     }
 
@@ -529,58 +529,58 @@ class UIElement extends Node
     // ============================================================
 
     /** @param callable(PointerEvent): void $callback */
-    public function onPointerDown(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onPointerDown(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::POINTER_DOWN, $callback, null, null, $phase);
+        $this->dom()->on(Events::POINTER_DOWN, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(PointerEvent): void $callback */
-    public function onPointerUp(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onPointerUp(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::POINTER_UP, $callback, null, null, $phase);
+        $this->dom()->on(Events::POINTER_UP, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(PointerEvent): void $callback */
-    public function onPointerMove(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onPointerMove(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::POINTER_MOVE, $callback, null, null, $phase);
+        $this->dom()->on(Events::POINTER_MOVE, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(PointerEvent): void $callback */
-    public function onPointerOver(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onPointerOver(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::POINTER_OVER, $callback, null, null, $phase);
+        $this->dom()->on(Events::POINTER_OVER, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(PointerEvent): void $callback */
-    public function onPointerOut(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onPointerOut(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::POINTER_OUT, $callback, null, null, $phase);
+        $this->dom()->on(Events::POINTER_OUT, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(PointerEvent): void $callback */
-    public function onPointerEnter(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onPointerEnter(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::POINTER_ENTER, $callback, null, null, $phase);
+        $this->dom()->on(Events::POINTER_ENTER, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(PointerEvent): void $callback */
-    public function onPointerLeave(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onPointerLeave(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::POINTER_LEAVE, $callback, null, null, $phase);
+        $this->dom()->on(Events::POINTER_LEAVE, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(PointerEvent): void $callback */
-    public function onPointerCancel(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onPointerCancel(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::POINTER_CANCEL, $callback, null, null, $phase);
+        $this->dom()->on(Events::POINTER_CANCEL, $callback, null, null, $phase, $client);
         return $this;
     }
 
@@ -589,51 +589,51 @@ class UIElement extends Node
     // ============================================================
 
     /** @param callable(DragEvent): void $callback */
-    public function onDragStart(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onDragStart(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::DRAG_START, $callback, null, null, $phase);
+        $this->dom()->on(Events::DRAG_START, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(DragEvent): void $callback */
-    public function onDrag(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onDrag(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::DRAG, $callback, null, null, $phase);
+        $this->dom()->on(Events::DRAG, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(DragEvent): void $callback */
-    public function onDragEnd(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onDragEnd(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::DRAG_END, $callback, null, null, $phase);
+        $this->dom()->on(Events::DRAG_END, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(DragEvent): void $callback */
-    public function onDragEnter(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onDragEnter(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::DRAG_ENTER, $callback, null, null, $phase);
+        $this->dom()->on(Events::DRAG_ENTER, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(DragEvent): void $callback */
-    public function onDragLeave(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onDragLeave(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::DRAG_LEAVE, $callback, null, null, $phase);
+        $this->dom()->on(Events::DRAG_LEAVE, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(DragEvent): void $callback */
-    public function onDragOver(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onDragOver(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::DRAG_OVER, $callback, null, null, $phase);
+        $this->dom()->on(Events::DRAG_OVER, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(DragEvent): void $callback */
-    public function onDrop(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onDrop(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::DROP, $callback, null, null, $phase);
+        $this->dom()->on(Events::DROP, $callback, null, null, $phase, $client);
         return $this;
     }
 
@@ -642,23 +642,23 @@ class UIElement extends Node
     // ============================================================
 
     /** @param callable(ClipboardEvent): void $callback */
-    public function onCopy(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onCopy(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::COPY, $callback, null, null, $phase);
+        $this->dom()->on(Events::COPY, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(ClipboardEvent): void $callback */
-    public function onCut(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onCut(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::CUT, $callback, null, null, $phase);
+        $this->dom()->on(Events::CUT, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(ClipboardEvent): void $callback */
-    public function onPaste(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onPaste(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::PASTE, $callback, null, null, $phase);
+        $this->dom()->on(Events::PASTE, $callback, null, null, $phase, $client);
         return $this;
     }
 
@@ -667,16 +667,16 @@ class UIElement extends Node
     // ============================================================
 
     /** @param callable(ScrollEvent): void $callback */
-    public function onScroll(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onScroll(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::SCROLL, $callback, null, null, $phase);
+        $this->dom()->on(Events::SCROLL, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(WheelEvent): void $callback */
-    public function onWheel(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onWheel(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::WHEEL, $callback, null, null, $phase);
+        $this->dom()->on(Events::WHEEL, $callback, null, null, $phase, $client);
         return $this;
     }
 
@@ -685,37 +685,37 @@ class UIElement extends Node
     // ============================================================
 
     /** @param callable(TransitionEvent): void $callback */
-    public function onTransitionEnd(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onTransitionEnd(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::TRANSITION_END, $callback, null, null, $phase);
+        $this->dom()->on(Events::TRANSITION_END, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(TransitionEvent): void $callback */
-    public function onTransitionStart(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onTransitionStart(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::TRANSITION_START, $callback, null, null, $phase);
+        $this->dom()->on(Events::TRANSITION_START, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(AnimationEvent): void $callback */
-    public function onAnimationEnd(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onAnimationEnd(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::ANIMATION_END, $callback, null, null, $phase);
+        $this->dom()->on(Events::ANIMATION_END, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(AnimationEvent): void $callback */
-    public function onAnimationStart(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onAnimationStart(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::ANIMATION_START, $callback, null, null, $phase);
+        $this->dom()->on(Events::ANIMATION_START, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(AnimationEvent): void $callback */
-    public function onAnimationIteration(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onAnimationIteration(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::ANIMATION_ITERATION, $callback, null, null, $phase);
+        $this->dom()->on(Events::ANIMATION_ITERATION, $callback, null, null, $phase, $client);
         return $this;
     }
 
@@ -724,23 +724,23 @@ class UIElement extends Node
     // ============================================================
 
     /** @param callable(): void $callback */
-    public function onLoad(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onLoad(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::LOAD, $callback, null, null, $phase);
+        $this->dom()->on(Events::LOAD, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(): void $callback */
-    public function onError(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onError(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::ERROR, $callback, null, null, $phase);
+        $this->dom()->on(Events::ERROR, $callback, null, null, $phase, $client);
         return $this;
     }
 
     /** @param callable(ResizeEvent): void $callback */
-    public function onResize(callable $callback, EventPhase $phase = EventPhase::Bubble): static
+    public function onResize(callable $callback, EventPhase $phase = EventPhase::Bubble, bool $client = true): static
     {
-        $this->dom()->on(Events::RESIZE, $callback, null, null, $phase);
+        $this->dom()->on(Events::RESIZE, $callback, null, null, $phase, $client);
         return $this;
     }
 
