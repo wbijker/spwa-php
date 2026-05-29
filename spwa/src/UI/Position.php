@@ -20,29 +20,33 @@ class Position extends UIElementContent
         $this->addStyle('absolute', ['position' => 'absolute']);
     }
 
-    public function top(Unit $value, ?Pseudo $pseudo = null): static
+    public function top(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('top'), ['top' => $value->getCssValue()]);
         return $this;
     }
 
-    public function bottom(Unit $value, ?Pseudo $pseudo = null): static
+    public function bottom(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('bottom'), ['bottom' => $value->getCssValue()]);
         return $this;
     }
 
-    public function left(Unit $value, ?Pseudo $pseudo = null): static
+    public function left(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('left'), ['left' => $value->getCssValue()]);
         return $this;
     }
 
-    public function right(Unit $value, ?Pseudo $pseudo = null): static
+    public function right(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('right'), ['right' => $value->getCssValue()]);
         return $this;

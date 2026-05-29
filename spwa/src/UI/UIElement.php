@@ -873,22 +873,37 @@ class UIElement extends Node
     // Sizing
     // ============================================================
 
-    public function width(Unit $value, ?Pseudo $pseudo = null): static
+    /**
+     * Normalize a spacing argument: a bare int is shorthand for
+     * `Unit::tick(n)` (a Tailwind spacing tick), so callers can write
+     * `->padding(1)` instead of `->padding(Unit::tick(1))`. Unit and null
+     * pass through unchanged. Applied at the top of every style method that
+     * accepts `Unit|int`.
+     */
+    protected static function unit(Unit|int|null $value): ?Unit
     {
+        return is_int($value) ? Unit::tick($value) : $value;
+    }
+
+    public function width(Unit|int $value, ?Pseudo $pseudo = null): static
+    {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('w'), ['width' => $value->getCssValue()]);
         return $this;
     }
 
-    public function height(Unit $value, ?Pseudo $pseudo = null): static
+    public function height(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('h'), ['height' => $value->getCssValue()]);
         return $this;
     }
 
-    public function size(Unit $value, ?Pseudo $pseudo = null): static
+    public function size(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $css = $value->getCssValue();
         $this->addStyle($prefix . $value->withContext('w'), ['width' => $css]);
@@ -896,29 +911,33 @@ class UIElement extends Node
         return $this;
     }
 
-    public function minWidth(Unit $value, ?Pseudo $pseudo = null): static
+    public function minWidth(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('min-w'), ['min-width' => $value->getCssValue()]);
         return $this;
     }
 
-    public function maxWidth(Unit $value, ?Pseudo $pseudo = null): static
+    public function maxWidth(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('max-w'), ['max-width' => $value->getCssValue()]);
         return $this;
     }
 
-    public function minHeight(Unit $value, ?Pseudo $pseudo = null): static
+    public function minHeight(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('min-h'), ['min-height' => $value->getCssValue()]);
         return $this;
     }
 
-    public function maxHeight(Unit $value, ?Pseudo $pseudo = null): static
+    public function maxHeight(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('max-h'), ['max-height' => $value->getCssValue()]);
         return $this;
@@ -973,15 +992,22 @@ class UIElement extends Node
      * Pseudo (named `pseudo:`) applies to every emitted class in this call.
      */
     public function padding(
-        ?Unit $value = null,
+        Unit|int|null $value = null,
         ?Pseudo $pseudo = null,
-        ?Unit $x = null,
-        ?Unit $y = null,
-        ?Unit $top = null,
-        ?Unit $right = null,
-        ?Unit $bottom = null,
-        ?Unit $left = null,
+        Unit|int|null $x = null,
+        Unit|int|null $y = null,
+        Unit|int|null $top = null,
+        Unit|int|null $right = null,
+        Unit|int|null $bottom = null,
+        Unit|int|null $left = null,
     ): static {
+        $value = self::unit($value);
+        $x = self::unit($x);
+        $y = self::unit($y);
+        $top = self::unit($top);
+        $right = self::unit($right);
+        $bottom = self::unit($bottom);
+        $left = self::unit($left);
         $prefix = $pseudo?->prefix() ?? '';
         if ($value !== null) {
             $this->addStyle($prefix . $value->withContext('p'), ['padding' => $value->getCssValue()]);
@@ -1009,24 +1035,27 @@ class UIElement extends Node
         return $this;
     }
 
-    public function paddingX(Unit $value, ?Pseudo $pseudo = null): static
+    public function paddingX(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $css = $value->getCssValue();
         $this->addStyle($prefix . $value->withContext('px'), ['padding-left' => $css, 'padding-right' => $css]);
         return $this;
     }
 
-    public function paddingY(Unit $value, ?Pseudo $pseudo = null): static
+    public function paddingY(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $css = $value->getCssValue();
         $this->addStyle($prefix . $value->withContext('py'), ['padding-top' => $css, 'padding-bottom' => $css]);
         return $this;
     }
 
-    public function paddingTop(Unit $value, ?Pseudo $pseudo = null): static
+    public function paddingTop(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('pt'), ['padding-top' => $value->getCssValue()]);
         return $this;
@@ -1037,15 +1066,22 @@ class UIElement extends Node
      * usage examples; substitute m/mx/my/mt/mr/mb/ml for the utility prefixes.
      */
     public function margin(
-        ?Unit $value = null,
+        Unit|int|null $value = null,
         ?Pseudo $pseudo = null,
-        ?Unit $x = null,
-        ?Unit $y = null,
-        ?Unit $top = null,
-        ?Unit $right = null,
-        ?Unit $bottom = null,
-        ?Unit $left = null,
+        Unit|int|null $x = null,
+        Unit|int|null $y = null,
+        Unit|int|null $top = null,
+        Unit|int|null $right = null,
+        Unit|int|null $bottom = null,
+        Unit|int|null $left = null,
     ): static {
+        $value = self::unit($value);
+        $x = self::unit($x);
+        $y = self::unit($y);
+        $top = self::unit($top);
+        $right = self::unit($right);
+        $bottom = self::unit($bottom);
+        $left = self::unit($left);
         $prefix = $pseudo?->prefix() ?? '';
         if ($value !== null) {
             $this->addStyle($prefix . $value->withContext('m'), ['margin' => $value->getCssValue()]);
@@ -1073,16 +1109,18 @@ class UIElement extends Node
         return $this;
     }
 
-    public function marginX(Unit $value, ?Pseudo $pseudo = null): static
+    public function marginX(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $css = $value->getCssValue();
         $this->addStyle($prefix . $value->withContext('mx'), ['margin-left' => $css, 'margin-right' => $css]);
         return $this;
     }
 
-    public function marginY(Unit $value, ?Pseudo $pseudo = null): static
+    public function marginY(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $css = $value->getCssValue();
         $this->addStyle($prefix . $value->withContext('my'), ['margin-top' => $css, 'margin-bottom' => $css]);
@@ -1105,17 +1143,26 @@ class UIElement extends Node
      *   ->rounded(topLeft: Unit::rem(2))                       // per-corner
      */
     public function rounded(
-        ?Unit $value = null,
+        Unit|int|null $value = null,
         ?Pseudo $pseudo = null,
-        ?Unit $top = null,
-        ?Unit $right = null,
-        ?Unit $bottom = null,
-        ?Unit $left = null,
-        ?Unit $topLeft = null,
-        ?Unit $topRight = null,
-        ?Unit $bottomLeft = null,
-        ?Unit $bottomRight = null,
+        Unit|int|null $top = null,
+        Unit|int|null $right = null,
+        Unit|int|null $bottom = null,
+        Unit|int|null $left = null,
+        Unit|int|null $topLeft = null,
+        Unit|int|null $topRight = null,
+        Unit|int|null $bottomLeft = null,
+        Unit|int|null $bottomRight = null,
     ): static {
+        $value = self::unit($value);
+        $top = self::unit($top);
+        $right = self::unit($right);
+        $bottom = self::unit($bottom);
+        $left = self::unit($left);
+        $topLeft = self::unit($topLeft);
+        $topRight = self::unit($topRight);
+        $bottomLeft = self::unit($bottomLeft);
+        $bottomRight = self::unit($bottomRight);
         $prefix = $pseudo?->prefix() ?? '';
 
         // Bare ->rounded() retains its original "0.25rem all" shorthand.
@@ -1414,8 +1461,9 @@ class UIElement extends Node
     /**
      * CSS `inset` shorthand applied uniformly to all four sides.
      */
-    public function inset(Unit $value, ?Pseudo $pseudo = null): static
+    public function inset(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $css = $value->getCssValue();
         $class = 'inset-[' . str_replace(' ', '_', $css) . ']';
@@ -1423,29 +1471,33 @@ class UIElement extends Node
         return $this;
     }
 
-    public function offsetTop(Unit $value, ?Pseudo $pseudo = null): static
+    public function offsetTop(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('top'), ['top' => $value->getCssValue()]);
         return $this;
     }
 
-    public function offsetLeft(Unit $value, ?Pseudo $pseudo = null): static
+    public function offsetLeft(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('left'), ['left' => $value->getCssValue()]);
         return $this;
     }
 
-    public function offsetRight(Unit $value, ?Pseudo $pseudo = null): static
+    public function offsetRight(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('right'), ['right' => $value->getCssValue()]);
         return $this;
     }
 
-    public function offsetBottom(Unit $value, ?Pseudo $pseudo = null): static
+    public function offsetBottom(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('bottom'), ['bottom' => $value->getCssValue()]);
         return $this;
@@ -1653,50 +1705,57 @@ class UIElement extends Node
     // Spacing — single-side variants
     // ============================================================
 
-    public function paddingRight(Unit $value, ?Pseudo $pseudo = null): static
+    public function paddingRight(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('pr'), ['padding-right' => $value->getCssValue()]);
         return $this;
     }
 
-    public function paddingBottom(Unit $value, ?Pseudo $pseudo = null): static
+    public function paddingBottom(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('pb'), ['padding-bottom' => $value->getCssValue()]);
         return $this;
     }
 
-    public function paddingLeft(Unit $value, ?Pseudo $pseudo = null): static
+    public function paddingLeft(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('pl'), ['padding-left' => $value->getCssValue()]);
         return $this;
     }
 
-    public function marginTop(Unit $value, ?Pseudo $pseudo = null): static
+    public function marginTop(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('mt'), ['margin-top' => $value->getCssValue()]);
         return $this;
     }
 
-    public function marginRight(Unit $value, ?Pseudo $pseudo = null): static
+    public function marginRight(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('mr'), ['margin-right' => $value->getCssValue()]);
         return $this;
     }
 
-    public function marginBottom(Unit $value, ?Pseudo $pseudo = null): static
+    public function marginBottom(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('mb'), ['margin-bottom' => $value->getCssValue()]);
         return $this;
     }
 
-    public function marginLeft(Unit $value, ?Pseudo $pseudo = null): static
+    public function marginLeft(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('ml'), ['margin-left' => $value->getCssValue()]);
         return $this;
@@ -1724,8 +1783,9 @@ class UIElement extends Node
     // Rounded — per-corner / per-side
     // ============================================================
 
-    public function roundedTop(?Unit $value = null, ?Pseudo $pseudo = null): static
+    public function roundedTop(Unit|int|null $value = null, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         if ($value === null) {
             $this->addStyle($prefix . 'rounded-t', ['border-top-left-radius' => '0.25rem', 'border-top-right-radius' => '0.25rem']);
@@ -1736,8 +1796,9 @@ class UIElement extends Node
         return $this;
     }
 
-    public function roundedBottom(?Unit $value = null, ?Pseudo $pseudo = null): static
+    public function roundedBottom(Unit|int|null $value = null, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         if ($value === null) {
             $this->addStyle($prefix . 'rounded-b', ['border-bottom-left-radius' => '0.25rem', 'border-bottom-right-radius' => '0.25rem']);
@@ -1748,8 +1809,9 @@ class UIElement extends Node
         return $this;
     }
 
-    public function roundedLeft(?Unit $value = null, ?Pseudo $pseudo = null): static
+    public function roundedLeft(Unit|int|null $value = null, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         if ($value === null) {
             $this->addStyle($prefix . 'rounded-l', ['border-top-left-radius' => '0.25rem', 'border-bottom-left-radius' => '0.25rem']);
@@ -1760,8 +1822,9 @@ class UIElement extends Node
         return $this;
     }
 
-    public function roundedRight(?Unit $value = null, ?Pseudo $pseudo = null): static
+    public function roundedRight(Unit|int|null $value = null, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         if ($value === null) {
             $this->addStyle($prefix . 'rounded-r', ['border-top-right-radius' => '0.25rem', 'border-bottom-right-radius' => '0.25rem']);
@@ -1772,29 +1835,33 @@ class UIElement extends Node
         return $this;
     }
 
-    public function roundedTopLeft(Unit $value, ?Pseudo $pseudo = null): static
+    public function roundedTopLeft(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('rounded-tl'), ['border-top-left-radius' => $value->getCssValue()]);
         return $this;
     }
 
-    public function roundedTopRight(Unit $value, ?Pseudo $pseudo = null): static
+    public function roundedTopRight(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('rounded-tr'), ['border-top-right-radius' => $value->getCssValue()]);
         return $this;
     }
 
-    public function roundedBottomLeft(Unit $value, ?Pseudo $pseudo = null): static
+    public function roundedBottomLeft(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('rounded-bl'), ['border-bottom-left-radius' => $value->getCssValue()]);
         return $this;
     }
 
-    public function roundedBottomRight(Unit $value, ?Pseudo $pseudo = null): static
+    public function roundedBottomRight(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('rounded-br'), ['border-bottom-right-radius' => $value->getCssValue()]);
         return $this;
@@ -1869,15 +1936,17 @@ class UIElement extends Node
     // Transforms — translate, skew, origin, GPU
     // ============================================================
 
-    public function translateX(Unit $value, ?Pseudo $pseudo = null): static
+    public function translateX(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('translate-x'), ['transform' => 'translateX(' . $value->getCssValue() . ')']);
         return $this;
     }
 
-    public function translateY(Unit $value, ?Pseudo $pseudo = null): static
+    public function translateY(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('translate-y'), ['transform' => 'translateY(' . $value->getCssValue() . ')']);
         return $this;

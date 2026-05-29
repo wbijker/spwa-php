@@ -27,8 +27,9 @@ class Row extends UIElementContent
     /**
      * Set gap between items.
      */
-    public function gap(Unit $value, ?Pseudo $pseudo = null): static
+    public function gap(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('gap'), ['gap' => $value->getCssValue()]);
         return $this;

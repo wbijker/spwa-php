@@ -6,6 +6,7 @@ use PhpToken;
 use ReflectionMethod;
 use ReflectionNamedType;
 use ReflectionParameter;
+use ReflectionUnionType;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Throwable;
@@ -562,33 +563,51 @@ class CssExtractor
     private function candidatesForParam(ReflectionParameter $p, array $bag): ?array
     {
         $type = $p->getType();
-        if (!$type instanceof ReflectionNamedType) {
+
+        // Collect the named types. A union like `Unit|int` (now common since
+        // style methods accept a bare-int spacing shorthand) yields both, so
+        // we try each: the Unit half draws from the harvested bag, the int
+        // half falls back to a scalar default.
+        $names = [];
+        if ($type instanceof ReflectionNamedType) {
+            $names = [$type->getName()];
+        } elseif ($type instanceof ReflectionUnionType) {
+            foreach ($type->getTypes() as $t) {
+                if ($t instanceof ReflectionNamedType) {
+                    $names[] = $t->getName();
+                }
+            }
+        }
+        if ($names === []) {
             return $p->isOptional() ? ['null'] : null;
         }
-        $name = $type->getName();
-        $shortName = ($pos = strrpos($name, '\\')) !== false ? substr($name, $pos + 1) : $name;
 
-        $candidates = $bag[$shortName] ?? null;
-        if ($candidates !== null) {
-            return $candidates;
+        $candidates = [];
+        foreach ($names as $name) {
+            $shortName = ($pos = strrpos($name, '\\')) !== false ? substr($name, $pos + 1) : $name;
+            if (isset($bag[$shortName])) {
+                $candidates = [...$candidates, ...$bag[$shortName]];
+                continue;
+            }
+            // Scalar fallback so non-value params still eval (no CSS, no
+            // failure) — e.g. attr('id', $this->key), or the int half of Unit|int.
+            $scalar = match ($name) {
+                'string' => "''",
+                'int'    => '0',
+                'float'  => '0.0',
+                'bool'   => 'false',
+                default  => null,
+            };
+            if ($scalar !== null) {
+                $candidates[] = $scalar;
+            }
         }
 
-        // Scalar params have no harvestable literal, but the call still needs
-        // to eval. Fill them with a benign default so non-style methods (e.g.
-        // attr('id', $this->key)) succeed and produce no CSS instead of being
-        // reported as an unresolved failure.
-        $scalar = match ($name) {
-            'string' => ["''"],
-            'int'    => ['0'],
-            'float'  => ['0.0'],
-            'bool'   => ['false'],
-            default  => null,
-        };
-        if ($scalar !== null) {
-            return $scalar;
+        if ($candidates !== []) {
+            return array_values(array_unique($candidates));
         }
 
-        return ($p->isOptional() || $type->allowsNull()) ? ['null'] : null;
+        return ($p->isOptional() || ($type !== null && $type->allowsNull())) ? ['null'] : null;
     }
 
     /**

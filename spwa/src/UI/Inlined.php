@@ -29,8 +29,9 @@ class Inlined extends UIElementContent
     /**
      * Set spacing between items (both horizontal and vertical).
      */
-    public function spacing(Unit $value, ?Pseudo $pseudo = null): static
+    public function spacing(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('gap'), ['gap' => $value->getCssValue()]);
         return $this;
@@ -39,8 +40,9 @@ class Inlined extends UIElementContent
     /**
      * Set horizontal spacing.
      */
-    public function spacingX(Unit $value, ?Pseudo $pseudo = null): static
+    public function spacingX(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('gap-x'), ['column-gap' => $value->getCssValue()]);
         return $this;
@@ -49,8 +51,9 @@ class Inlined extends UIElementContent
     /**
      * Set vertical spacing.
      */
-    public function spacingY(Unit $value, ?Pseudo $pseudo = null): static
+    public function spacingY(Unit|int $value, ?Pseudo $pseudo = null): static
     {
+        $value = self::unit($value);
         $prefix = $pseudo?->prefix() ?? '';
         $this->addStyle($prefix . $value->withContext('gap-y'), ['row-gap' => $value->getCssValue()]);
         return $this;
