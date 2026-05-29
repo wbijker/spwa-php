@@ -50,89 +50,6 @@ class Spwa
 CSS;
 
     /**
-     * Inline IIFE injected on every dev-mode page (development=true). Plain
-     * clicks pass through to the app; ctrl/cmd-click on a tagged element
-     * logs its construct/component label + source file:line to the console
-     * and navigates to the editor URL built from window.__SPWA_EDITOR_URL,
-     * substituting {file}/{line}/{col}. If the template is empty (no
-     * config.editor.url) the navigation step is skipped and only the
-     * console line is emitted.
-     *
-     * Also installs a "w" keybind that flips ?wireframe= on/off via a
-     * full page reload (the wireframe transform runs server-side, so a
-     * fresh GET is the right way to toggle). Ignored when focus is in an
-     * editable field, or when a modifier key is held.
-     */
-    private const INSPECT_JS = <<<'JS'
-(function () {
-  function buildHref(file, line, col) {
-    var tpl = window.__SPWA_EDITOR_URL;
-    if (!tpl || !file) return null;
-    return tpl
-      .split('{file}').join(file)
-      .split('{line}').join(line || '1')
-      .split('{col}').join(col || '1');
-  }
-  document.addEventListener('click', function (e) {
-    if (!e.ctrlKey && !e.metaKey) return;
-    var el = e.target && e.target.closest ? e.target.closest('[data-wf-label]') : null;
-    if (!el) return;
-    e.preventDefault();
-    e.stopPropagation();
-    var label = el.getAttribute('data-wf-label') || '?';
-    var file = el.getAttribute('data-wf-file');
-    var line = el.getAttribute('data-wf-line');
-    var loc = file ? (file + (line ? ':' + line : '')) : '(unknown)';
-    console.log('%c' + label, 'font-weight:bold;color:#a06010', '@', loc);
-    var href = buildHref(file, line, 1);
-    if (href) window.location.href = href;
-  }, true);
-  document.addEventListener('keydown', function (e) {
-    if (e.key !== 'w' && e.key !== 'W') return;
-    if (e.ctrlKey || e.metaKey || e.altKey) return;
-    var t = document.activeElement;
-    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
-    e.preventDefault();
-    var url = new URL(window.location.href);
-    if (url.searchParams.get('wireframe') === 'true') {
-      url.searchParams.delete('wireframe');
-    } else {
-      url.searchParams.set('wireframe', 'true');
-    }
-    window.location.href = url.toString();
-  });
-})();
-JS;
-
-    /**
-     * Inline IIFE injected only when ?wireframe=true (and dev mode is on).
-     * Tracks the innermost tagged element under the cursor and toggles
-     * .spwa-wf-hover for a translucent background highlight. Plain
-     * (non-modifier) clicks are swallowed too — wireframe view is read-only.
-     * Ctrl/cmd-click stays unhandled here; the INSPECT_JS handler logs it.
-     */
-    private const WIREFRAME_JS = <<<'JS'
-(function () {
-  var active = null;
-  function clear() { if (active) { active.classList.remove('spwa-wf-hover'); active = null; } }
-  document.addEventListener('mousemove', function (e) {
-    var el = e.target && e.target.closest ? e.target.closest('[data-wf-label]') : null;
-    if (el === active) return;
-    clear();
-    if (el) { el.classList.add('spwa-wf-hover'); active = el; }
-  }, true);
-  document.addEventListener('mouseleave', clear, true);
-  document.addEventListener('click', function (e) {
-    if (e.ctrlKey || e.metaKey) return;
-    var el = e.target && e.target.closest ? e.target.closest('[data-wf-label]') : null;
-    if (!el) return;
-    e.preventDefault();
-    e.stopPropagation();
-  }, true);
-})();
-JS;
-
-    /**
      * Entry point. Accepts either an instantiated App or its class
      * name. Passing the class name is preferred: it lets Spwa install
      * its error traps BEFORE the App is constructed, so a parse error
@@ -880,6 +797,9 @@ JS;
 
         $bootJs = 'window.__SPWA_HASH=' . json_encode($stateHash) . ';'
                 . 'window.__SPWA_DEV=' . json_encode($isDev) . ';'
+                // Read by spwa_debug.js to gate its wireframe-only behaviour
+                // (hover highlight + read-only click swallow) on this render.
+                . 'window.__SPWA_WIREFRAME=' . json_encode($wireframe) . ';'
                 . 'window.__SPWA_ENV=' . json_encode(self::phpEnv()) . ';'
                 // Replaced at echo time with the real timings (below), so they
                 // cover the whole request including toHtml().
@@ -967,15 +887,13 @@ JS;
 
         $body->content((new TagDomNode('script'))->rawContent($debugJs));
 
-        // Inspect logger goes on every dev page so ctrl+click + the "w"
-        // keybind work without having to switch into wireframe mode first.
-        // Wireframe mode then adds the hover-highlight + plain-click swallow
-        // on top.
+        // Debug runtime (served statically as /spwa_debug.js): the ctrl+click
+        // open-in-editor inspector + the "w" wireframe-toggle keybind, plus the
+        // wireframe hover-highlight / read-only click swallow. Loaded on every
+        // dev page; the wireframe-only behaviour self-gates on
+        // window.__SPWA_WIREFRAME (set in bootJs above).
         if ($isDev) {
-            $body->content((new TagDomNode('script'))->rawContent(self::INSPECT_JS));
-        }
-        if ($wireframe) {
-            $body->content((new TagDomNode('script'))->rawContent(self::WIREFRAME_JS));
+            $body->content((new TagDomNode('script'))->attr('src', '/spwa_debug.js')->rawContent(''));
         }
 
         $document = (new TagDomNode('html'))
