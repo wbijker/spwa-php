@@ -72,32 +72,8 @@ class Text extends UIElementContent
     }
 
     // ============================================================
-    // Font size
+    // Font weight (fontSize + weight are inherited from UIElement)
     // ============================================================
-
-    /**
-     * Set font size.
-     */
-    public function fontSize(FontSize $size, ?Pseudo $pseudo = null): static
-    {
-        $prefix = $pseudo?->prefix() ?? '';
-        $this->addStyle($prefix . $size->toClass(), ['font-size' => $size->getCssValue()]);
-        return $this;
-    }
-
-    // ============================================================
-    // Font weight
-    // ============================================================
-
-    /**
-     * Set font weight.
-     */
-    public function weight(FontWeight $weight, ?Pseudo $pseudo = null): static
-    {
-        $prefix = $pseudo?->prefix() ?? '';
-        $this->addStyle($prefix . $weight->toClass(), ['font-weight' => $weight->getCssValue()]);
-        return $this;
-    }
 
     /**
      * Bold text.

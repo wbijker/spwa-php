@@ -14,18 +14,9 @@ namespace Spwa\UI;
  */
 class Input extends UIElement
 {
+    use FormControl;
+
     protected string $inputType = 'text';
-    protected ?string $inputName = null;
-    protected ?string $inputValue = null;
-    protected ?string $inputPlaceholder = null;
-    protected ?string $inputId = null;
-    protected bool $isRequired = false;
-    protected bool $isDisabled = false;
-    protected bool $isReadonly = false;
-    protected bool $isAutofocus = false;
-    protected ?string $inputAutocomplete = null;
-    protected ?int $inputMinLength = null;
-    protected ?int $inputMaxLength = null;
     protected ?string $inputPattern = null;
     protected ?string $inputMin = null;
     protected ?string $inputMax = null;
@@ -43,116 +34,6 @@ class Input extends UIElement
     public function type(string $type): static
     {
         $this->inputType = $type;
-        return $this;
-    }
-
-    /**
-     * Set name attribute.
-     */
-    public function name(string $name): static
-    {
-        $this->inputName = $name;
-        return $this;
-    }
-
-    /**
-     * Set value attribute.
-     */
-    public function value(string $value): static
-    {
-        $this->inputValue = $value;
-        return $this;
-    }
-
-    /**
-     * Bind a component property to this input's value.
-     * The property will be hydrated with the frontend value on each request.
-     */
-    public function bind(string &$ref): static
-    {
-        $this->inputValue = $ref;
-        $this->dom()->bindRef($ref);
-        return $this;
-    }
-
-    /**
-     * Set placeholder text.
-     */
-    public function placeholder(string $placeholder): static
-    {
-        $this->inputPlaceholder = $placeholder;
-        return $this;
-    }
-
-    /**
-     * Set id attribute.
-     */
-    public function id(string $id): static
-    {
-        $this->inputId = $id;
-        return $this;
-    }
-
-    /**
-     * Mark as required.
-     */
-    public function required(bool $required = true): static
-    {
-        $this->isRequired = $required;
-        return $this;
-    }
-
-    /**
-     * Mark as disabled.
-     */
-    public function disabled(bool $disabled = true): static
-    {
-        $this->isDisabled = $disabled;
-        return $this;
-    }
-
-    /**
-     * Mark as readonly.
-     */
-    public function readonly(bool $readonly = true): static
-    {
-        $this->isReadonly = $readonly;
-        return $this;
-    }
-
-    /**
-     * Set autofocus.
-     */
-    public function autofocus(bool $autofocus = true): static
-    {
-        $this->isAutofocus = $autofocus;
-        return $this;
-    }
-
-    /**
-     * Set autocomplete behavior.
-     */
-    public function autocomplete(string $value): static
-    {
-        $this->inputAutocomplete = $value;
-        return $this;
-    }
-
-    /**
-     * Set minimum length.
-     */
-    public function minLength(int $length): static
-    {
-        $this->inputMinLength = $length;
-        return $this;
-    }
-
-    /**
-     * Set maximum length.
-     */
-    public function maxLength(int $length): static
-    {
-        $this->inputMaxLength = $length;
         return $this;
     }
 
