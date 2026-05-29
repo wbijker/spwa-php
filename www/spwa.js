@@ -446,9 +446,8 @@ var SPWA = (function() {
 
         // Signal that the DOM has been updated for this response. Used by
         // the Router script to defer scroll restoration until the new page
-        // content is actually in place (executeJsDump runs pushState BEFORE
-        // applyPatches, so restoring inside pushState would scroll the OLD
-        // DOM).
+        // content is actually in place — patches and any pushState in data.js
+        // have both run by now.
         window.dispatchEvent(new Event('spwa:patched'));
 
         // DOM is now hydrated for this request — release the queue.

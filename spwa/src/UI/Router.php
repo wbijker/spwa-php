@@ -154,12 +154,10 @@ class Router extends Component
     }
 
     // Navigation triggered by Router::navigate() reaches the browser via
-    // history.pushState in `data.js`, which the runtime executes BEFORE
-    // applyPatches. Restoring scroll inside the pushState override would
-    // scroll the OLD DOM, then patches would land and the page would
-    // appear in the wrong position. Instead we stash the target key and
-    // restore in response to spwa:patched, fired by spwa.js after patches
-    // are applied.
+    // history.pushState in `data.js`. The new page's height isn't settled
+    // until patches are applied and laid out, so instead of scrolling inside
+    // the pushState override we stash the target key and restore in response
+    // to spwa:patched, fired by spwa.js once patches are applied.
     var pendingRestoreKey = null;
     window.addEventListener('spwa:patched', function () {
         if (pendingRestoreKey !== null) {
@@ -174,12 +172,16 @@ class Router extends Component
     // body still being parsed.
     restoreFor(currentKey);
 
-    // pushState changes location synchronously. Save for OLD key first, then
-    // flip currentKey and queue a deferred restore for the NEW key.
+    // pushState changes location synchronously, but the runtime applies DOM
+    // patches BEFORE running this (it's emitted in data.js and executed after
+    // applyPatches). By now the new — often shorter — page is already on
+    // screen and the browser has clamped window.scrollY, so reading it here
+    // would save a corrupted position for the page we're leaving. The
+    // outgoing scroll was already captured by the rAF snapshot above while the
+    // old DOM was still on screen, so here we only roll currentKey forward and
+    // queue the restore for the new URL.
     var origPush = history.pushState;
     history.pushState = function () {
-        scrollPositions[currentKey] = window.scrollY;
-        persist();
         var ret = origPush.apply(this, arguments);
         var newKey = keyOf();
         if (newKey !== currentKey) {

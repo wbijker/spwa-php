@@ -227,6 +227,24 @@ class CssExtractor
             }
         }
 
+        // Static calls in the args — `self::categoryColor(...)`,
+        // `News::categoryColor(...)`. Reconstruct the file's namespace + use
+        // imports to resolve the class to its FQN, then harvest the literal
+        // values out of the resolved method's body (reflection, so it works
+        // across files). e.g. a `match` returning Color::blue(600)/red(600)/…
+        // yields exactly those colors for the param below.
+        foreach ($this->extractStaticMethodCalls($argText) as $call) {
+            $short = ($p = strrpos($call['class'], '\\')) !== false ? substr($call['class'], $p + 1) : $call['class'];
+            if (in_array($short, self::HARVESTABLE, true)) continue; // value class — already harvested literally
+            $fqn = $this->resolveClassRef($call['class'], $file);
+            if ($fqn === null) continue;
+            $body = $this->reflectionMethodBody($fqn, $call['method']);
+            if ($body === null) continue;
+            foreach ($this->extractValues($body) as $cls => $exprs) {
+                $bag[$cls] = array_values(array_unique([...($bag[$cls] ?? []), ...$exprs]));
+            }
+        }
+
         $synthOk = $this->trySynthesis($probe, $rm, $bag);
 
         if (!$synthOk) {
@@ -261,6 +279,9 @@ class CssExtractor
 
     /** @var array<string, array<string, string|null>>  file → method → body|null */
     private array $methodBodyCache = [];
+
+    /** @var array<string, array{namespace: string, class: ?string, uses: array<string, string>}>  file → reconstructed meta */
+    private array $fileMetaCache = [];
 
     /**
      * Locate `function <name>(…) { body }` in a PHP file and return the body
@@ -318,6 +339,144 @@ class CssExtractor
             return null;
         }
         return null;
+    }
+
+    /**
+     * Find static method calls in an expression — `self::m(...)`,
+     * `static::m(...)`, `News::m(...)`, `Foo\Bar::m(...)`. Enum-case reads
+     * (`Color::Red`) and `::class` are skipped (no following `(`).
+     *
+     * @return array<int, array{class: string, method: string}>
+     */
+    private function extractStaticMethodCalls(string $argText): array
+    {
+        $tokens = PhpToken::tokenize('<?php ' . $argText . ';');
+        $count = count($tokens);
+        $calls = [];
+        for ($i = 0; $i < $count; $i++) {
+            $id = $tokens[$i]->id;
+            if ($id !== T_STRING && $id !== T_NAME_QUALIFIED && $id !== T_STATIC) continue;
+            $class = $tokens[$i]->text;
+
+            $j = $this->skipTrivia($tokens, $i + 1);
+            if ($j === null || $tokens[$j]->id !== T_DOUBLE_COLON) continue;
+            $k = $this->skipTrivia($tokens, $j + 1);
+            if ($k === null || $tokens[$k]->id !== T_STRING) continue;
+            $method = $tokens[$k]->text;
+            $l = $this->skipTrivia($tokens, $k + 1);
+            if ($l === null || $tokens[$l]->text !== '(') continue;
+
+            $calls[] = ['class' => $class, 'method' => $method];
+        }
+        return $calls;
+    }
+
+    /**
+     * Resolve a class reference written in $file to a fully-qualified name,
+     * using the file's reconstructed namespace + use imports. `self`/`static`/
+     * `parent` map to the file's declared class (reflection then finds even
+     * inherited methods); an unqualified name uses a matching import or falls
+     * back to the file's namespace; an already-qualified name is returned as-is.
+     */
+    private function resolveClassRef(string $ref, string $file): ?string
+    {
+        if ($ref === 'self' || $ref === 'static' || $ref === 'parent') {
+            return $this->fileMeta($file)['class'];
+        }
+        if (str_contains($ref, '\\')) {
+            return ltrim($ref, '\\');
+        }
+        $meta = $this->fileMeta($file);
+        if (isset($meta['uses'][$ref])) {
+            return $meta['uses'][$ref];
+        }
+        return $meta['namespace'] !== '' ? $meta['namespace'] . '\\' . $ref : $ref;
+    }
+
+    /**
+     * Source text of a method's body (signature line included — harmless for
+     * value harvesting), located via reflection so it works across files and
+     * resolves inherited methods. Null when the class/method can't be found.
+     */
+    private function reflectionMethodBody(string $fqn, string $method): ?string
+    {
+        if (!class_exists($fqn) || !method_exists($fqn, $method)) {
+            return null;
+        }
+        try {
+            $rm = new ReflectionMethod($fqn, $method);
+            $srcFile = $rm->getFileName();
+            $start = $rm->getStartLine();
+            $end = $rm->getEndLine();
+            if ($srcFile === false || $start === false || $end === false) {
+                return null;
+            }
+            $lines = @file($srcFile);
+            if ($lines === false) {
+                return null;
+            }
+            return implode('', array_slice($lines, $start - 1, $end - $start + 1));
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
+    /**
+     * Reconstruct a file's namespace, declared class FQN, and use-import map
+     * (short/alias => FQN) by tokenizing its head. Cached per file.
+     *
+     * @return array{namespace: string, class: ?string, uses: array<string, string>}
+     */
+    private function fileMeta(string $file): array
+    {
+        if (isset($this->fileMetaCache[$file])) {
+            return $this->fileMetaCache[$file];
+        }
+        $meta = ['namespace' => '', 'class' => null, 'uses' => []];
+        $tokens = PhpToken::tokenize(@file_get_contents($file) ?: '');
+        $count = count($tokens);
+
+        $segment = function (int $from) use ($tokens, $count): string {
+            $out = '';
+            for ($j = $from; $j < $count; $j++) {
+                $t = $tokens[$j];
+                if ($t->text === ';' || $t->text === '{' || $t->id === T_AS) break;
+                if ($t->id === T_STRING || $t->id === T_NAME_QUALIFIED || $t->id === T_NS_SEPARATOR) {
+                    $out .= $t->text;
+                }
+            }
+            return trim($out, '\\');
+        };
+
+        for ($i = 0; $i < $count; $i++) {
+            $id = $tokens[$i]->id;
+            if ($id === T_NAMESPACE) {
+                $meta['namespace'] = $segment($i + 1);
+            } elseif ($id === T_USE && $meta['class'] === null) {
+                // Top-level use only (class not seen yet → not a trait `use`).
+                $fqn = $segment($i + 1);
+                if ($fqn === '') continue;
+                $alias = null;
+                for ($j = $i + 1; $j < $count; $j++) {
+                    if ($tokens[$j]->text === ';' || $tokens[$j]->text === '{') break;
+                    if ($tokens[$j]->id === T_AS) {
+                        $a = $this->skipTrivia($tokens, $j + 1);
+                        if ($a !== null && $tokens[$a]->id === T_STRING) $alias = $tokens[$a]->text;
+                        break;
+                    }
+                }
+                $short = $alias ?? (($p = strrpos($fqn, '\\')) !== false ? substr($fqn, $p + 1) : $fqn);
+                $meta['uses'][$short] = $fqn;
+            } elseif (($id === T_CLASS || $id === T_INTERFACE || $id === T_TRAIT || $id === T_ENUM) && $meta['class'] === null) {
+                $j = $this->skipTrivia($tokens, $i + 1);
+                if ($j !== null && $tokens[$j]->id === T_STRING) {
+                    $name = $tokens[$j]->text;
+                    $meta['class'] = $meta['namespace'] !== '' ? $meta['namespace'] . '\\' . $name : $name;
+                }
+            }
+        }
+
+        return $this->fileMetaCache[$file] = $meta;
     }
 
     private function recordFailure(string $file, int $line, string $method, string $argText, string $reason): void
@@ -410,10 +569,26 @@ class CssExtractor
         $shortName = ($pos = strrpos($name, '\\')) !== false ? substr($name, $pos + 1) : $name;
 
         $candidates = $bag[$shortName] ?? null;
-        if ($candidates === null) {
-            return $p->isOptional() ? ['null'] : null;
+        if ($candidates !== null) {
+            return $candidates;
         }
-        return $candidates;
+
+        // Scalar params have no harvestable literal, but the call still needs
+        // to eval. Fill them with a benign default so non-style methods (e.g.
+        // attr('id', $this->key)) succeed and produce no CSS instead of being
+        // reported as an unresolved failure.
+        $scalar = match ($name) {
+            'string' => ["''"],
+            'int'    => ['0'],
+            'float'  => ['0.0'],
+            'bool'   => ['false'],
+            default  => null,
+        };
+        if ($scalar !== null) {
+            return $scalar;
+        }
+
+        return ($p->isOptional() || $type->allowsNull()) ? ['null'] : null;
     }
 
     /**
