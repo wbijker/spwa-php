@@ -2,7 +2,6 @@
 
 namespace Spwa\VNode;
 
-use Spwa\Config;
 use Spwa\Error\DefaultErrorPage;
 use Spwa\Error\ErrorInfo;
 use Spwa\State\StateManager;
@@ -25,16 +24,6 @@ abstract class App extends Component
     abstract public function title(): string;
 
     abstract protected function view(): VNode;
-
-    /**
-     * Project configuration. Override to set development mode, the editor
-     * jump-to-source URL, source-watch settings, etc. Defaults are
-     * production-safe (development off).
-     */
-    public function config(): Config
-    {
-        return new Config();
-    }
 
     /**
      * Override to register custom assets on this App.

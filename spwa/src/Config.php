@@ -3,47 +3,44 @@
 namespace Spwa;
 
 /**
- * Project configuration as a typed object. Supplied by the App via
- * App::config() (override it to set your values) instead of a loose
- * config.php array, so the framework reads named members.
+ * Project configuration as static members. Set the values here (or assign
+ * the statics during bootstrap, before Spwa::run) and the framework reads
+ * them via Config::$member. Defaults are production-safe (development off).
  */
 class Config
 {
-    public function __construct(
-        /**
-         * When true the page emits the HMR long-poll, the ctrl+click
-         * open-in-editor inspector, the "w" wireframe keybind, and the
-         * ?wireframe view. Set false in production.
-         */
-        public bool $development = false,
+    /**
+     * When true the page emits the HMR long-poll, the ctrl+click
+     * open-in-editor inspector, the "w" wireframe keybind, and the
+     * ?wireframe view. Set false in production.
+     */
+    public static bool $development = false;
 
-        /**
-         * Root of hmr.php's source-change walk. Relative paths resolve
-         * against the entry script's directory; '..' means the project root.
-         */
-        public string $sourceDir = '..',
+    /**
+     * Root of hmr.php's source-change walk. Relative paths resolve
+     * against the entry script's directory; '..' means the project root.
+     */
+    public static string $sourceDir = '..';
 
-        /**
-         * Basenames pruned from that walk — matches directory and file names.
-         * @var string[]
-         */
-        public array $sourceExclude = ['vendor', 'node_modules', '.git'],
+    /**
+     * Basenames pruned from that walk — matches directory and file names.
+     * @var string[]
+     */
+    public static array $sourceExclude = ['vendor', 'node_modules', '.git'];
 
-        /**
-         * Editor jump-to-source URL template for ctrl+click, interpolated
-         * with {file}, {line}, {col}. Empty disables it. Examples:
-         *   phpstorm://open?file={file}&line={line}
-         *   vscode://file/{file}:{line}:{col}
-         *   cursor://file/{file}:{line}:{col}
-         */
-        public string $editorUrl = '',
+    /**
+     * Editor jump-to-source URL template for ctrl+click, interpolated
+     * with {file}, {line}, {col}. Empty disables it. Examples:
+     *   phpstorm://open?file={file}&line={line}
+     *   vscode://file/{file}:{line}:{col}
+     *   cursor://file/{file}:{line}:{col}
+     */
+    public static string $editorUrl = 'phpstorm://open?file={file}&line={line}';
 
-        /**
-         * Host-side absolute path of this project, used to rewrite
-         * server-captured paths so the editor link resolves when PHP runs
-         * in a container/VM. Null = no rewrite (auto-detected server root).
-         */
-        public ?string $editorHostRoot = null,
-    ) {
-    }
+    /**
+     * Host-side absolute path of this project, used to rewrite
+     * server-captured paths so the editor link resolves when PHP runs
+     * in a container/VM. Null = no rewrite (auto-detected server root).
+     */
+    public static ?string $editorHostRoot = null;
 }

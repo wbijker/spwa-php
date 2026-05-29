@@ -32,9 +32,6 @@ class Spwa
     /** @var float microtime when run() entered — start of the app's own PHP code execution. */
     private static float $runStart = 0.0;
 
-    /** @var Config|null The active app's config, cached for the request. */
-    private static ?Config $config = null;
-
     /**
      * Inline stylesheet for wireframe mode. Loaded only when the page is
      * rendered with ?wireframe=true. Keeps the original element box (so
@@ -158,7 +155,6 @@ JS;
                 $entry = new $entry();
             }
             self::$current = $entry;
-            self::$config = $entry->config();
 
             // Dev mode flips the capture flag for the whole request — every
             // UIElement::__construct walks the call stack once to stamp
@@ -167,8 +163,8 @@ JS;
             // covers the OLD/NEW rebuilds. Captured paths are rewritten
             // through host_root so they survive the container boundary when
             // the dev's editor opens the link.
-            UIElement::$captureSource = self::$config->development;
-            if (self::$config->development) {
+            UIElement::$captureSource = Config::$development;
+            if (Config::$development) {
                 UIElement::$sourceRoot = rtrim(dirname($_SERVER['SCRIPT_FILENAME'] ?? '', 2), '/');
                 UIElement::$hostRoot = rtrim(self::editorHostRoot() ?? UIElement::$sourceRoot, '/');
             }
@@ -201,10 +197,11 @@ JS;
      *
      *   Spwa::watch(NewsApp::class);
      *
-     * Config-aware via the app (no config file): a non-development app
-     * short-circuits. While polling it walks the source (sourceHash); on a
-     * change it rewrites Hash and tells the client to reload. Writing Hash at
-     * the start also catches edits made while no poll was running.
+     * Config-aware via the static Config (no config file): when
+     * Config::$development is off it short-circuits. While polling it walks
+     * the source (sourceHash); on a change it rewrites Hash and tells the
+     * client to reload. Writing Hash at the start also catches edits made
+     * while no poll was running.
      *
      * @param App|class-string<App> $entry
      */
@@ -214,7 +211,6 @@ JS;
             $entry = new $entry();
         }
         self::$current = $entry;
-        self::$config = $entry->config();
 
         header('Content-Type: application/json');
         header('Cache-Control: no-store');
@@ -222,7 +218,7 @@ JS;
 
         // Production short-circuit — the client only polls in dev, but a
         // direct hit shouldn't burn worker time when HMR is off.
-        if (!self::$config->development) {
+        if (!Config::$development) {
             echo json_encode(['changed' => false]);
             return;
         }
@@ -393,22 +389,13 @@ JS;
     }
 
     /**
-     * The active app's Config. Set from App::config() in run()/watch();
-     * defaults (production-safe) when accessed outside that flow.
-     */
-    public static function config(): Config
-    {
-        return self::$config ??= (self::$current?->config() ?? new Config());
-    }
-
-    /**
      * True when the app's config has development on. Gates the HMR long-poll
      * (the IIFE in spwa.js via window.__SPWA_DEV, the inlined error-page
      * script, and the /hmr.php endpoint itself).
      */
     public static function isDevelopment(): bool
     {
-        return self::config()->development;
+        return Config::$development;
     }
 
     /**
@@ -417,7 +404,7 @@ JS;
      */
     public static function editorUrlTemplate(): string
     {
-        return self::config()->editorUrl;
+        return Config::$editorUrl;
     }
 
     /**
@@ -428,7 +415,7 @@ JS;
      */
     public static function editorHostRoot(): ?string
     {
-        $v = self::config()->editorHostRoot;
+        $v = Config::$editorHostRoot;
         return ($v !== null && $v !== '') ? $v : null;
     }
 
@@ -532,10 +519,10 @@ JS;
         $file = self::hashFile();
         $content = "<?php\n\n"
             . "namespace Spwa;\n\n"
-            . "// AUTO-GENERATED — do not edit by hand. The VALUE is rewritten by\n"
+            . "// AUTO-GENERATED — do not edit by hand. The \$value is rewritten by\n"
             . "// hmr.php (Spwa::watch) with the current source fingerprint and read\n"
             . "// by Spwa::styleVersion() as the /style.css cache-buster.\n"
-            . "class Hash\n{\n    public const VALUE = " . var_export($hash, true) . ";\n}\n";
+            . "class Hash\n{\n    public static string \$value = " . var_export($hash, true) . ";\n}\n";
 
         if (@file_get_contents($file) === $content) {
             return; // unchanged — skip the write
@@ -553,12 +540,12 @@ JS;
      * Hash class — the normal request flow never scans the source. When Hash
      * is still empty (fresh checkout, hmr hasn't run yet), it bootstraps once:
      * computes sourceHash and writes Hash, so subsequent requests just read
-     * the constant.
+     * the static value.
      */
     private static function styleVersion(): string
     {
-        if (Hash::VALUE !== '') {
-            return Hash::VALUE;
+        if (Hash::$value !== '') {
+            return Hash::$value;
         }
         $hash = self::sourceHash();
         self::writeHash($hash);
@@ -574,13 +561,12 @@ JS;
      */
     public static function sourceHash(): string
     {
-        $config = self::config();
         $configDir = dirname($_SERVER['SCRIPT_FILENAME'] ?? '');
-        $root = $config->sourceDir;
+        $root = Config::$sourceDir;
         if ($root === '' || $root[0] !== '/') {
             $root = $configDir . '/' . $root;
         }
-        $skip = array_flip($config->sourceExclude);
+        $skip = array_flip(Config::$sourceExclude);
         // Never fingerprint our own generated Hash class — writing it would
         // bump its mtime and falsely trip the next change check (reload loop).
         $skip['Hash.php'] = true;
