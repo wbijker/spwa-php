@@ -22,6 +22,13 @@ class TagDomNode extends DomNode
         'upload' => 'change',
     ];
 
+    /** Void (self-closing) tags — keyed for O(1) lookup in toHtml(). */
+    private const SELF_CLOSING = [
+        'img' => true, 'br' => true, 'hr' => true, 'input' => true, 'meta' => true,
+        'link' => true, 'area' => true, 'base' => true, 'col' => true, 'embed' => true,
+        'source' => true, 'track' => true, 'wbr' => true,
+    ];
+
     /** @var (DomNode|string)[] */
     protected array $children = [];
 
@@ -460,9 +467,8 @@ class TagDomNode extends DomNode
             $attrHtml .= ' data-wf-line="' . $this->wireframeLine . '"';
         }
 
-        // Self-closing tags
-        $selfClosing = ['img', 'br', 'hr', 'input', 'meta', 'link', 'area', 'base', 'col', 'embed', 'source', 'track', 'wbr'];
-        if (in_array($this->tag, $selfClosing) && empty($this->children)) {
+        // Self-closing (void) tags
+        if (isset(self::SELF_CLOSING[$this->tag]) && empty($this->children)) {
             return "<{$this->tag}{$attrHtml}>";
         }
 

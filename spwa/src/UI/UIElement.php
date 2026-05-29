@@ -155,7 +155,7 @@ class UIElement extends Node
         // was rendered on the initial GET. First-page render still runs in
         // full because the HTML payload needs the real subtree.
         if ($this->dom()->isFrozen() && $phase !== RenderPhase::Initial) {
-            return $this->dom()->assignPaths($this->path);
+            return $parent === null ? $this->dom()->assignPaths($this->path) : $this->dom();
         }
 
         $this->applyAttributes();
@@ -167,7 +167,10 @@ class UIElement extends Node
 
         $this->applyInvalidations();
 
-        return $this->dom()->assignPaths($this->path);
+        // Paths are assigned for the whole tree in a single pass at the root
+        // (parent === null). Nested renders skip it, so assignment is O(n)
+        // rather than O(n²) (each node re-walking its subtree).
+        return $parent === null ? $this->dom()->assignPaths($this->path) : $this->dom();
     }
 
     /**
@@ -175,11 +178,15 @@ class UIElement extends Node
      */
     protected function findOwningComponent(?VNode $node): ?Component
     {
-        while ($node !== null) {
-            if ($node instanceof Component) {
-                return $node;
-            }
-            $node = $node->getParent();
+        // Nearest Component ancestor, in O(1): render is top-down, so the
+        // parent already resolved its own owner. A Component parent is the
+        // owner; a UIElement parent's eventOwner is the nearest Component
+        // above it. Avoids walking the whole parent chain per node (O(n·depth)).
+        if ($node instanceof Component) {
+            return $node;
+        }
+        if ($node instanceof UIElement) {
+            return $node->eventOwner;
         }
         return null;
     }

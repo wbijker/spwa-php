@@ -53,7 +53,7 @@ class UIElementContent extends UIElement
         // Frozen during a diff cycle: don't walk the subtree at all. See
         // UIElement::render() for the rationale.
         if ($this->dom()->isFrozen() && $phase !== RenderPhase::Initial) {
-            return $this->dom()->assignPaths($this->path);
+            return $parent === null ? $this->dom()->assignPaths($this->path) : $this->dom();
         }
 
         $this->applyAttributes();
@@ -80,6 +80,7 @@ class UIElementContent extends UIElement
         $this->dom()->content(...$domChildren);
         $this->applyInvalidations();
 
-        return $this->dom()->assignPaths($this->path);
+        // Single-pass path assignment at the root only (see UIElement::render).
+        return $parent === null ? $this->dom()->assignPaths($this->path) : $this->dom();
     }
 }
