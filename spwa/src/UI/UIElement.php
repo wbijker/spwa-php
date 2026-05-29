@@ -1008,35 +1008,37 @@ class UIElement extends Node
         Unit|int|null $bottom = null,
         Unit|int|null $left = null,
     ): static {
-        $value = self::unit($value);
-        $x = self::unit($x);
-        $y = self::unit($y);
-        $top = self::unit($top);
-        $right = self::unit($right);
-        $bottom = self::unit($bottom);
-        $left = self::unit($left);
+        // Normalize lazily inside each guard: a single-arg call like
+        // ->padding(1) does one Unit conversion, not seven.
         $prefix = $pseudo?->prefix() ?? '';
         if ($value !== null) {
+            $value = self::unit($value);
             $this->addStyle($prefix . $value->withContext('p'), ['padding' => $value->getCssValue()]);
         }
         if ($x !== null) {
+            $x = self::unit($x);
             $css = $x->getCssValue();
             $this->addStyle($prefix . $x->withContext('px'), ['padding-left' => $css, 'padding-right' => $css]);
         }
         if ($y !== null) {
+            $y = self::unit($y);
             $css = $y->getCssValue();
             $this->addStyle($prefix . $y->withContext('py'), ['padding-top' => $css, 'padding-bottom' => $css]);
         }
         if ($top !== null) {
+            $top = self::unit($top);
             $this->addStyle($prefix . $top->withContext('pt'), ['padding-top' => $top->getCssValue()]);
         }
         if ($right !== null) {
+            $right = self::unit($right);
             $this->addStyle($prefix . $right->withContext('pr'), ['padding-right' => $right->getCssValue()]);
         }
         if ($bottom !== null) {
+            $bottom = self::unit($bottom);
             $this->addStyle($prefix . $bottom->withContext('pb'), ['padding-bottom' => $bottom->getCssValue()]);
         }
         if ($left !== null) {
+            $left = self::unit($left);
             $this->addStyle($prefix . $left->withContext('pl'), ['padding-left' => $left->getCssValue()]);
         }
         return $this;
@@ -1082,35 +1084,36 @@ class UIElement extends Node
         Unit|int|null $bottom = null,
         Unit|int|null $left = null,
     ): static {
-        $value = self::unit($value);
-        $x = self::unit($x);
-        $y = self::unit($y);
-        $top = self::unit($top);
-        $right = self::unit($right);
-        $bottom = self::unit($bottom);
-        $left = self::unit($left);
+        // Normalize lazily inside each guard (see padding()).
         $prefix = $pseudo?->prefix() ?? '';
         if ($value !== null) {
+            $value = self::unit($value);
             $this->addStyle($prefix . $value->withContext('m'), ['margin' => $value->getCssValue()]);
         }
         if ($x !== null) {
+            $x = self::unit($x);
             $css = $x->getCssValue();
             $this->addStyle($prefix . $x->withContext('mx'), ['margin-left' => $css, 'margin-right' => $css]);
         }
         if ($y !== null) {
+            $y = self::unit($y);
             $css = $y->getCssValue();
             $this->addStyle($prefix . $y->withContext('my'), ['margin-top' => $css, 'margin-bottom' => $css]);
         }
         if ($top !== null) {
+            $top = self::unit($top);
             $this->addStyle($prefix . $top->withContext('mt'), ['margin-top' => $top->getCssValue()]);
         }
         if ($right !== null) {
+            $right = self::unit($right);
             $this->addStyle($prefix . $right->withContext('mr'), ['margin-right' => $right->getCssValue()]);
         }
         if ($bottom !== null) {
+            $bottom = self::unit($bottom);
             $this->addStyle($prefix . $bottom->withContext('mb'), ['margin-bottom' => $bottom->getCssValue()]);
         }
         if ($left !== null) {
+            $left = self::unit($left);
             $this->addStyle($prefix . $left->withContext('ml'), ['margin-left' => $left->getCssValue()]);
         }
         return $this;
@@ -1161,18 +1164,11 @@ class UIElement extends Node
         Unit|int|null $bottomLeft = null,
         Unit|int|null $bottomRight = null,
     ): static {
-        $value = self::unit($value);
-        $top = self::unit($top);
-        $right = self::unit($right);
-        $bottom = self::unit($bottom);
-        $left = self::unit($left);
-        $topLeft = self::unit($topLeft);
-        $topRight = self::unit($topRight);
-        $bottomLeft = self::unit($bottomLeft);
-        $bottomRight = self::unit($bottomRight);
         $prefix = $pseudo?->prefix() ?? '';
 
         // Bare ->rounded() retains its original "0.25rem all" shorthand.
+        // Null-ness is checked on the raw args (unit() preserves null), so we
+        // normalize lazily inside each guard rather than all nine up front.
         $allDefault = $value === null
             && $top === null && $right === null && $bottom === null && $left === null
             && $topLeft === null && $topRight === null && $bottomLeft === null && $bottomRight === null;
@@ -1182,34 +1178,43 @@ class UIElement extends Node
         }
 
         if ($value !== null) {
+            $value = self::unit($value);
             $this->addStyle($prefix . $value->withContext('rounded'), ['border-radius' => $value->getCssValue()]);
         }
         if ($top !== null) {
+            $top = self::unit($top);
             $css = $top->getCssValue();
             $this->addStyle($prefix . $top->withContext('rounded-t'), ['border-top-left-radius' => $css, 'border-top-right-radius' => $css]);
         }
         if ($right !== null) {
+            $right = self::unit($right);
             $css = $right->getCssValue();
             $this->addStyle($prefix . $right->withContext('rounded-r'), ['border-top-right-radius' => $css, 'border-bottom-right-radius' => $css]);
         }
         if ($bottom !== null) {
+            $bottom = self::unit($bottom);
             $css = $bottom->getCssValue();
             $this->addStyle($prefix . $bottom->withContext('rounded-b'), ['border-bottom-left-radius' => $css, 'border-bottom-right-radius' => $css]);
         }
         if ($left !== null) {
+            $left = self::unit($left);
             $css = $left->getCssValue();
             $this->addStyle($prefix . $left->withContext('rounded-l'), ['border-top-left-radius' => $css, 'border-bottom-left-radius' => $css]);
         }
         if ($topLeft !== null) {
+            $topLeft = self::unit($topLeft);
             $this->addStyle($prefix . $topLeft->withContext('rounded-tl'), ['border-top-left-radius' => $topLeft->getCssValue()]);
         }
         if ($topRight !== null) {
+            $topRight = self::unit($topRight);
             $this->addStyle($prefix . $topRight->withContext('rounded-tr'), ['border-top-right-radius' => $topRight->getCssValue()]);
         }
         if ($bottomLeft !== null) {
+            $bottomLeft = self::unit($bottomLeft);
             $this->addStyle($prefix . $bottomLeft->withContext('rounded-bl'), ['border-bottom-left-radius' => $bottomLeft->getCssValue()]);
         }
         if ($bottomRight !== null) {
+            $bottomRight = self::unit($bottomRight);
             $this->addStyle($prefix . $bottomRight->withContext('rounded-br'), ['border-bottom-right-radius' => $bottomRight->getCssValue()]);
         }
         return $this;
