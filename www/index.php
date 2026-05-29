@@ -8,7 +8,7 @@ require 'vendor/autoload.php';
 
 // /style.css — preflight reset stitched together with the utility rules
 // extracted by lex-scanning the News sample's PHP source. Preflight goes
-// first so app rules can override its defaults. Versioned via ?h=<sourceHash>
+// first so app rules can override its defaults. Versioned via ?h=<styleVersion>
 // in the <link> tag; the browser keys its cache off the full URL so a fresh
 // hash forces a refetch.
 if (str_starts_with($_SERVER['REQUEST_URI'] ?? '', '/style.css')) {

@@ -32,6 +32,9 @@ class Spwa
     /** @var float microtime when run() entered — start of the app's own PHP code execution. */
     private static float $runStart = 0.0;
 
+    /** @var Config|null The active app's config, cached for the request. */
+    private static ?Config $config = null;
+
     /**
      * Inline stylesheet for wireframe mode. Loaded only when the page is
      * rendered with ?wireframe=true. Keeps the original element box (so
@@ -150,25 +153,25 @@ JS;
 
         self::installErrorTraps();
 
-        // Dev mode flips the capture flag for the whole request — every
-        // UIElement::__construct walks the call stack once to stamp file:line
-        // on its DOM node so ctrl+click in the page can log "this came from
-        // News.php:75". Done at the very top so it covers POST replays too
-        // (handlePost rebuilds the app twice for OLD/NEW). Captured paths
-        // are rewritten through host_root so they survive the container
-        // boundary when the dev's editor opens the link.
-        $isDev = self::isDevelopment();
-        UIElement::$captureSource = $isDev;
-        if ($isDev) {
-            UIElement::$sourceRoot = rtrim(dirname($_SERVER['SCRIPT_FILENAME'] ?? '', 2), '/');
-            UIElement::$hostRoot = rtrim(self::editorHostRoot() ?? UIElement::$sourceRoot, '/');
-        }
-
         try {
             if (is_string($entry)) {
                 $entry = new $entry();
             }
             self::$current = $entry;
+            self::$config = $entry->config();
+
+            // Dev mode flips the capture flag for the whole request — every
+            // UIElement::__construct walks the call stack once to stamp
+            // file:line on its DOM node so ctrl+click in the page can log
+            // "this came from News.php:75". Set before handlePost so it
+            // covers the OLD/NEW rebuilds. Captured paths are rewritten
+            // through host_root so they survive the container boundary when
+            // the dev's editor opens the link.
+            UIElement::$captureSource = self::$config->development;
+            if (self::$config->development) {
+                UIElement::$sourceRoot = rtrim(dirname($_SERVER['SCRIPT_FILENAME'] ?? '', 2), '/');
+                UIElement::$hostRoot = rtrim(self::editorHostRoot() ?? UIElement::$sourceRoot, '/');
+            }
 
             // Section timer for the per-request console breakdown. Started
             // here so the first section ("restore state") captures the state
@@ -190,6 +193,67 @@ JS;
         } catch (Throwable $e) {
             self::renderError(ErrorInfo::fromThrowable($e));
         }
+    }
+
+    /**
+     * HMR endpoint — long-polls for source changes and publishes the current
+     * fingerprint into the Hash class. Drive it from www/hmr.php:
+     *
+     *   Spwa::watch(NewsApp::class);
+     *
+     * Config-aware via the app (no config file): a non-development app
+     * short-circuits. While polling it walks the source (sourceHash); on a
+     * change it rewrites Hash and tells the client to reload. Writing Hash at
+     * the start also catches edits made while no poll was running.
+     *
+     * @param App|class-string<App> $entry
+     */
+    public static function watch(App|string $entry): void
+    {
+        if (is_string($entry)) {
+            $entry = new $entry();
+        }
+        self::$current = $entry;
+        self::$config = $entry->config();
+
+        header('Content-Type: application/json');
+        header('Cache-Control: no-store');
+        header('X-Accel-Buffering: no');
+
+        // Production short-circuit — the client only polls in dev, but a
+        // direct hit shouldn't burn worker time when HMR is off.
+        if (!self::$config->development) {
+            echo json_encode(['changed' => false]);
+            return;
+        }
+
+        ignore_user_abort(false);
+        @set_time_limit(70);
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
+        $deadline = microtime(true) + 60;
+        $baseline = self::sourceHash();
+        self::writeHash($baseline);
+
+        while (microtime(true) < $deadline) {
+            clearstatcache();
+            $current = self::sourceHash();
+            if ($current !== $baseline) {
+                self::writeHash($current);
+                echo json_encode(['changed' => true]);
+                return;
+            }
+            echo ' ';
+            flush();
+            if (connection_aborted()) {
+                return;
+            }
+            usleep(300_000);
+        }
+
+        echo json_encode(['changed' => false]);
     }
 
     /**
@@ -329,53 +393,43 @@ JS;
     }
 
     /**
-     * Load the project config (returns []) if no config.php exists. Looks
-     * next to the entry script (e.g. www/config.php sits beside index.php).
-     * Cached for the request.
-     *
-     * @return array<string, mixed>
+     * The active app's Config. Set from App::config() in run()/watch();
+     * defaults (production-safe) when accessed outside that flow.
      */
-    private static function config(): array
+    public static function config(): Config
     {
-        static $config = null;
-        if ($config === null) {
-            $path = dirname($_SERVER['SCRIPT_FILENAME'] ?? '') . '/config.php';
-            $config = is_file($path) ? (array)require $path : [];
-        }
-        return $config;
+        return self::$config ??= (self::$current?->config() ?? new Config());
     }
 
     /**
-     * True when config.php has `development => true`. Gates the HMR
-     * long-poll (both the IIFE in spwa.js, via window.__SPWA_DEV, the
-     * inlined script in error pages, and the /hmr.php endpoint itself).
+     * True when the app's config has development on. Gates the HMR long-poll
+     * (the IIFE in spwa.js via window.__SPWA_DEV, the inlined error-page
+     * script, and the /hmr.php endpoint itself).
      */
     public static function isDevelopment(): bool
     {
-        return (bool)(self::config()['development'] ?? false);
+        return self::config()->development;
     }
 
     /**
-     * URL template (config.editor.url) used by ctrl+click to jump into the
-     * dev's editor. Empty when unconfigured — the inspector falls back to
-     * console.log.
+     * Editor jump-to-source URL template used by ctrl+click. Empty when
+     * unconfigured — the inspector falls back to console.log.
      */
     public static function editorUrlTemplate(): string
     {
-        return (string)(self::config()['editor']['url'] ?? '');
+        return self::config()->editorUrl;
     }
 
     /**
-     * Host-side absolute path of this project (config.editor.host_root) —
-     * the prefix the editor link needs so the OS can find the file when
-     * PHP runs under a different mount path (Docker, VM, etc.). Returns
-     * null when unset — UIElement falls back to the auto-detected server
-     * root and the rewrite is a no-op.
+     * Host-side absolute path of this project — the prefix the editor link
+     * needs so the OS can find the file when PHP runs under a different mount
+     * path (Docker, VM, etc.). Null when unset — UIElement falls back to the
+     * auto-detected server root and the rewrite is a no-op.
      */
     public static function editorHostRoot(): ?string
     {
-        $v = self::config()['editor']['host_root'] ?? null;
-        return is_string($v) && $v !== '' ? $v : null;
+        $v = self::config()->editorHostRoot;
+        return ($v !== null && $v !== '') ? $v : null;
     }
 
     /**
@@ -461,23 +515,75 @@ JS;
         ];
     }
 
+    /** Absolute path of the generated Hash class file (spwa/src/Hash.php). */
+    private static function hashFile(): string
+    {
+        return __DIR__ . '/Hash.php';
+    }
+
     /**
-     * Cheap source fingerprint: newest mtime + file count, joined with a
-     * colon. Doubles as HMR change signal and /style.css cache-buster — an
-     * edit bumps mtime, an add/remove bumps count. Walks .php and .css under
-     * the directory named by config()['source']['dir'], pruning basenames
-     * listed in config()['source']['exclude'] (matches both directories and
-     * files).
+     * Rewrite the Spwa\Hash class with the given source fingerprint. Called
+     * from Spwa::watch (hmr) and the bootstrap in styleVersion(). Written
+     * atomically (temp + rename) so a concurrent autoload never sees a
+     * half-written file; skips the write when the value is unchanged.
+     */
+    public static function writeHash(string $hash): void
+    {
+        $file = self::hashFile();
+        $content = "<?php\n\n"
+            . "namespace Spwa;\n\n"
+            . "// AUTO-GENERATED — do not edit by hand. The VALUE is rewritten by\n"
+            . "// hmr.php (Spwa::watch) with the current source fingerprint and read\n"
+            . "// by Spwa::styleVersion() as the /style.css cache-buster.\n"
+            . "class Hash\n{\n    public const VALUE = " . var_export($hash, true) . ";\n}\n";
+
+        if (@file_get_contents($file) === $content) {
+            return; // unchanged — skip the write
+        }
+        $tmp = $file . '.' . getmypid() . '.tmp';
+        if (@file_put_contents($tmp, $content) !== false) {
+            @rename($tmp, $file);
+        } else {
+            @unlink($tmp);
+        }
+    }
+
+    /**
+     * /style.css cache-buster. Reads the fingerprint hmr.php wrote into the
+     * Hash class — the normal request flow never scans the source. When Hash
+     * is still empty (fresh checkout, hmr hasn't run yet), it bootstraps once:
+     * computes sourceHash and writes Hash, so subsequent requests just read
+     * the constant.
+     */
+    private static function styleVersion(): string
+    {
+        if (Hash::VALUE !== '') {
+            return Hash::VALUE;
+        }
+        $hash = self::sourceHash();
+        self::writeHash($hash);
+        return $hash;
+    }
+
+    /**
+     * Full source fingerprint: newest mtime + file count, joined with a
+     * colon. The HMR change signal — it must watch every source file,
+     * including ones the current request never loaded, so it walks .php and
+     * .css under the config's sourceDir, pruning the sourceExclude basenames.
+     * An edit bumps mtime, an add/remove bumps count.
      */
     public static function sourceHash(): string
     {
-        $src = self::config()['source'] ?? [];
+        $config = self::config();
         $configDir = dirname($_SERVER['SCRIPT_FILENAME'] ?? '');
-        $root = $src['dir'] ?? '..';
+        $root = $config->sourceDir;
         if ($root === '' || $root[0] !== '/') {
             $root = $configDir . '/' . $root;
         }
-        $skip = array_flip($src['exclude'] ?? []);
+        $skip = array_flip($config->sourceExclude);
+        // Never fingerprint our own generated Hash class — writing it would
+        // bump its mtime and falsely trip the next change check (reload loop).
+        $skip['Hash.php'] = true;
 
         $dir = new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS);
         $filter = new \RecursiveCallbackFilterIterator($dir, function ($f) use ($skip) {
@@ -704,9 +810,7 @@ JS;
         $inlineStyles = implode("\n", $entry->getStylesInline());
 
         $stateHash = self::computeStateHash($state);
-        // Same source-mtime hash that HMR watches; bumping it on any PHP/CSS
-        // change forces the browser to refetch /style.css.
-        $styleHash = self::sourceHash();
+        $styleHash = self::styleVersion();
         $t->mark('compute hash');
 
         // Debug panel → inline script for initial render. Construct AFTER
