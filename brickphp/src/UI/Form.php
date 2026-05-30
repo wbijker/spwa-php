@@ -70,38 +70,27 @@ class Form extends Container
         return $this;
     }
 
-    public function build(): DomNode
+    protected function applyAttributes(): void
     {
-        $node = $this->dom()->setTag('form');
+        $node = $this->dom();
 
         if ($this->action !== null) {
             $node->attr('action', $this->action);
         }
-
         if ($this->method !== null) {
             $node->attr('method', $this->method);
         }
-
         if ($this->enctype !== null) {
             $node->attr('enctype', $this->enctype);
         }
-
         if ($this->target !== null) {
             $node->attr('target', $this->target);
         }
-
         if ($this->novalidate) {
             $node->attr('novalidate', 'novalidate');
         }
-
         if ($this->autocomplete !== null) {
             $node->attr('autocomplete', $this->autocomplete);
         }
-
-        foreach ($this->children as $child) {
-            $node->children($child->build());
-        }
-
-        return $node;
     }
 }

@@ -51,7 +51,13 @@ class Fieldset extends Container
         }
 
         foreach ($this->children as $child) {
-            $node->children($child->build());
+            if ($child instanceof UIElement) {
+                $node->children($child->build());
+            } elseif ($child instanceof DomNode) {
+                $node->children($child);
+            } elseif (is_string($child)) {
+                $node->children($child);
+            }
         }
 
         return $node;

@@ -65,12 +65,4 @@ class Position extends UIElementContent
         return $this;
     }
 
-    public function build(): DomNode
-    {
-        $node = $this->dom()->setTag('div');
-        foreach ($this->children as $child) {
-            $node->children($child->build());
-        }
-        return $node;
-    }
 }

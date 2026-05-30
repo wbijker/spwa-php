@@ -11,13 +11,4 @@ class Nav extends Container
     {
         parent::__construct('nav');
     }
-
-    public function build(): DomNode
-    {
-        $node = $this->dom()->setTag('nav');
-        foreach ($this->children as $child) {
-            $node->children($child->build());
-        }
-        return $node;
-    }
 }

@@ -20,18 +20,10 @@ class Dialog extends Container
         return $this;
     }
 
-    public function build(): DomNode
+    protected function applyAttributes(): void
     {
-        $node = $this->dom()->setTag('dialog');
-
         if ($this->open) {
-            $node->attr('open', 'open');
+            $this->dom()->attr('open', 'open');
         }
-
-        foreach ($this->children as $child) {
-            $node->children($child->build());
-        }
-
-        return $node;
     }
 }

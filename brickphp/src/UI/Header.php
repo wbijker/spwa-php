@@ -11,13 +11,4 @@ class Header extends Container
     {
         parent::__construct('header');
     }
-
-    public function build(): DomNode
-    {
-        $node = $this->dom()->setTag('header');
-        foreach ($this->children as $child) {
-            $node->children($child->build());
-        }
-        return $node;
-    }
 }
