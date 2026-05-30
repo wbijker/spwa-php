@@ -2,17 +2,17 @@
 
 namespace Samples\News;
 
-use Spwa\Js\Console;
-use Spwa\UI\Color;
-use Spwa\UI\FontSize;
-use Spwa\UI\FontWeight;
-use Spwa\UI\Pseudo;
-use Spwa\UI\Shadow;
-use Spwa\UI\UI;
-use Spwa\UI\UIElement;
-use Spwa\UI\Unit;
-use Spwa\VNode\StatelessComponent;
-use Spwa\VNode\VNode;
+use BrickPHP\Js\Console;
+use BrickPHP\UI\Color;
+use BrickPHP\UI\FontSize;
+use BrickPHP\UI\FontWeight;
+use BrickPHP\UI\Pseudo;
+use BrickPHP\UI\Shadow;
+use BrickPHP\UI\UI;
+use BrickPHP\UI\UIElement;
+use BrickPHP\UI\Unit;
+use BrickPHP\VNode\StatelessComponent;
+use BrickPHP\VNode\VNode;
 
 /**
  * Story-location section — Leaflet map plus a row of landmark "chips".

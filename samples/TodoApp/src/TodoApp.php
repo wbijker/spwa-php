@@ -2,20 +2,20 @@
 
 namespace Samples\TodoApp;
 
-use Spwa\State\SessionStateManager;
-use Spwa\State\StateManager;
-use Spwa\UI\Color;
-use Spwa\UI\FontSize;
-use Spwa\UI\UI;
-use Spwa\UI\Unit;
-use Spwa\VNode\App;
-use Spwa\VNode\VNode;
+use BrickPHP\State\SessionStateManager;
+use BrickPHP\State\StateManager;
+use BrickPHP\UI\Color;
+use BrickPHP\UI\FontSize;
+use BrickPHP\UI\UI;
+use BrickPHP\UI\Unit;
+use BrickPHP\VNode\App;
+use BrickPHP\VNode\VNode;
 
 class TodoApp extends App
 {
     public function title(): string
     {
-        return 'TodoMVC - SPWA';
+        return 'TodoMVC - Brick';
     }
 
     public function state(): StateManager

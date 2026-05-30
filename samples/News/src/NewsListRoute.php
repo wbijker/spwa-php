@@ -2,7 +2,7 @@
 
 namespace Samples\News;
 
-use Spwa\UI\BaseRoute;
+use BrickPHP\UI\BaseRoute;
 
 /**
  * Matches the news index — `/`.

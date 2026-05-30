@@ -8,18 +8,18 @@ use CodeQuery\Columns\IntColumn;
 use CodeQuery\Expressions\ConstExpression;
 use CodeQuery\Queryable\Aggregation;
 use CodeQuery\Queryable\Query;
-use Spwa\Html\Div;
-use Spwa\Html\Img;
-use Spwa\Html\Meta;
-use Spwa\Html\Table;
-use Spwa\Html\Td;
-use Spwa\Html\Title;
-use Spwa\Html\Tr;
-use Spwa\Nodes\HtmlText;
-use Spwa\Nodes\Node;
-use Spwa\Nodes\Page;
-use Spwa\Route\Route;
-use Spwa\Route\Router;
+use BrickPHP\Html\Div;
+use BrickPHP\Html\Img;
+use BrickPHP\Html\Meta;
+use BrickPHP\Html\Table;
+use BrickPHP\Html\Td;
+use BrickPHP\Html\Title;
+use BrickPHP\Html\Tr;
+use BrickPHP\Nodes\HtmlText;
+use BrickPHP\Nodes\Node;
+use BrickPHP\Nodes\Page;
+use BrickPHP\Route\Route;
+use BrickPHP\Route\Router;
 
 
 class WelcomePage extends Page

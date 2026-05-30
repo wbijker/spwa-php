@@ -1,0 +1,17 @@
+<?php
+
+namespace BrickPHP\UI;
+
+/**
+ * Generic span element.
+ */
+class Span extends UIElementContent
+{
+    public function __construct(DomNode|string|null $content = null)
+    {
+        parent::__construct('span');
+        if ($content !== null) {
+            $this->content($content);
+        }
+    }
+}

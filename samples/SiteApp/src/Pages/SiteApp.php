@@ -8,13 +8,13 @@ use Samples\SiteApp\Routes\FeaturesRoute;
 use Samples\SiteApp\Routes\FormsRoute;
 use Samples\SiteApp\Routes\HomeRoute;
 use Samples\SiteApp\Routes\StateRoute;
-use Spwa\UI\Color;
-use Spwa\UI\FontSize;
-use Spwa\UI\Router;
-use Spwa\UI\UI;
-use Spwa\UI\Unit;
-use Spwa\VNode\Component;
-use Spwa\VNode\VNode;
+use BrickPHP\UI\Color;
+use BrickPHP\UI\FontSize;
+use BrickPHP\UI\Router;
+use BrickPHP\UI\UI;
+use BrickPHP\UI\Unit;
+use BrickPHP\VNode\Component;
+use BrickPHP\VNode\VNode;
 
 class SiteApp extends Component
 {
@@ -48,7 +48,7 @@ class SiteApp extends Component
                     ->gap(Unit::small())
                     ->alignCenter()
                     ->content(
-                        UI::text('SPWA — Server-Powered Web Applications')
+                        UI::text('Brick — Server-Powered Web Applications')
                             ->color(Color::slate(400))
                             ->fontSize(FontSize::Small),
                         UI::text('Pure PHP. No Node. No external libraries.')

@@ -4,14 +4,14 @@ namespace Samples\SiteApp\Pages;
 
 use Samples\SiteApp\Components\CodeBlock;
 use Samples\SiteApp\Components\SectionHeading;
-use Spwa\UI\Color;
-use Spwa\UI\FontSize;
-use Spwa\UI\FontWeight;
-use Spwa\UI\Shadow;
-use Spwa\UI\UI;
-use Spwa\UI\Unit;
-use Spwa\VNode\Component;
-use Spwa\VNode\VNode;
+use BrickPHP\UI\Color;
+use BrickPHP\UI\FontSize;
+use BrickPHP\UI\FontWeight;
+use BrickPHP\UI\Shadow;
+use BrickPHP\UI\UI;
+use BrickPHP\UI\Unit;
+use BrickPHP\VNode\Component;
+use BrickPHP\VNode\VNode;
 
 class FeaturesPage extends Component
 {
@@ -329,7 +329,7 @@ PHP
                 UI::row()
                     ->background(Color::slate(100))
                     ->content(
-                        UI::text('SPWA PHP')
+                        UI::text('Brick PHP')
                             ->weight(FontWeight::SemiBold)
                             ->fontSize(FontSize::Small)
                             ->color(Color::slate(700))

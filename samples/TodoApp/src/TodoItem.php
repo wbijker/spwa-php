@@ -3,15 +3,15 @@
 namespace Samples\TodoApp;
 
 use Closure;
-use Spwa\UI\Color;
-use Spwa\UI\FontSize;
-use Spwa\UI\FontWeight;
-use Spwa\UI\Pseudo;
-use Spwa\UI\UI;
-use Spwa\UI\UIElement;
-use Spwa\UI\Unit;
-use Spwa\VNode\Component;
-use Spwa\VNode\VNode;
+use BrickPHP\UI\Color;
+use BrickPHP\UI\FontSize;
+use BrickPHP\UI\FontWeight;
+use BrickPHP\UI\Pseudo;
+use BrickPHP\UI\UI;
+use BrickPHP\UI\UIElement;
+use BrickPHP\UI\Unit;
+use BrickPHP\VNode\Component;
+use BrickPHP\VNode\VNode;
 
 class TodoItem extends Component
 {

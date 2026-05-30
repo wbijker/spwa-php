@@ -27,7 +27,7 @@ services:
 
     volumes:
       - ./www:/var/www/html/
-      - ./spwa:/var/www/spwa/
+      - ./brickphp:/var/www/brickphp/
       - ./codequery:/var/www/codequery/
       - ./heroicons:/var/www/heroicons/
       - ./samples:/var/www/samples/

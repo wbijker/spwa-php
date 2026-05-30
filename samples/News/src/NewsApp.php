@@ -2,11 +2,11 @@
 
 namespace Samples\News;
 
-use Spwa\State\SessionStateManager;
-use Spwa\State\StateManager;
-use Spwa\UI\Router;
-use Spwa\VNode\App;
-use Spwa\VNode\VNode;
+use BrickPHP\State\SessionStateManager;
+use BrickPHP\State\StateManager;
+use BrickPHP\UI\Router;
+use BrickPHP\VNode\App;
+use BrickPHP\VNode\VNode;
 
 class NewsApp extends App
 {

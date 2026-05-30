@@ -2,11 +2,11 @@
 
 namespace App\Components;
 
-use Spwa\Html\Div;
-use Spwa\Nodes\Component;
-use Spwa\Nodes\HtmlText;
-use Spwa\Nodes\Node;
-use Spwa\Route\RouteLink;
+use BrickPHP\Html\Div;
+use BrickPHP\Nodes\Component;
+use BrickPHP\Nodes\HtmlText;
+use BrickPHP\Nodes\Node;
+use BrickPHP\Route\RouteLink;
 
 
 class AboutPage extends Component

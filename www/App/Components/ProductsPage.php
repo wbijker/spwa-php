@@ -2,12 +2,12 @@
 
 namespace App\Components;
 
-use Spwa\Html\A;
-use Spwa\Html\Div;
-use Spwa\Nodes\Component;
-use Spwa\Nodes\HtmlText;
-use Spwa\Nodes\Node;
-use Spwa\Route\RouteLink;
+use BrickPHP\Html\A;
+use BrickPHP\Html\Div;
+use BrickPHP\Nodes\Component;
+use BrickPHP\Nodes\HtmlText;
+use BrickPHP\Nodes\Node;
+use BrickPHP\Route\RouteLink;
 
 class ProductsPage extends Component
 {

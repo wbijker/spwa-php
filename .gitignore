@@ -2,5 +2,5 @@ www/vendor
 .DS_Store
 .idea
 
-spwa/vendor
+brickphp/vendor
 *.cache

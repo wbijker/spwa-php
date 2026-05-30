@@ -2,13 +2,13 @@
 
 namespace Samples\News;
 
-use Spwa\Js\Js;
-use Spwa\UI\Color;
-use Spwa\UI\UI;
-use Spwa\UI\Unit;
-use Spwa\VNode\App;
-use Spwa\VNode\StatelessComponent;
-use Spwa\VNode\VNode;
+use BrickPHP\Js\Js;
+use BrickPHP\UI\Color;
+use BrickPHP\UI\UI;
+use BrickPHP\UI\Unit;
+use BrickPHP\VNode\App;
+use BrickPHP\VNode\StatelessComponent;
+use BrickPHP\VNode\VNode;
 
 /**
  * Leaflet map wrapper. Mirrors the most common one-way operations on
@@ -28,7 +28,7 @@ use Spwa\VNode\VNode;
 class Leaflet extends StatelessComponent
 {
     /**
-     * Namespaced event names dispatched via `SPWA.dispatch` and
+     * Namespaced event names dispatched via `Brick.dispatch` and
      * registered with `EventData::register`. Kept as class constants
      * so the literal `'leaflet:click'` only lives in one spot.
      */
@@ -43,7 +43,7 @@ class Leaflet extends StatelessComponent
     /**
      * Decorative `addMarker` / `addCircle` / `addPolygon` / `addPopup`
      * calls buffer their rendered JS-expression strings here. The
-     * setup `SPWA.ready` block in created() drains the buffer so the
+     * setup `Brick.ready` block in created() drains the buffer so the
      * additions land on the client AFTER the map exists, exactly once
      * per map (subsequent renders re-fill the buffer but created()
      * doesn't fire again, so nothing duplicates).
@@ -66,7 +66,7 @@ class Leaflet extends StatelessComponent
     }
 
     // ============================================================
-    // Server-side events (forwarded via SPWA.dispatch)
+    // Server-side events (forwarded via Brick.dispatch)
     // ============================================================
 
     /**
@@ -175,7 +175,7 @@ class Leaflet extends StatelessComponent
     // ============================================================
 
     /**
-     * First-render setup inside a single `SPWA.ready` block:
+     * First-render setup inside a single `Brick.ready` block:
      *
      *   window.leafLet["<key>"] = L.map("<key>");
      *   L.tileLayer(…).addTo(window.leafLet["<key>"]);
@@ -213,7 +213,7 @@ class Leaflet extends StatelessComponent
         $lines[] = Js::invoke(Js::obj("map", 'setView'), $this->initialCoords ?? [0, 0], $this->initialZoom);
 
         // Drain staged additions (markers, circles, polygons, popups)
-        // into the same SPWA.ready block, after map setup.
+        // into the same Brick.ready block, after map setup.
         foreach ($this->staged as $stmt) {
             $lines[] = $stmt;
         }
@@ -227,7 +227,7 @@ class Leaflet extends StatelessComponent
         return Js::obj('window', 'leafLet') . Js::index($this->key);
     }
 
-    /** Emit a single map operation wrapped in SPWA.ready. */
+    /** Emit a single map operation wrapped in Brick.ready. */
     private function emit(string $stmt): void
     {
         // add map
@@ -274,7 +274,7 @@ class Leaflet extends StatelessComponent
      * Build the JS that wires a single server-side event:
      *
      *   map.on('<leafletEvent>', function(event) {
-     *       SPWA.dispatch('<serverEvent>',
+     *       Brick.dispatch('<serverEvent>',
      *                     event.target.getContainer(),
      *                     event.latlng);
      *   });
@@ -284,7 +284,7 @@ class Leaflet extends StatelessComponent
         $leafletEvent = self::leafletEvent($serverEvent);
 
         $dispatch = Js::invoke(
-            Js::obj('SPWA', 'dispatch'),
+            Js::obj('Brick', 'dispatch'),
             Js::str($serverEvent),
             Js::invoke(Js::obj('event', 'target', 'getContainer')),
             Js::obj('event', 'latlng'),

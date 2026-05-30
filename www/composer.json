@@ -1,5 +1,5 @@
 {
-    "name": "spwa/test",
+    "name": "brickphp/test",
     "type": "library",
     "version": "1.0.0",
     "autoload": {
@@ -13,7 +13,7 @@
         },
         {
             "type": "path",
-            "url": "../spwa/"
+            "url": "../brickphp/"
         },
         {
             "type": "path",
@@ -29,7 +29,7 @@
         }
     ],
     "require": {
-        "spwa/spwa": "*",
+        "brickphp/brickphp": "*",
         "itecho/codequery": "*",
         "itecho/heroicons": "*",
         "samples/news": "*",

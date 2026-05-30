@@ -2,7 +2,7 @@
 
 namespace Samples\SiteApp\Routes;
 
-use Spwa\UI\BaseRoute;
+use BrickPHP\UI\BaseRoute;
 
 class FeaturesRoute extends BaseRoute
 {

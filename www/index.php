@@ -1,7 +1,7 @@
 <?php
 
-use Spwa\Spwa;
-use Spwa\UI\CssExtractor;
+use BrickPHP\Brick;
+use BrickPHP\UI\CssExtractor;
 use Samples\News\NewsApp;
 
 require 'vendor/autoload.php';
@@ -25,4 +25,4 @@ if (str_starts_with($_SERVER['REQUEST_URI'] ?? '', '/style.css')) {
     exit;
 }
 
-Spwa::run(NewsApp::class);
+Brick::run(NewsApp::class);

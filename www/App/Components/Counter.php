@@ -2,12 +2,12 @@
 
 namespace App\Components;
 
-use Spwa\Html\Div;
-use Spwa\Html\MouseEvents;
-use Spwa\Nodes\Component;
-use Spwa\Nodes\HtmlText;
-use Spwa\Nodes\Node;
-use Spwa\Nodes\State;
+use BrickPHP\Html\Div;
+use BrickPHP\Html\MouseEvents;
+use BrickPHP\Nodes\Component;
+use BrickPHP\Nodes\HtmlText;
+use BrickPHP\Nodes\Node;
+use BrickPHP\Nodes\State;
 
 
 class Counter extends Component

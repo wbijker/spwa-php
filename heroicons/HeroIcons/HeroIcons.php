@@ -3,8 +3,8 @@
 
 namespace HeroIcons;
 
-use Spwa\UI\Svg;
-use Spwa\UI\SvgPath;
+use BrickPHP\UI\Svg;
+use BrickPHP\UI\SvgPath;
 
 class HeroIcons
 {

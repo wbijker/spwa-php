@@ -2,16 +2,16 @@
 
 namespace Samples\SiteApp\Components;
 
-use Spwa\UI\Color;
-use Spwa\UI\FontSize;
-use Spwa\UI\FontWeight;
-use Spwa\UI\Pseudo;
-use Spwa\UI\Router;
-use Spwa\UI\Shadow;
-use Spwa\UI\UI;
-use Spwa\UI\Unit;
-use Spwa\VNode\Component;
-use Spwa\VNode\VNode;
+use BrickPHP\UI\Color;
+use BrickPHP\UI\FontSize;
+use BrickPHP\UI\FontWeight;
+use BrickPHP\UI\Pseudo;
+use BrickPHP\UI\Router;
+use BrickPHP\UI\Shadow;
+use BrickPHP\UI\UI;
+use BrickPHP\UI\Unit;
+use BrickPHP\VNode\Component;
+use BrickPHP\VNode\VNode;
 
 class Navbar extends Component
 {
@@ -29,7 +29,7 @@ class Navbar extends Component
                     ->alignMiddle()
                     ->alignBetween()
                     ->content(
-                        UI::text('SPWA')
+                        UI::text('Brick')
                             ->fontSize(FontSize::ExtraLarge)
                             ->weight(FontWeight::Bold)
                             ->color(Color::indigo(600))

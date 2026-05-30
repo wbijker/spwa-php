@@ -2,7 +2,7 @@
 
 namespace Samples\News;
 
-use Spwa\UI\BaseRoute;
+use BrickPHP\UI\BaseRoute;
 
 /**
  * Matches `/article/<slug>` and carries the slug to the route handler. The

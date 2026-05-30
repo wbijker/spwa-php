@@ -1,0 +1,61 @@
+<?php
+
+namespace BrickPHP\State;
+
+/**
+ * Simple in-memory state manager implementation.
+ */
+class InMemoryStateManager extends StateManager
+{
+    /** @var array<string, array> */
+    private array $states = [];
+
+    /**
+     * Get state for a given path.
+     * @param string $path
+     * @return array
+     */
+    public function getState(string $path): array
+    {
+        return $this->states[$path] ?? [];
+    }
+
+    /**
+     * Save state for a given path.
+     * @param string $path
+     * @param array $state
+     */
+    public function saveState(string $path, array $state): void
+    {
+        $this->states[$path] = $state;
+    }
+
+    public function removeState(string $path): void
+    {
+        unset($this->states[$path]);
+    }
+
+    public function clearAll(): void
+    {
+        $this->states = [];
+    }
+
+    /**
+     * Get all state.
+     * @return array<string, array>
+     */
+    public function getAll(): array
+    {
+        return $this->states;
+    }
+
+    public function getClientState(): ?array
+    {
+        return null;
+    }
+
+    public function getClientJs(): ?string
+    {
+        return null;
+    }
+}

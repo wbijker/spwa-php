@@ -2,8 +2,8 @@
 
 namespace Samples\News;
 
-use Spwa\Events\EventRegistration;
-use Spwa\Js\Js;
+use BrickPHP\Events\EventRegistration;
+use BrickPHP\Js\Js;
 
 /**
  * Drives one Leaflet `map.on(...)` / `map.off(...)` listener through the
@@ -38,7 +38,7 @@ final class LeafletEventRegistration implements EventRegistration
     public function add(array $path): void
     {
         // Idempotent: detach first, then attach. Leaflet's map.on() has no
-        // dedup of its own (unlike SPWA's native bindEvent, which is guarded
+        // dedup of its own (unlike Brick's native bindEvent, which is guarded
         // client-side and "never double-bound"), and the map is cached at
         // window.leafLet[<key>] across renders. So a re-wire — navigating back
         // to the map page, a re-render that re-inserts the node, or a map
@@ -53,7 +53,7 @@ final class LeafletEventRegistration implements EventRegistration
         $this->ready($this->offStmt);
     }
 
-    /** Run statements against the cached map inside SPWA.ready. */
+    /** Run statements against the cached map inside Brick.ready. */
     private function ready(string ...$stmts): void
     {
         Js::ready(

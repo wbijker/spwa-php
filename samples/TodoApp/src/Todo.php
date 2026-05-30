@@ -2,7 +2,7 @@
 
 namespace Samples\TodoApp;
 
-use Spwa\State\State;
+use BrickPHP\State\State;
 
 final class Todo extends State
 {

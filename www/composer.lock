@@ -4,8 +4,38 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "dcaaa8eae41b9ad7695fcc9325df2734",
+    "content-hash": "7d7fb84fbb9768d8690386a3265e7888",
     "packages": [
+        {
+            "name": "brickphp/brickphp",
+            "version": "1.0.0",
+            "dist": {
+                "type": "path",
+                "url": "../brickphp",
+                "reference": "973dad1fcd0b95d77a51f740318552bf378e797d"
+            },
+            "require": {
+                "php": ">=8.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^11.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "BrickPHP\\": "src/"
+                },
+                "files": []
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "BrickPHP\\Tests\\": "tests/"
+                }
+            },
+            "transport-options": {
+                "relative": true
+            }
+        },
         {
             "name": "itecho/codequery",
             "version": "1.0.0",
@@ -34,11 +64,11 @@
             "dist": {
                 "type": "path",
                 "url": "../heroicons",
-                "reference": "e1da3aa97b33e813b2614465d035d83eab3a6795"
+                "reference": "c1af77c85e8ed2769ada8e152d7bdb3978a5dcb7"
             },
             "require": {
-                "php": ">=8.0",
-                "spwa/spwa": "^1.0"
+                "brickphp/brickphp": "^1.0",
+                "php": ">=8.0"
             },
             "type": "library",
             "autoload": {
@@ -57,11 +87,11 @@
             "dist": {
                 "type": "path",
                 "url": "../samples/News",
-                "reference": "fc5e4f8d5fe69ff50715f1c8b0b6f086b404083c"
+                "reference": "d1488cba8d0ae1bf8a6700d677c71eb319748753"
             },
             "require": {
-                "php": ">=8.0",
-                "spwa/spwa": "^1.0"
+                "brickphp/brickphp": "^1.0",
+                "php": ">=8.0"
             },
             "type": "library",
             "autoload": {
@@ -79,11 +109,11 @@
             "dist": {
                 "type": "path",
                 "url": "../samples/SiteApp",
-                "reference": "8fc169bba20238a9c14d5879782004b73a30d62c"
+                "reference": "72c82ab1750596607a285ce642ba09a554c31281"
             },
             "require": {
-                "php": ">=8.0",
-                "spwa/spwa": "^1.0"
+                "brickphp/brickphp": "^1.0",
+                "php": ">=8.0"
             },
             "type": "library",
             "autoload": {
@@ -101,46 +131,16 @@
             "dist": {
                 "type": "path",
                 "url": "../samples/TodoApp",
-                "reference": "539738502834b1f101d2a75191e0f227a43aecc8"
+                "reference": "21449356a18e443e2be3db0ee3149dbcc637bbe8"
             },
             "require": {
-                "php": ">=8.0",
-                "spwa/spwa": "^1.0"
+                "brickphp/brickphp": "^1.0",
+                "php": ">=8.0"
             },
             "type": "library",
             "autoload": {
                 "psr-4": {
                     "Samples\\TodoApp\\": "src/"
-                }
-            },
-            "transport-options": {
-                "relative": true
-            }
-        },
-        {
-            "name": "spwa/spwa",
-            "version": "1.0.0",
-            "dist": {
-                "type": "path",
-                "url": "../spwa",
-                "reference": "93089c63bddcca210d8c3914c1f610ece67a5b16"
-            },
-            "require": {
-                "php": ">=8.0"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "^11.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Spwa\\": "src/"
-                },
-                "files": []
-            },
-            "autoload-dev": {
-                "psr-4": {
-                    "Spwa\\Tests\\": "tests/"
                 }
             },
             "transport-options": {

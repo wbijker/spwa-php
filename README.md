@@ -1,10 +1,10 @@
-# spwa-php
-A Server-Powered Web Applications (SPWA) framework using PHP.
+# BrickPHP
+A Server-Powered Web Applications (Brick) framework using PHP.
 
 There are 3 different sub-projects in this repository:
-- 'SPWA' - the main framework for building server and client-powered web applications in PHP.
+- 'Brick' - the main framework for building server and client-powered web applications in PHP.
 - 'CodeQuery' - a way to write statically typed SQL in PHP. 
-- 'SPWA-UI' - a alternative to traditional templating engines for PHP. It builds on fluent API and programmatic UI generation. Layout and styling is based on 
+- 'Brick-UI' - a alternative to traditional templating engines for PHP. It builds on fluent API and programmatic UI generation. Layout and styling is based on 
 
 # setup
 

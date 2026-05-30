@@ -1,9 +1,9 @@
-// SPWA Router runtime — wires the browser History API to SPWA and manages
+// Brick Router runtime — wires the browser History API to Brick and manages
 // scroll restoration across SPA navigation, popstate, and full reloads.
-// Registered as a static external script by Spwa\UI\Router::registerAssets().
+// Registered as a static external script by BrickPHP\UI\Router::registerAssets().
 (function () {
-    if (window.__spwaRouterAttached) return;
-    window.__spwaRouterAttached = true;
+    if (window.__brickRouterAttached) return;
+    window.__brickRouterAttached = true;
 
     // We manage scroll ourselves so the browser doesn't fight us on back/forward.
     if ('scrollRestoration' in history) {
@@ -13,7 +13,7 @@
     // Persist scroll positions across full page reloads via sessionStorage —
     // the in-memory map alone is wiped on refresh. Keyed per-URL so navigating
     // away and back (whether by SPA or by reload) lands at the same scroll.
-    var STORAGE_KEY = '__spwaScrollPositions';
+    var STORAGE_KEY = '__brickScrollPositions';
     var scrollPositions = {};
     try {
         var raw = sessionStorage.getItem(STORAGE_KEY);
@@ -75,9 +75,9 @@
     // history.pushState in `data.js`. The new page's height isn't settled
     // until patches are applied and laid out, so instead of scrolling inside
     // the pushState override we stash the target key and restore in response
-    // to spwa:patched, fired by spwa.js once patches are applied.
+    // to brick:patched, fired by brick.js once patches are applied.
     var pendingRestoreKey = null;
-    window.addEventListener('spwa:patched', function () {
+    window.addEventListener('brick:patched', function () {
         if (pendingRestoreKey !== null) {
             var key = pendingRestoreKey;
             pendingRestoreKey = null;
@@ -123,11 +123,11 @@
         scrollPositions[currentKey] = window.scrollY;
         persist();
         currentKey = keyOf();
-        if (window.SPWA && typeof SPWA.refresh === 'function') {
-            // SPWA.refresh POSTs and the new DOM arrives asynchronously —
+        if (window.Brick && typeof Brick.refresh === 'function') {
+            // Brick.refresh POSTs and the new DOM arrives asynchronously —
             // defer the restore so it lands after patches are applied.
             pendingRestoreKey = currentKey;
-            SPWA.refresh();
+            Brick.refresh();
         } else {
             // No runtime to refresh against — restore immediately against
             // whatever DOM is already on the page.

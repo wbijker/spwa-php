@@ -6,12 +6,12 @@ use DOMDocument;
 use DOMElement;
 use DOMNode;
 use DOMText;
-use Spwa\Html\Div;
-use Spwa\Html\TextArea;
-use Spwa\Js\JS;
-use Spwa\Nodes\Component;
-use Spwa\Nodes\HtmlText;
-use Spwa\Nodes\Node;
+use BrickPHP\Html\Div;
+use BrickPHP\Html\TextArea;
+use BrickPHP\Js\JS;
+use BrickPHP\Nodes\Component;
+use BrickPHP\Nodes\HtmlText;
+use BrickPHP\Nodes\Node;
 
 
 function convertToComponent(DOMNode $node, int $indentLevel = 0): string

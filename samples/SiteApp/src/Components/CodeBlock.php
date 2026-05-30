@@ -2,12 +2,12 @@
 
 namespace Samples\SiteApp\Components;
 
-use Spwa\UI\Color;
-use Spwa\UI\FontSize;
-use Spwa\UI\UI;
-use Spwa\UI\Unit;
-use Spwa\VNode\Component;
-use Spwa\VNode\VNode;
+use BrickPHP\UI\Color;
+use BrickPHP\UI\FontSize;
+use BrickPHP\UI\UI;
+use BrickPHP\UI\Unit;
+use BrickPHP\VNode\Component;
+use BrickPHP\VNode\VNode;
 
 class CodeBlock extends Component
 {

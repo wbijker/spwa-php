@@ -2,19 +2,19 @@
 
 namespace Samples\SiteApp\Pages;
 
-use Spwa\Events\InputEvent;
+use BrickPHP\Events\InputEvent;
 use Samples\SiteApp\Components\CodeBlock;
 use Samples\SiteApp\Components\DemoCard;
 use Samples\SiteApp\Components\SectionHeading;
-use Spwa\UI\Color;
-use Spwa\UI\FontSize;
-use Spwa\UI\FontWeight;
-use Spwa\UI\Pseudo;
-use Spwa\UI\Shadow;
-use Spwa\UI\UI;
-use Spwa\UI\Unit;
-use Spwa\VNode\Component;
-use Spwa\VNode\VNode;
+use BrickPHP\UI\Color;
+use BrickPHP\UI\FontSize;
+use BrickPHP\UI\FontWeight;
+use BrickPHP\UI\Pseudo;
+use BrickPHP\UI\Shadow;
+use BrickPHP\UI\UI;
+use BrickPHP\UI\Unit;
+use BrickPHP\VNode\Component;
+use BrickPHP\VNode\VNode;
 
 class StatePage extends Component
 {

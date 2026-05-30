@@ -2,7 +2,7 @@
 
 namespace App\Components;
 
-use Spwa\Route\RoutePath;
+use BrickPHP\Route\RoutePath;
 
 class Routes
 {

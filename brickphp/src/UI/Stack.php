@@ -1,0 +1,59 @@
+<?php
+
+namespace BrickPHP\UI;
+
+use BrickPHP\VNode\VNode;
+
+/**
+ * Stack element — children are positioned on top of each other.
+ * Only accepts Position elements as children.
+ *
+ * Usage:
+ *   UI::stack()
+ *       ->content(
+ *           Stack::position(UI::image("bg.jpg"))->fillParent(),
+ *           Stack::position(UI::text("Top-left"))->top(Unit::px(10))->left(Unit::px(10)),
+ *           Stack::position(UI::text("Bottom-right"))->bottom(Unit::px(10))->right(Unit::px(10)),
+ *       )
+ */
+class Stack extends UIElementContent
+{
+    /** @var Position[] */
+    protected array $children = [];
+
+    public function __construct()
+    {
+        parent::__construct('div');
+        $this->addStyle('relative', ['position' => 'relative']);
+    }
+
+    /**
+     * Create a positioned child for this stack.
+     */
+    public static function position(UIElement ...$children): Position
+    {
+        return new Position(...$children);
+    }
+
+    /**
+     * Add positioned children to the stack.
+     */
+    public function content(DomNode|VNode|string|null ...$children): static
+    {
+        foreach ($children as $child) {
+            if ($child instanceof Position) {
+                $this->children[] = $child;
+            }
+        }
+        return $this;
+    }
+
+    public function build(): DomNode
+    {
+        $node = $this->dom()->setTag('div');
+        foreach ($this->children as $child) {
+            $node->children($child->build());
+        }
+        return $node;
+    }
+}
