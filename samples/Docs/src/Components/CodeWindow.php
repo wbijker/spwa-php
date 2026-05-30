@@ -24,17 +24,19 @@ class CodeWindow extends Component
     /** @var array<int, VNode|string|null> */
     private array $children = [];
     private ?string $tab = null;
-    private ?string $tabEmoji = null;
+    private VNode|string|null $tabIcon = null;
 
     /**
      * Show an "active tab" inside the title bar (right of the dots).
      * Mirrors VS Code's open-file tab — small monospace label with a
-     * 2-px orange bottom accent.
+     * 2-px orange bottom accent. The optional `$icon` accepts either
+     * a plain string (rendered as text, e.g. an emoji like `'⚡'`) or
+     * any VNode (rendered as-is, e.g. a `new PHPIcon()` SVG mark).
      */
-    public function tab(string $label, ?string $emoji = null): static
+    public function tab(string $label, VNode|string|null $icon = null): static
     {
         $this->tab = $label;
-        $this->tabEmoji = $emoji;
+        $this->tabIcon = $icon;
         return $this;
     }
 
@@ -87,8 +89,10 @@ class CodeWindow extends Component
     private function tabPill(): UIElement
     {
         $children = [];
-        if ($this->tabEmoji !== null) {
-            $children[] = UI::span($this->tabEmoji)
+        if ($this->tabIcon instanceof VNode) {
+            $children[] = $this->tabIcon;
+        } elseif (is_string($this->tabIcon)) {
+            $children[] = UI::span($this->tabIcon)
                 ->color(Color::slate(400));
         }
         $children[] = UI::text($this->tab)

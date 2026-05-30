@@ -12,6 +12,7 @@ use BrickPHP\VNode\VNode;
 use Samples\Docs\Components\CodeWindow;
 use Samples\Docs\Components\FeatureTile;
 use Samples\Docs\Components\PHPCode;
+use Samples\Docs\Components\PHPIcon;
 
 /**
  * Seven-tile feature grid sitting on a light slate-50 surface. Each
@@ -212,7 +213,7 @@ class FeaturesSection extends StatelessComponent
     private function codeBox(string $filename, string $code): VNode
     {
         return (new CodeWindow())
-            ->tab($filename, '🐘')
+            ->tab($filename, new PHPIcon())
             ->content(new PHPCode($code));
     }
 }

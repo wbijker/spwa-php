@@ -16,6 +16,7 @@ use Samples\Docs\Components\BrowserFrame;
 use Samples\Docs\Components\CodeWindow;
 use Samples\Docs\Components\Icon;
 use Samples\Docs\Components\PHPCode;
+use Samples\Docs\Components\PHPIcon;
 
 /**
  * "Reactive Components, No JavaScript Required" section. Two-column on
@@ -118,7 +119,7 @@ class PreviewSection extends StatelessComponent
             ->gap(Unit::px(24))
             ->content(
                 (new CodeWindow())
-                    ->tab('Counter.php', '🐘')
+                    ->tab('Counter.php', new PHPIcon())
                     ->content(new PHPCode($counterSource)),
                 (new BrowserFrame())
                     ->url('localhost:8080/demo/counter')

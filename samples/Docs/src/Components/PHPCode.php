@@ -2,7 +2,6 @@
 
 namespace Samples\Docs\Components;
 
-use BrickPHP\UI\Color;
 use BrickPHP\UI\FontSize;
 use BrickPHP\UI\UI;
 use BrickPHP\UI\UIElement;
@@ -17,16 +16,17 @@ use PhpToken;
  * no external dependency, no regex approximation.
  *
  * Usage:
- *   new PHPCode("<?php\necho 'hello';\n")
+ *   new PHPCode("<?php\necho 'hello';\n");
  *
  * The `<?php` opening tag is added automatically if missing so users can
  * paste plain snippets like `echo 'hi';`.
  *
- * Colour palette is modelled on PHPStorm's Darcula scheme — muted
- * brown-orange keywords, purple variables, olive-green strings, blue
- * numbers, yellow function names. Mapped to the framework's tonal
- * `Color::*` factories so the CSS extractor harvests every shade at
- * build time.
+ * Colour palette lives in a strongly typed {@see SyntaxTheme} —
+ * {@see AtomOneDark} is the concrete derived class used here. The
+ * build chain references `(new AtomOneDark())` directly so the
+ * BrickPHP CSS extractor can follow `new Class(...)` into the ctor
+ * body and register every theme Color literal as a CSS rule at build
+ * time.
  */
 class PHPCode extends Component
 {
@@ -34,18 +34,13 @@ class PHPCode extends Component
 
     protected function build(): VNode
     {
-        $spans = $this->tokenize($this->code);
-
-        // Default foreground is PHPStorm Darcula's `#A9B7C6` — closest
-        // framework match is slate-300. Background stays slate-950 so the
-        // surrounding CodeWindow chrome flows in visually.
         return UI::pre()
             ->padding(Unit::px(24))
-            ->background(Color::slate(950))
-            ->color(Color::slate(300))
+            ->background((new AtomOneDark())->background)
+            ->color((new AtomOneDark())->defaultColor)
             ->fontSize(FontSize::Small)
             ->overflow()
-            ->content(...$spans);
+            ->content(...$this->tokenize($this->code));
     }
 
     // ============================================================
@@ -75,112 +70,86 @@ class PHPCode extends Component
         $spans = [];
         $count = count($tokens);
         for ($i = 0; $i < $count; $i++) {
-            // `->color($this->colorFor(...))` is the deliberate shape:
-            // the CSS extractor follows `$this->name(...)` calls inside
-            // chain args and harvests Color literals from the called
-            // method's body, so writing it inline (rather than via a
-            // local `$color` variable) is what registers every syntax
-            // colour as a real CSS rule at build time.
+            // `->color((new AtomOneDark())->colorFor($this->kindOf(...)))`
+            // is the deliberate shape: the CSS extractor follows the
+            // `new Class(...)` into AtomOneDark's ctor body, harvests
+            // every Color literal it finds there, and (because the
+            // `$this->kindOf(...)` arg is opaque at scan time) runs
+            // synthesis with each Color as a candidate — registering
+            // one CSS rule per theme colour.
             $spans[] = UI::span($tokens[$i]->text)
-                ->color($this->colorFor($tokens[$i], $tokens, $i));
+                ->color((new AtomOneDark())->colorFor(
+                    $this->kindOf($tokens[$i], $tokens, $i),
+                ));
         }
 
         return $spans;
     }
 
+    // ============================================================
+    // Token classifier
+    // ============================================================
+
     /**
-     * Decide the highlight colour for one token. Some tokens (notably
-     * `T_STRING`) need a peek at neighbours to disambiguate class names,
-     * function calls, and bare identifiers. Always returns a Color so
-     * the call site stays a literal `->color($this->colorFor(...))` —
-     * the CSS extractor relies on that shape to walk this method's
-     * body and register every Color literal it finds.
+     * Bucket a token into one of the {@see SyntaxTheme} kinds. Some
+     * tokens (notably `T_STRING`) need a peek at neighbours to
+     * disambiguate class names, function calls, and bare identifiers.
      *
      * @param array<int, PhpToken> $tokens
      */
-    private function colorFor(PhpToken $token, array $tokens, int $i): Color
+    private function kindOf(PhpToken $token, array $tokens, int $i): string
     {
         $id   = $token->id;
         $text = $token->text;
 
-        // Whitespace + everything uncategorised falls through to the
-        // Darcula default foreground (`#A9B7C6` ≈ slate-300).
         if ($id === T_WHITESPACE) {
-            return Color::slate(300);
+            return 'default';
         }
-
-        // Line/block comments — Darcula `#808080` ≈ slate-500.
-        if ($id === T_COMMENT) {
-            return Color::slate(500);
+        if ($id === T_COMMENT || $id === T_DOC_COMMENT) {
+            return 'comment';
         }
-
-        // PHPDoc comments — Darcula `#629755` (muted green, italic in IDE).
-        if ($id === T_DOC_COMMENT) {
-            return Color::green(700);
-        }
-
-        // Strings — Darcula `#6A8759` olive ≈ lime-600.
         if (
             $id === T_CONSTANT_ENCAPSED_STRING
             || $id === T_ENCAPSED_AND_WHITESPACE
             || $id === T_INLINE_HTML
         ) {
-            return Color::lime(600);
+            return 'string';
         }
-
-        // Quote characters bracketing strings keep the string colour.
         if ($text === '"' || $text === "'" || $text === '`') {
-            return Color::lime(600);
+            return 'string';
         }
-
-        // Numbers — Darcula `#6897BB` blue ≈ blue-400.
         if ($id === T_LNUMBER || $id === T_DNUMBER) {
-            return Color::blue(400);
+            return 'number';
         }
-
-        // Variables — Darcula `#9876AA` purple, the scheme's most
-        // distinctive tone.
         if ($id === T_VARIABLE) {
-            return Color::purple(400);
+            return 'variable';
         }
-
-        // Open / close PHP tag — treat like a keyword.
         if ($id === T_OPEN_TAG || $id === T_OPEN_TAG_WITH_ECHO || $id === T_CLOSE_TAG) {
-            return Color::orange(700);
+            return 'tag';
         }
-
-        // Keywords — Darcula `#CC7832` muted brown-orange ≈ orange-700.
         if (self::isKeyword($id)) {
-            return Color::orange(700);
+            return 'keyword';
         }
-
-        // Operators `->`, `::`, `=>` — default foreground in Darcula; we
-        // keep them a touch dimmer than body text for visual rhythm.
         if (in_array($id, [T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR, T_DOUBLE_COLON, T_DOUBLE_ARROW], true)) {
-            return Color::slate(400);
+            return 'operator';
         }
 
-        // Bare identifiers — peek at neighbours.
         if ($id === T_STRING) {
-            $upper = strtolower($text);
-            // `true` / `false` / `null` — Darcula colours constants
-            // purple like variables.
-            if ($upper === 'true' || $upper === 'false' || $upper === 'null') {
-                return Color::purple(400);
+            $lower = strtolower($text);
+            if ($lower === 'true' || $lower === 'false' || $lower === 'null') {
+                return 'constant';
             }
 
             $prev = $this->previousMeaningful($tokens, $i);
             $prevId = $prev?->id;
 
-            // Function declarations: `function foo(` — Darcula `#FFC66D`
-            // yellow ≈ amber-300.
+            // `function foo(` — declaration name.
             if ($prevId === T_FUNCTION) {
-                return Color::amber(300);
+                return 'function';
             }
 
-            // Class references after `new`, `use`, `\`, `::`,
-            // `extends`/`implements`/`instanceof` — default foreground
-            // in Darcula (italic in the IDE, plain colour here).
+            // Class refs after `new`, `use`, `\`, `::`, `extends`,
+            // `implements`, `instanceof`.
             if ($prevId === T_NEW
                 || $prevId === T_USE
                 || $prevId === T_NAMESPACE
@@ -190,25 +159,28 @@ class PHPCode extends Component
                 || $prevId === T_INSTANCEOF
                 || ($prev !== null && $prev->text === '\\')
             ) {
-                return Color::slate(300);
+                return 'class';
             }
 
-            // Function or method call — yellow.
+            // Followed by `(` — function/method call.
             $next = $this->nextMeaningful($tokens, $i);
             if ($next !== null && $next->text === '(') {
-                return Color::amber(300);
+                return 'function';
             }
 
-            // Pascal-cased bare word — likely a class name; default fg.
-            return Color::slate(300);
+            // Pascal-cased bare word — likely a class name.
+            if (ctype_upper($text[0] ?? '')) {
+                return 'class';
+            }
+
+            return 'default';
         }
 
-        // Namespaced identifiers — Darcula default foreground.
         if ($id === T_NAME_QUALIFIED || $id === T_NAME_FULLY_QUALIFIED || $id === T_NAME_RELATIVE) {
-            return Color::slate(300);
+            return 'class';
         }
 
-        return Color::slate(300);
+        return 'default';
     }
 
     private function previousMeaningful(array $tokens, int $i): ?PhpToken
@@ -235,8 +207,9 @@ class PHPCode extends Component
     }
 
     /**
-     * Common PHP language keywords whose colour is the "control flow" violet.
-     * Listed by token id so we don't have to string-match the spelling.
+     * Common PHP language keywords that should highlight as the
+     * theme's `keyword` kind. Looked up by token id so we don't have
+     * to string-match the spelling.
      */
     private static function isKeyword(int $id): bool
     {

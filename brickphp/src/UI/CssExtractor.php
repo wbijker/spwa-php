@@ -279,6 +279,24 @@ class CssExtractor
             }
         }
 
+        // Constructor calls in the args — `new AtomOneDark()`, `new
+        // News\Article(...)`. Treated the same as a static method call,
+        // but the reflected body is the class's `__construct`. Lets
+        // chains like `->color((new AtomOneDark())->colorFor($kind))`
+        // surface every Color literal that the typed ctor passes to its
+        // parent.
+        foreach ($this->extractConstructorCalls($argText) as $call) {
+            $short = ($p = strrpos($call['class'], '\\')) !== false ? substr($call['class'], $p + 1) : $call['class'];
+            if (in_array($short, self::HARVESTABLE, true)) continue;
+            $fqn = $this->resolveClassRef($call['class'], $file);
+            if ($fqn === null) continue;
+            $body = $this->reflectionMethodBody($fqn, '__construct');
+            if ($body === null) continue;
+            foreach ($this->extractValues($body) as $cls => $exprs) {
+                $bag[$cls] = array_values(array_unique([...($bag[$cls] ?? []), ...$exprs]));
+            }
+        }
+
         $synthOk = $this->trySynthesis($probe, $rm, $bag);
 
         if (!$synthOk) {
@@ -401,6 +419,36 @@ class CssExtractor
             if ($l === null || $tokens[$l]->text !== '(') continue;
 
             $calls[] = ['class' => $class, 'method' => $method];
+        }
+        return $calls;
+    }
+
+    /**
+     * Find `new Class(...)` constructor calls in an expression —
+     * `new AtomOneDark()`, `new App\Service(...)`. Returns just the
+     * class refs; the caller reflects on each class's `__construct`.
+     *
+     * @return array<int, array{class: string}>
+     */
+    private function extractConstructorCalls(string $argText): array
+    {
+        $tokens = PhpToken::tokenize('<?php ' . $argText . ';');
+        $count = count($tokens);
+        $calls = [];
+        for ($i = 0; $i < $count; $i++) {
+            if ($tokens[$i]->id !== T_NEW) continue;
+            $j = $this->skipTrivia($tokens, $i + 1);
+            if ($j === null) continue;
+            $id = $tokens[$j]->id;
+            if ($id !== T_STRING
+                && $id !== T_NAME_QUALIFIED
+                && $id !== T_NAME_FULLY_QUALIFIED
+                && $id !== T_NAME_RELATIVE
+                && $id !== T_STATIC
+            ) {
+                continue;
+            }
+            $calls[] = ['class' => $tokens[$j]->text];
         }
         return $calls;
     }

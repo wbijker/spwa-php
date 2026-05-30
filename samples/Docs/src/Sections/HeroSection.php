@@ -16,6 +16,7 @@ use BrickPHP\VNode\StatelessComponent;
 use BrickPHP\VNode\VNode;
 use Samples\Docs\Components\CodeWindow;
 use Samples\Docs\Components\PHPCode;
+use Samples\Docs\Components\PHPIcon;
 
 /**
  * Landing-page hero — left column with title + tagline + CTAs, right
@@ -164,7 +165,7 @@ class HeroSection extends StatelessComponent
             ->maxWidth(Unit::px(540))
             ->content(
                 (new CodeWindow())
-                    ->tab('index.php', '🐘')
+                    ->tab('index.php', new PHPIcon())
                     ->content(new PHPCode($php)),
             );
     }
