@@ -35,6 +35,7 @@
         "samples/news": "*",
         "samples/site-app": "*",
         "samples/todo-app": "*",
+        "samples/docs": "*",
         "ext-json": "*",
         "ext-zlib": "*"
     },

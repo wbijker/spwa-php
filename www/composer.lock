@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7d7fb84fbb9768d8690386a3265e7888",
+    "content-hash": "4970d0e940fb2fece38ccc3a917ddeb5",
     "packages": [
         {
             "name": "brickphp/brickphp",
@@ -76,6 +76,28 @@
                     "HeroIcons\\": "HeroIcons/"
                 },
                 "files": []
+            },
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
+            "name": "samples/docs",
+            "version": "1.0.0",
+            "dist": {
+                "type": "path",
+                "url": "../samples/Docs",
+                "reference": "1ccdae8eb470a80751076a931fe5cc8ebaa3b5bb"
+            },
+            "require": {
+                "brickphp/brickphp": "^1.0",
+                "php": ">=8.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Samples\\Docs\\": "src/"
+                }
             },
             "transport-options": {
                 "relative": true
