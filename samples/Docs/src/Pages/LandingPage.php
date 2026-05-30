@@ -8,12 +8,12 @@ use BrickPHP\UI\FontWeight;
 use BrickPHP\UI\Pseudo;
 use BrickPHP\UI\Router;
 use BrickPHP\UI\Shadow;
+use BrickPHP\UI\Svg;
 use BrickPHP\UI\UI;
 use BrickPHP\UI\UIElement;
 use BrickPHP\UI\Unit;
 use BrickPHP\VNode\Component;
 use BrickPHP\VNode\VNode;
-use Samples\Docs\Components\BrickLogo;
 use Samples\Docs\Components\BrowserFrame;
 use Samples\Docs\Components\CodeWindow;
 use Samples\Docs\Components\FeatureTile;
@@ -48,26 +48,68 @@ class LandingPage extends Component
 
     private function hero(): VNode
     {
+        // Stacking by hand (Layers doesn't expose z-order):
+        //   1. Outer column is position:relative — the positioning context.
+        //   2. SVG backdrop is position:absolute + inset:0 — fills the
+        //      relative parent edge-to-edge.
+        //   3. Foreground column is position:relative + z-index:1, which
+        //      promotes it above the absolutely-positioned backdrop in
+        //      the same stacking context (positioned siblings stack by
+        //      source order *and* z-index; without an explicit z, the
+        //      absolute child would tie at z-auto and paint on top).
         return UI::column()
-            ->background(Color::slate(900))
-            ->color(Color::white())
-            ->paddingY(Unit::px(64))
-            ->paddingX(Unit::px(24))
-            ->borderBottom(1)
-            ->borderColor(Color::slate(800))
+            ->relative()
+            ->width(Unit::full())
+            ->overflow()
             ->content(
-                UI::row()
-                    ->maxWidth(Unit::px(1100))
-                    ->marginX(Unit::auto())
-                    ->width(Unit::full())
-                    ->gap(Unit::px(64))
-                    ->alignMiddle()
-                    ->direction(\BrickPHP\UI\Direction::column())
-                    ->direction(\BrickPHP\UI\Direction::row(), Pseudo::lg())
+                $this->heroBackdrop(),
+                UI::column()
+                    ->relative()
+                    ->zIndex(1)
+                    ->color(Color::white())
+                    ->paddingY(Unit::px(40))
+                    ->paddingBottom(Unit::px(72))
+                    ->paddingX(Unit::px(24))
                     ->content(
-                        $this->heroText(),
-                        $this->heroCode(),
+                        UI::row()
+                            ->maxWidth(Unit::px(1100))
+                            ->marginX(Unit::auto())
+                            ->width(Unit::full())
+                            ->gap(Unit::px(64))
+                            ->alignMiddle()
+                            ->direction(\BrickPHP\UI\Direction::column())
+                            ->direction(\BrickPHP\UI\Direction::row(), Pseudo::lg())
+                            ->content(
+                                $this->heroText(),
+                                $this->heroCode(),
+                            ),
                     ),
+            );
+    }
+
+    /**
+     * Dark backdrop painted as an SVG polygon — left edge runs the full
+     * height of the hero, right edge stops at 90% so the bottom slopes
+     * gently upward. The SVG is absolutely positioned with inset:0 to
+     * fill the relative hero outer; `preserveAspectRatio="none"` and
+     * width/height 100% let the normalized 0–100 viewBox stretch non-
+     * uniformly to match the box.
+     */
+    private function heroBackdrop(): UIElement
+    {
+        return UI::svg()
+            ->absolute()
+            ->inset(Unit::none())
+            ->width(Unit::full())
+            ->height(Unit::full())
+            ->viewBox(0, 0, 100, 100)
+            ->svgWidth('100%')
+            ->svgHeight('100%')
+            ->attr('preserveAspectRatio', 'none')
+            ->attr('style', 'display:block;')
+            ->content(
+                Svg::polygon('0,0 100,0 100,90 0,100')
+                    ->fill(Color::slate(900)),
             );
     }
 
@@ -78,17 +120,11 @@ class LandingPage extends Component
             ->gap(Unit::px(24))
             ->alignLeft()
             ->content(
-                UI::container()
-                    ->padding(Unit::px(8))
-                    ->rounded(Unit::roundedLg())
-                    ->background(Color::slate(800))
-                    ->bordered()
-                    ->borderColor(Color::slate(700))
-                    ->content((new BrickLogo())->size(48)),
                 UI::text('The Modern ')
                     ->fontSize(FontSize::SixXL)
                     ->weight(FontWeight::Bold)
                     ->color(Color::white())
+                    ->attr('style', 'line-height:1;')
                     ->content(
                         UI::span('Server-Driven')->color(Color::orange(500)),
                         UI::text(' Framework.')
@@ -190,7 +226,8 @@ class LandingPage extends Component
     {
         return UI::column()
             ->background(Color::slate(50))
-            ->paddingY(Unit::px(96))
+            ->paddingY(Unit::px(40))
+            ->paddingBottom(Unit::px(72))
             ->paddingX(Unit::px(24))
             ->content(
                 UI::container()
@@ -226,7 +263,7 @@ class LandingPage extends Component
             'dataset',
             'All in one place',
             'Routing, state, components, events, styling — every concern lives in one PHP codebase. No context-switching between languages or repos.',
-        ))->preview(new PHPCode($code));
+        ))->preview($this->codeBox('App.php', $code));
     }
 
     private function noGlueFeature(): VNode
@@ -240,7 +277,7 @@ class LandingPage extends Component
             'link_off',
             'No glue — all PHP',
             'Skip the API layer. Skip the serialization. Skip the type duplication. Your UI talks to your data directly because it lives in the same process.',
-        ))->preview(new PHPCode($code));
+        ))->preview($this->codeBox('UserList.php', $code));
     }
 
     private function hmrFeature(): VNode
@@ -248,6 +285,7 @@ class LandingPage extends Component
         $indicator = UI::row()
             ->gap(Unit::px(8))
             ->alignMiddle()
+            ->padding(Unit::px(24))
             ->content(
                 UI::container()
                     ->width(Unit::px(8))
@@ -263,7 +301,9 @@ class LandingPage extends Component
             'bolt',
             'Hot module reloading',
             'Save a PHP file, watch the browser update in place — without losing state. HMR built in, no Vite or Webpack config required.',
-        ))->preview($indicator);
+        ))->preview(
+            (new CodeWindow())->tab('terminal', '⚡')->content($indicator),
+        );
     }
 
     private function stylingFeature(): VNode
@@ -277,16 +317,21 @@ class LandingPage extends Component
             'palette',
             'Styling out of the box',
             'A complete utility CSS system is bundled and lex-scanned from your source. Write semantic methods like padding(Unit::large()).',
-        ))->preview(new PHPCode($code));
+        ))->preview($this->codeBox('Button.php', $code));
     }
 
     private function wireframeFeature(): VNode
     {
+        // Intentionally NOT a CodeWindow — this preview is a wireframe
+        // sketch, not a code/terminal artifact. The dashed-border treatment
+        // is the visual point.
         $wireframe = UI::column()
             ->bordered()
             ->dashed()
             ->borderColor(Color::orange(400))
             ->padding(Unit::px(8))
+            ->background(Color::slate(950))
+            ->rounded(Unit::rounded())
             ->content(
                 UI::row()->content(
                     UI::container()
@@ -316,6 +361,7 @@ class LandingPage extends Component
     {
         $log = UI::column()
             ->gap(Unit::px(4))
+            ->padding(Unit::px(24))
             ->content(
                 UI::text('# Server Log 14:02:11')
                     ->fontSize(FontSize::ExtraSmall)
@@ -345,7 +391,9 @@ class LandingPage extends Component
             'bug_report',
             'Debugging made easy',
             'Xdebug works out of the box. Server-rendered patches surface in the browser console so you can see exactly what changed between renders.',
-        ))->preview($log);
+        ))->preview(
+            (new CodeWindow())->tab('console', '🐛')->content($log),
+        );
     }
 
     private function uiElementsFeature(): VNode
@@ -359,7 +407,15 @@ class LandingPage extends Component
             'view_quilt',
             'UI elements, not JS + CSS',
             'Express your interface through typed UIElements. No className strings, no template languages, no JSX. Refactor with IDE confidence.',
-        ))->preview(new PHPCode($code));
+        ))->preview($this->codeBox('HeaderElement.php', $code));
+    }
+
+    /** Helper — wraps a PHP snippet in a CodeWindow with the 🐘 filename tab. */
+    private function codeBox(string $filename, string $code): VNode
+    {
+        return (new CodeWindow())
+            ->tab($filename, '🐘')
+            ->content(new PHPCode($code));
     }
 
     // ============================================================
@@ -432,10 +488,33 @@ class LandingPage extends Component
 
     private function previewFrame(): UIElement
     {
+        $counterSource = <<<'PHP'
+        class Counter extends Component
+        {
+            private int $count = 0;
+
+            protected function initialize(): void
+            {
+                $this->useState($this->count);
+            }
+
+            protected function build(): VNode
+            {
+                return UI::row()->content(
+                    UI::button('-')->onClick(fn() => $this->count--),
+                    UI::text($this->count),
+                    UI::button('+')->onClick(fn() => $this->count++),
+                );
+            }
+        }
+        PHP;
+
         return UI::column()
             ->grow()
             ->width(Unit::full())
+            ->gap(Unit::px(24))
             ->content(
+                $this->codeBox('Counter.php', $counterSource),
                 (new BrowserFrame())
                     ->url('localhost:8080/demo/counter')
                     ->content($this->counterDemo()),

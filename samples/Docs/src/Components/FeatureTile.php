@@ -82,7 +82,15 @@ class FeatureTile extends Component
             );
     }
 
-    /** @return array<int, VNode> */
+    /**
+     * The preview slot is a thin wrapper — we add top margin so it
+     * separates from the body copy, but no background of our own so
+     * children (typically a `CodeWindow`, which has its own dark
+     * chrome) don't end up nested inside a duplicate dark box. Plain
+     * non-code previews can supply their own background.
+     *
+     * @return array<int, VNode>
+     */
     private function previewBlock(): array
     {
         if ($this->previewChildren === []) {
@@ -92,12 +100,6 @@ class FeatureTile extends Component
         return [
             UI::column()
                 ->marginTop(Unit::px(16))
-                ->padding(Unit::px(16))
-                ->background(Color::slate(950))
-                ->bordered()
-                ->borderColor(Color::slate(800))
-                ->rounded(Unit::rounded())
-                ->overflow()
                 ->content(...$this->previewChildren),
         ];
     }
