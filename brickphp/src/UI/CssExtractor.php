@@ -37,7 +37,14 @@ use Throwable;
  */
 class CssExtractor
 {
-    /** @var array<string, UIElement> per-factory shared probe */
+    /**
+     * Per-factory shared probe. `null` means the factory exists but
+     * returns a non-UIElement value object (Optgroup, Source, Track,
+     * Option) — those chains can't generate CSS so we skip them
+     * silently instead of recording false-positive failures.
+     *
+     * @var array<string, ?UIElement>
+     */
     private array $probes = [];
 
     /** @var array<int, array{file:string, line:int, call:string, error:string}> */
@@ -71,6 +78,7 @@ class CssExtractor
 
         $styles = [];
         foreach ($this->probes as $probe) {
+            if ($probe === null) continue; // value-object factory; nothing to collect
             foreach ($probe->build()->collectStyles() as $cls => $css) {
                 $styles[$cls] = $css;
             }
@@ -94,7 +102,7 @@ class CssExtractor
 
         $names = ['Color','Unit','Pseudo','Cursor','FontSize','FontWeight','Shadow',
                   'Align','Direction','GridColumns','GridFlow','GridAlign','Breakpoint','ColorScheme',
-                  'Selector','BaseRoute','UI'];
+                  'Selector','BaseRoute','UI','Svg'];
         foreach ($names as $name) {
             if (class_exists($name, false) || enum_exists($name, false)) continue;
             $fqn = "BrickPHP\\UI\\$name";
@@ -121,12 +129,28 @@ class CssExtractor
         try {
             $rm = new ReflectionMethod(UI::class, $factoryName);
             if (!$rm->isPublic() || !$rm->isStatic()) return null;
-            $sampleArgs = match ($factoryName) {
-                'text', 'badge', 'button', 'code' => [''],
-                'image' => ['', ''],
-                'link'  => [''],
-                default => [],
-            };
+
+            // Synthesize sample args by walking the required parameters
+            // and providing a zero-value per scalar type. Stops at the
+            // first optional parameter — those don't need to be passed.
+            // This auto-covers factories like `optgroup(string $label)`,
+            // `source(string $src)`, `track(string $src)`, `option(string
+            // $label)`, `heading(string $content, int $level = 1)` so they
+            // produce a real probe instead of falling back to Container.
+            $sampleArgs = [];
+            foreach ($rm->getParameters() as $p) {
+                if ($p->isOptional()) break;
+                $type = $p->getType();
+                $name = $type instanceof ReflectionNamedType ? $type->getName() : null;
+                $sampleArgs[] = match ($name) {
+                    'string' => '',
+                    'int'    => 0,
+                    'float'  => 0.0,
+                    'bool'   => false,
+                    default  => null,
+                };
+            }
+
             $result = UI::$factoryName(...$sampleArgs);
             return $result instanceof UIElement ? $result : null;
         } catch (Throwable) {
@@ -151,7 +175,14 @@ class CssExtractor
             if ($j === null || $tokens[$j]->id !== T_STRING) continue;
             $factory = $tokens[$j]->text;
 
-            $probe = $this->probes[$factory] ??= ($this->makeProbe($factory) ?? UI::container());
+            // Cache probe per factory. Null is a real outcome — it
+            // means the factory returns a non-UIElement (Optgroup,
+            // Source, Track, Option). We still advance past the
+            // chain to keep the parser in sync, but skip processCall.
+            if (!array_key_exists($factory, $this->probes)) {
+                $this->probes[$factory] = $this->makeProbe($factory);
+            }
+            $probe = $this->probes[$factory];
 
             // Skip past UI::factory(...)
             $k = $this->skipTrivia($tokens, $j + 1);
@@ -184,7 +215,9 @@ class CssExtractor
                 $args = $this->extractArgs($tokens, $j);
                 $k = $args['end'];
 
-                $this->processCall($probe, $methodName, $args['text'], $file, $line);
+                if ($probe !== null) {
+                    $this->processCall($probe, $methodName, $args['text'], $file, $line);
+                }
             }
         }
     }

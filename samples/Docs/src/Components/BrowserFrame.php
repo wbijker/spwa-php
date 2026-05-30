@@ -67,9 +67,12 @@ class BrowserFrame extends Component
             ->alignMiddle()
             ->content(
                 UI::row()->gap(Unit::px(8))->alignMiddle()->content(
-                    $this->dot(Color::red(400)),
-                    $this->dot(Color::amber(400)),
-                    $this->dot(Color::emerald(400)),
+                    UI::container()->width(Unit::px(12))->height(Unit::px(12))
+                        ->roundedFull()->background(Color::red(400)),
+                    UI::container()->width(Unit::px(12))->height(Unit::px(12))
+                        ->roundedFull()->background(Color::amber(400)),
+                    UI::container()->width(Unit::px(12))->height(Unit::px(12))
+                        ->roundedFull()->background(Color::emerald(400)),
                 ),
                 $this->urlBar(),
             );
@@ -93,14 +96,5 @@ class BrowserFrame extends Component
                     ->fontSize(FontSize::ExtraSmall)
                     ->color(Color::slate(500)),
             );
-    }
-
-    private function dot(Color $color): UIElement
-    {
-        return UI::container()
-            ->width(Unit::px(12))
-            ->height(Unit::px(12))
-            ->roundedFull()
-            ->background($color);
     }
 }

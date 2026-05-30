@@ -26,22 +26,17 @@ class Tile extends Component
     /** @var array<int, VNode|string|null> */
     private array $children = [];
     private bool $accent = false;
-    private ?Color $accentColor = null;
     private ?Unit $paddingValue = null;
 
     public function __construct()
     {
-        $this->accentColor = Color::orange(500);
         $this->paddingValue = Unit::px(32);
     }
 
     /** Show a 2px brand-color stripe along the top edge of the tile. */
-    public function accent(?Color $color = null): static
+    public function accent(): static
     {
         $this->accent = true;
-        if ($color !== null) {
-            $this->accentColor = $color;
-        }
         return $this;
     }
 
@@ -83,6 +78,6 @@ class Tile extends Component
         return UI::container()
             ->height(Unit::px(2))
             ->width(Unit::full())
-            ->background($this->accentColor);
+            ->background(Color::orange(500));
     }
 }
