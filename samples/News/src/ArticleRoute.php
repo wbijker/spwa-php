@@ -17,8 +17,13 @@ class ArticleRoute extends BaseRoute
 
     public static function handle(string $uri): ?static
     {
-        if (preg_match('#^/article/([a-z0-9-]+)$#', $uri, $m)) {
-            return new static($m[1]);
+        // Tolerant of an optional trailing slash, uppercase letters, and
+        // percent-encoded chars — anything that round-trips to the canonical
+        // lowercase slug. The previous strict pattern rejected a stray '/'
+        // and silently routed to `body()` (the main page), producing the
+        // confusing "URL changes, content doesn't" symptom.
+        if (preg_match('#^/article/([^/]+)/?$#', $uri, $m)) {
+            return new static(strtolower(urldecode($m[1])));
         }
         return null;
     }

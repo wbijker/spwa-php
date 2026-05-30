@@ -53,7 +53,26 @@ class News extends Component
                             ->register(NewsListRoute::class, fn() => $this->body())
                             ->register(ArticleRoute::class, function (ArticleRoute $route) {
                                 $article = NewsData::findBySlug($route->slug);
-                                return $article !== null ? new DetailView($article) : $this->body();
+                                if ($article !== null) {
+                                    return new DetailView($article);
+                                }
+                                // Visible "not found" so a route-vs-data mismatch
+                                // doesn't masquerade as a successful 0-patch diff
+                                // against the main page (which silently leaves
+                                // the article on screen on a SPA back-nav).
+                                return UI::column()
+                                    ->padding(Unit::extraLarge())
+                                    ->alignCenter()
+                                    ->gap(Unit::medium())
+                                    ->content(
+                                        UI::text('Article not found')
+                                            ->fontSize(FontSize::TwoXL)
+                                            ->weight(FontWeight::Bold)
+                                            ->color(Color::gray(900)),
+                                        UI::text($route->slug)
+                                            ->fontSize(FontSize::Small)
+                                            ->color(Color::gray(500)),
+                                    );
                             })
                             ->fallback($this->body()),
                     ),

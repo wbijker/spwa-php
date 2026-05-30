@@ -363,6 +363,17 @@ var SPWA = (function() {
     }
 
     function bootstrap() {
+        // Re-sync the "what URL is the current DOM rendered for" marker. The
+        // IIFE set it at parse time from location.pathname, but on a page
+        // served by handleNavPost (client=false form POST) the response body
+        // contains an inline `history.pushState(..., "/article/...")` which
+        // runs AFTER the IIFE but BEFORE bootstrap — so by now location is
+        // the post-pushState URL, and that's the one the popstate-back POST
+        // needs to send as `previousPath`. Without this re-sync, back posts a
+        // stale path, the server diffs the same route against itself, and
+        // returns 0 patches (the "URL changes, content doesn't" symptom).
+        __spwa_renderedPath = location.pathname + location.search;
+
         initBindings();
         // Restore any drafts BEFORE a possible replay, so the replayed event
         // sees the restored input value via collectBindings().
@@ -917,8 +928,12 @@ var SPWA = (function() {
         el.__spwaEvents = el.__spwaEvents || {};
         var key = domType + '|' + (capture ? 'c' : 'b');
         if (el.__spwaEvents[key]) return;
-        var serverNav = client === false;
-        var fn = function (evt) { handleEvent(evt, event, el, serverNav); };
+        // Capture the original `client` flag verbatim — handleEvent's
+        // `if (client === false) submitForm(...)` check expects the original
+        // value, not a derived one. A prior version derived a `serverNav` here
+        // and passed it through, which inverted the semantics (client=true
+        // pages went to submitForm and vice versa).
+        var fn = function (evt) { handleEvent(evt, event, el, client); };
         el.addEventListener(domType, fn, capture);
         el.__spwaEvents[key] = fn;
     }
