@@ -59,8 +59,11 @@ RUN mkdir -p /tmp && chmod 777 /tmp
 # Composer — PHP dependency manager, used to install/update vendor packages.
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-#CMD composer update
-# run composer install on startup
-#CMD composer install --no-interaction
-
 WORKDIR /var/www/html
+
+# Regenerate the autoloader on every container start. `composer install` is
+# typically run on the host (macOS), which bakes host-absolute paths into
+# vendor/composer/autoload_static.php. Dumping again inside the container
+# rewrites those paths against the container's filesystem view
+# (/var/www/html, /var/www/brickphp, ...) before Apache starts serving.
+CMD composer dump-autoload --working-dir=/var/www/html && apache2-foreground
