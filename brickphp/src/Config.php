@@ -42,5 +42,5 @@ class Config
      * server-captured paths so the editor link resolves when PHP runs
      * in a container/VM. Null = no rewrite (auto-detected server root).
      */
-    public static ?string $editorHostRoot = '/Users/willembijker/projects/spwa-php';
+    public static ?string $editorHostRoot = '/Users/willembijker/projects/brickphp';
 }

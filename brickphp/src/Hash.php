@@ -7,5 +7,5 @@ namespace BrickPHP;
 // by Brick::styleVersion() as the /style.css cache-buster.
 class Hash
 {
-    public static string $value = '1780125617:283';
+    public static string $value = '1780126372:283';
 }
