@@ -60,6 +60,85 @@ CSS;
      */
     public static function run(App|string $entry): void
     {
+        self::serveStaticAsset();
+        self::dispatch($entry);
+    }
+
+    /**
+     * Per-URL dispatch — runs after static-asset serving and decides
+     * which framework entry point handles the request. Today the only
+     * special route is `/hmr.php` (long-polled by the dev HMR client in
+     * `brick.js`); everything else flows into the normal app render.
+     *
+     * Consumers can keep a one-line `hmr.php` next to `index.php` — both
+     * just call `Brick::run(MyApp::class)` — so Apache serves `/hmr.php`
+     * directly without needing a rewrite rule. The dispatch is the same
+     * either way.
+     */
+    private static function dispatch(App|string $entry): void
+    {
+        $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+        if ($path === '/hmr.php') {
+            self::watch($entry);
+            return;
+        }
+        self::doRun($entry);
+    }
+
+    /**
+     * Map of framework runtime assets the consumer's `index.php` needs to
+     * make available at well-known URLs. Brick injects `<script>` /
+     * `<link>` tags that reference these paths, so any unrecognised
+     * request below falls through to the normal `run()` flow.
+     *
+     * Consumers can call this directly before `run()`; `run()` also calls
+     * it transparently so the assets just work without extra wiring:
+     *
+     *   <?php
+     *   require 'vendor/autoload.php';
+     *   Brick::run(App::class);  // <- handles /brick.js etc. automatically
+     */
+    public static function serveStaticAsset(?string $path = null): bool
+    {
+        $path ??= parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+
+        static $assets = [
+            '/brick.js'       => ['file' => 'brick.js',       'type' => 'application/javascript'],
+            '/brick_debug.js' => ['file' => 'brick_debug.js', 'type' => 'application/javascript'],
+            '/router.js'      => ['file' => 'router.js',      'type' => 'application/javascript'],
+            '/preflight.css'  => ['file' => 'preflight.css',  'type' => 'text/css'],
+        ];
+
+        if (!isset($assets[$path])) {
+            return false;
+        }
+
+        $a = $assets[$path];
+        $file = self::assetPath($a['file']);
+        if (!is_file($file)) {
+            return false;
+        }
+
+        header('Content-Type: ' . $a['type'] . '; charset=utf-8');
+        header('Cache-Control: public, max-age=31536000, immutable');
+        header('Content-Length: ' . filesize($file));
+        readfile($file);
+        exit;
+    }
+
+    /**
+     * Absolute path to an asset shipped with the library. Useful for
+     * consumers who want to read the file directly (e.g. concatenate
+     * `preflight.css` into a custom stylesheet endpoint) instead of
+     * round-tripping through the HTTP server.
+     */
+    public static function assetPath(string $name): string
+    {
+        return __DIR__ . '/../assets/' . $name;
+    }
+
+    private static function doRun(App|string $entry): void
+    {
         // Start of the app's own code execution — everything before this is
         // PHP engine startup + compiling index.php/autoload (the gap between
         // this and REQUEST_TIME_FLOAT). See codeMs() / phpMs().
