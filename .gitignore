@@ -1,6 +1,11 @@
-www/vendor
-.DS_Store
-.idea
+# Composer
+/vendor/
 
-brickphp/vendor
-*.cache
+# PHPUnit caches
+.phpunit.cache/
+.phpunit.result.cache
+
+# Editor / OS
+.idea/
+.vscode/
+.DS_Store
